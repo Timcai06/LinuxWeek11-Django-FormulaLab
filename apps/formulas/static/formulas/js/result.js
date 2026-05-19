@@ -11,26 +11,41 @@
 
     const formats = JSON.parse(dataNode.textContent);
     let current = "block";
+    let renderSequence = 0;
+    const maxKatexAttempts = 80;
 
     function previewSource(value) {
-        if (current === "block" || current === "inline") {
-            return formats.render || value.replace(/\$/g, "");
+        if (formats.render) {
+            return formats.render;
         }
-        return value;
+        return value.replace(/\$\$/g, "").replace(/\$/g, "").trim();
     }
 
-    function renderPreview(value) {
-        const source = previewSource(value);
-        if (window.katex && source) {
-            try {
-                window.katex.render(source, preview, {throwOnError: false, displayMode: current !== "inline"});
-                return;
-            } catch (error) {
-                preview.textContent = source;
-                return;
-            }
+    function renderPreview(value, attempt = 0, sequence = null) {
+        const activeSequence = sequence === null ? ++renderSequence : sequence;
+        if (activeSequence !== renderSequence) {
+            return;
         }
-        preview.textContent = source || "No LaTeX output recorded.";
+
+        const source = previewSource(value);
+        if (!source) {
+            preview.textContent = "No LaTeX output recorded.";
+            return;
+        }
+
+        if (!window.katex) {
+            preview.textContent = "Loading formula renderer...";
+            if (attempt < maxKatexAttempts) {
+                window.setTimeout(() => renderPreview(output.value, attempt + 1, activeSequence), 50);
+            }
+            return;
+        }
+
+        try {
+            window.katex.render(source, preview, {throwOnError: false, displayMode: current !== "inline"});
+        } catch (error) {
+            preview.textContent = source;
+        }
     }
 
     function selectFormat(name) {

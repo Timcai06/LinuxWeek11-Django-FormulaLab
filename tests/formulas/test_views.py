@@ -73,6 +73,8 @@ class FormulaMissionViewTests(TestCase):
         self.assertEqual(response.context["formats"]["raw"], r"\frac{a}{b}")
         self.assertEqual(response.context["formats"]["block"], r"$$\frac{a}{b}$$")
         self.assertContains(response, "COPY CURRENT")
+        self.assertContains(response, 'data-katex-preview')
+        self.assertContains(response, 'defer src="/static/formulas/js/result.js"')
 
     def test_create_job_accepts_valid_upload_creates_job_and_dispatches_worker(self):
         with patch("apps.formulas.views.run_formula_job.delay") as delay:
