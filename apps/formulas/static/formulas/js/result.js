@@ -42,7 +42,7 @@
         }
 
         try {
-            window.katex.render(source, preview, {throwOnError: false, displayMode: current !== "inline"});
+            window.katex.render(source, preview, {throwOnError: false, displayMode: true});
         } catch (error) {
             preview.textContent = source;
         }
