@@ -4,21 +4,59 @@
     const previewWrap = document.querySelector("[data-preview-wrap]");
     const previewImage = document.querySelector("[data-preview-image]");
     const previewName = document.querySelector("[data-preview-name]");
+    const previewMeta = document.querySelector("[data-preview-meta]");
+    const dropStatus = document.querySelector("[data-drop-status]");
+    const launchButton = document.querySelector("[data-launch-button]");
 
-    if (!dropZone || !input || !previewWrap || !previewImage || !previewName) {
+    if (!dropZone || !input || !previewWrap || !previewImage || !previewName || !previewMeta || !dropStatus || !launchButton) {
         return;
     }
 
-    function updatePreview(file) {
-        if (!file) {
-            previewWrap.hidden = true;
-            return;
+    let previewUrl = null;
+
+    function formatBytes(bytes) {
+        if (!bytes) {
+            return "0 KB";
         }
-        previewImage.src = URL.createObjectURL(file);
-        previewName.textContent = file.name;
-        previewWrap.hidden = false;
+        const units = ["B", "KB", "MB"];
+        let value = bytes;
+        let unitIndex = 0;
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024;
+            unitIndex += 1;
+        }
+        return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
     }
 
+    function updatePreview(file) {
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+        }
+
+        if (!file) {
+            previewWrap.hidden = true;
+            dropZone.classList.remove("has-file");
+            dropStatus.textContent = "AWAITING IMAGE INPUT";
+            launchButton.disabled = true;
+            return;
+        }
+
+        previewUrl = URL.createObjectURL(file);
+        previewImage.src = previewUrl;
+        previewName.textContent = file.name;
+        previewMeta.textContent = `${file.type || "image"} / ${formatBytes(file.size)}`;
+        dropZone.classList.add("has-file");
+        dropStatus.textContent = "IMAGE LOCKED";
+        launchButton.disabled = false;
+        previewWrap.hidden = false;
+
+        previewImage.onload = () => {
+            previewMeta.textContent = `${file.type || "image"} / ${formatBytes(file.size)} / ${previewImage.naturalWidth}x${previewImage.naturalHeight}`;
+        };
+    }
+
+    launchButton.disabled = !input.files[0];
     input.addEventListener("change", () => updatePreview(input.files[0]));
 
     ["dragenter", "dragover"].forEach((eventName) => {

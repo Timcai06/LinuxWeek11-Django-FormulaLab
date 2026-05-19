@@ -13,22 +13,29 @@
             <p>IMAGE ACQUISITION</p>
             <h1>WORKBENCH</h1>
         </div>
+        <div class="command-strip" aria-label="Upload constraints">
+            <span>PNG / JPG / JPEG</span>
+            <span>MAX 10MB</span>
+            <span>LOCAL QUEUE</span>
+        </div>
         <form id="upload-form" class="upload-console" action="{% url 'create-job' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label class="drop-zone" for="id_image" data-drop-zone>
                 {{ form.image }}
                 <span class="drop-reticle" aria-hidden="true"></span>
+                <span class="drop-status" data-drop-status>AWAITING IMAGE INPUT</span>
                 <strong>DROP FORMULA IMAGE</strong>
                 <span>PNG / JPG / JPEG, max 10MB. 选择一张公式截图开始识别。</span>
             </label>
             <div class="preview-strip" data-preview-wrap hidden>
                 <img data-preview-image alt="Selected formula preview">
-                <div>
+                <div class="preview-copy">
                     <span class="preview-label">SELECTED IMAGE</span>
                     <strong data-preview-name>Awaiting input</strong>
+                    <span data-preview-meta>Format and dimensions pending</span>
                 </div>
             </div>
-            <button class="button button-primary launch-button" type="submit">START RECOGNITION</button>
+            <button class="button button-primary launch-button" type="submit" data-launch-button>START RECOGNITION</button>
         </form>
     </div>
 

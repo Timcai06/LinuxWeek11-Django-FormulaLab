@@ -15,9 +15,31 @@
 
 .workbench-panel {
     display: grid;
-    gap: 28px;
+    gap: 22px;
     align-content: start;
     padding: clamp(18px, 4vw, 44px);
+}
+
+.command-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.command-strip span {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid var(--hairline-on-dark);
+    border-radius: 32px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
 }
 
 .upload-console {
@@ -38,6 +60,7 @@
     background: var(--canvas-night-panel);
     text-align: center;
     cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease;
 }
 
 .drop-zone input {
@@ -56,6 +79,14 @@
         linear-gradient(0deg, transparent 49%, rgba(255, 255, 255, 0.36) 50%, transparent 51%);
 }
 
+.drop-status {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
 .drop-zone strong {
     font-size: clamp(1.4rem, 4vw, 3rem);
     font-weight: 950;
@@ -67,6 +98,12 @@
 }
 
 .drop-zone.is-dragging {
+    border-color: var(--on-night);
+    background: var(--canvas-night-soft);
+}
+
+.drop-zone.has-file {
+    border-style: solid;
     border-color: var(--on-night);
     background: var(--canvas-night-soft);
 }
@@ -86,6 +123,23 @@
     height: 80px;
     object-fit: contain;
     background: var(--canvas-light);
+}
+
+.preview-copy {
+    min-width: 0;
+    display: grid;
+    gap: 5px;
+}
+
+.preview-copy strong,
+.preview-copy span:last-child {
+    overflow-wrap: anywhere;
+}
+
+.preview-copy span:last-child {
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
 }
 
 .launch-button {

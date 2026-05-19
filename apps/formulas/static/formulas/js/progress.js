@@ -9,6 +9,8 @@
     const stageEl = document.querySelector("[data-stage]");
     const messageEl = document.querySelector("[data-message]");
     const barEl = document.querySelector("[data-progress-bar]");
+    const progressValueEl = document.querySelector("[data-progress-value]");
+    const progressStateEl = document.querySelector("[data-progress-state]");
     const reportLink = document.querySelector("[data-report-link]");
     const failureBox = document.querySelector("[data-failure]");
     const errorEl = document.querySelector("[data-error]");
@@ -25,9 +27,16 @@
 
     function applyStatus(payload) {
         statusEl.textContent = String(payload.status || "unknown").toUpperCase();
+        if (progressStateEl) {
+            progressStateEl.textContent = String(payload.status || "unknown").toUpperCase();
+        }
         stageEl.textContent = payload.stage_label || "UNKNOWN";
         messageEl.textContent = payload.stage_message || "";
-        barEl.style.width = `${Number(payload.progress || 0)}%`;
+        const progress = Number(payload.progress || 0);
+        barEl.style.width = `${progress}%`;
+        if (progressValueEl) {
+            progressValueEl.textContent = `${progress}%`;
+        }
         renderStages(payload.stage_code);
 
         if (payload.status === "succeeded" && payload.result_url) {
@@ -60,6 +69,6 @@
         }
     }
 
-    renderStages(document.querySelector("[data-stage-item].is-active")?.dataset.stageItem || "UPLOAD_LOCKED");
+    renderStages(root.dataset.currentStageCode || document.querySelector("[data-stage-item].is-active")?.dataset.stageItem || "UPLOAD_LOCKED");
     window.setTimeout(poll, 800);
 })();

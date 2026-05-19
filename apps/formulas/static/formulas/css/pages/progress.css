@@ -23,6 +23,31 @@
     background: var(--canvas-light);
 }
 
+.progress-readout {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.progress-readout strong {
+    display: block;
+    color: var(--on-night);
+    font-size: clamp(2.6rem, 7vw, 5.6rem);
+    font-weight: 950;
+    line-height: 0.86;
+}
+
+.progress-readout > span {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
 .progress-bar {
     height: 12px;
     border: 1px solid var(--line-strong);
@@ -42,6 +67,7 @@
 }
 
 .stage-list {
+    counter-reset: stage;
     display: grid;
     gap: 1px;
     margin: 0;
@@ -51,15 +77,39 @@
 }
 
 .stage-list li {
+    counter-increment: stage;
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    align-items: center;
+    gap: 12px;
     padding: 14px;
     background: var(--canvas-night);
     color: var(--dim);
     font-weight: 800;
 }
 
+.stage-list li::before {
+    content: counter(stage, decimal-leading-zero);
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--hairline-on-dark);
+    border-radius: 50%;
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+}
+
 .stage-list li.is-active,
 .stage-list li.is-complete {
     color: var(--text);
+}
+
+.stage-list li.is-active::before,
+.stage-list li.is-complete::before {
+    border-color: var(--on-night);
+    color: var(--on-night);
 }
 
 .stage-list li.is-active {

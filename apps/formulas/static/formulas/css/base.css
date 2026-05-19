@@ -181,6 +181,14 @@ textarea {
     color: var(--ink);
 }
 
+.button:disabled {
+    border-color: var(--hairline-on-dark);
+    background: transparent;
+    color: var(--dim);
+    cursor: not-allowed;
+    opacity: 0.52;
+}
+
 .button:focus-visible,
 a:focus-visible,
 button:focus-visible,

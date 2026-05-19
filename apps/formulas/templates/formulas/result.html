@@ -23,6 +23,13 @@
         </dl>
     </div>
     <div class="latex-console">
+        <div class="result-readout">
+            <div>
+                <span class="telemetry-label">LATEX SOURCE CONSOLE</span>
+                <strong>{{ job.engine_name }}</strong>
+            </div>
+            <span>{{ job.status|upper }}</span>
+        </div>
         <div class="console-tabs" role="tablist" aria-label="LaTeX formats">
             <button type="button" data-format-tab="raw">RAW</button>
             <button type="button" data-format-tab="block" aria-selected="true">BLOCK</button>
