@@ -53,6 +53,21 @@ class FormulaTaskTests(TestCase):
         self.assertEqual(redis_client.values[MODEL_MESSAGE_KEY], "pix2tex model ready")
         self.assertEqual(result["status"], "ready")
 
+    def test_warmup_model_task_still_succeeds_when_telemetry_write_fails(self):
+        redis_client = FakeRedis()
+
+        with (
+            patch("apps.formulas.tasks.get_redis_client", return_value=redis_client),
+            patch("apps.formulas.tasks.set_model_status", side_effect=RuntimeError("redis down")),
+            patch("apps.formulas.tasks.Pix2TexEngine") as engine_class,
+            patch("apps.formulas.tasks.logger.warning") as log_warning,
+        ):
+            result = warmup_model_task.run()
+
+        engine_class.return_value.warmup.assert_called_once_with()
+        self.assertEqual(result["status"], "ready")
+        self.assertEqual(log_warning.call_count, 2)
+
     def test_run_formula_job_success_updates_stage_sequence_and_result_fields(self):
         job = self.create_job()
         stage_codes = []
@@ -97,6 +112,23 @@ class FormulaTaskTests(TestCase):
         self.assertIsNotNone(job.started_at)
         self.assertIsNotNone(job.finished_at)
         self.assertIsNotNone(job.duration_ms)
+
+    def test_run_formula_job_skips_non_queued_job(self):
+        job = self.create_job()
+        job.status = FormulaJob.Status.RUNNING
+        job.save(update_fields=["status"])
+
+        with (
+            patch("apps.formulas.tasks.Pix2TexEngine") as engine_class,
+            patch("apps.formulas.tasks.prepare_formula_image") as prepare_image,
+        ):
+            result = run_formula_job.run(str(job.id))
+
+        job.refresh_from_db()
+        self.assertIsNone(result)
+        self.assertEqual(job.status, FormulaJob.Status.RUNNING)
+        engine_class.return_value.warmup.assert_not_called()
+        prepare_image.assert_not_called()
 
     def test_run_formula_job_inference_failure_records_inference_stage(self):
         job = self.create_job()

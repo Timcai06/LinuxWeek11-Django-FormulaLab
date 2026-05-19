@@ -5,6 +5,7 @@ import traceback
 
 from celery import shared_task
 from celery.signals import worker_process_init
+from django.db import transaction
 from django.utils import timezone
 
 from apps.formulas.models import FormulaJob
@@ -73,43 +74,54 @@ def _truncated_error_detail() -> str:
     return traceback.format_exc()[:ERROR_DETAIL_MAX_LENGTH]
 
 
+def _safe_set_model_status(redis_client, status: str, message: str) -> None:
+    try:
+        set_model_status(redis_client, status, message)
+    except Exception:
+        logger.warning("Unable to write model status telemetry", exc_info=True)
+
+
 @shared_task
 def warmup_model_task():
     redis_client = get_redis_client()
-    set_model_status(redis_client, "warming", "loading pix2tex model")
+    _safe_set_model_status(redis_client, "warming", "loading pix2tex model")
     try:
         Pix2TexEngine().warmup()
     except Exception as exc:
-        set_model_status(redis_client, "error", _short_error_message(exc))
+        _safe_set_model_status(redis_client, "error", _short_error_message(exc))
         raise
 
-    set_model_status(redis_client, "ready", "pix2tex model ready")
+    _safe_set_model_status(redis_client, "ready", "pix2tex model ready")
     return {"status": "ready"}
 
 
 @shared_task
 def run_formula_job(job_id: str) -> None:
-    job = FormulaJob.objects.get(id=job_id)
-    current_stage = "QUEUED"
+    with transaction.atomic():
+        job = FormulaJob.objects.select_for_update().get(id=job_id)
+        if job.status != FormulaJob.Status.QUEUED:
+            logger.info("Skipping formula job %s because status is %s", job_id, job.status)
+            return None
+        job.status = FormulaJob.Status.RUNNING
+        job.started_at = timezone.now()
+        job.finished_at = None
+        job.duration_ms = None
+        job.error_message = ""
+        job.error_detail = ""
+        job.failure_stage = ""
+        job.save(
+            update_fields=[
+                "status",
+                "started_at",
+                "finished_at",
+                "duration_ms",
+                "error_message",
+                "error_detail",
+                "failure_stage",
+            ]
+        )
 
-    job.status = FormulaJob.Status.RUNNING
-    job.started_at = timezone.now()
-    job.finished_at = None
-    job.duration_ms = None
-    job.error_message = ""
-    job.error_detail = ""
-    job.failure_stage = ""
-    job.save(
-        update_fields=[
-            "status",
-            "started_at",
-            "finished_at",
-            "duration_ms",
-            "error_message",
-            "error_detail",
-            "failure_stage",
-        ]
-    )
+    current_stage = "QUEUED"
 
     try:
         for stage in ("QUEUED", "MODEL_WARMUP"):

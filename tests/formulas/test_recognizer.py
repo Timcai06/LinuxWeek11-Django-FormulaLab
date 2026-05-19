@@ -36,8 +36,8 @@ class Pix2TexEngineTests(SimpleTestCase):
                 load_count += 1
 
             def __call__(self, image_path):
-                calls.append(image_path)
-                return f"latex:{Path(image_path).name}"
+                calls.append(image_path.copy())
+                return f"latex:{image_path.size[0]}x{image_path.size[1]}"
 
         fake_cli.LatexOCR = FakeLatexOCR
 
@@ -45,13 +45,24 @@ class Pix2TexEngineTests(SimpleTestCase):
             module = importlib.import_module("apps.formulas.services.pix2tex_engine")
             module = importlib.reload(module)
 
-            first = module.Pix2TexEngine().recognize("/tmp/first.png")
-            second = module.Pix2TexEngine().recognize("/tmp/second.png")
+            first_image = self.create_temp_image("first.png", (14, 7))
+            second_image = self.create_temp_image("second.png", (18, 9))
 
-        self.assertEqual(first, "latex:first.png")
-        self.assertEqual(second, "latex:second.png")
+            first = module.Pix2TexEngine().recognize(str(first_image))
+            second = module.Pix2TexEngine().recognize(str(second_image))
+
+        self.assertEqual(first, "latex:14x7")
+        self.assertEqual(second, "latex:18x9")
         self.assertEqual(load_count, 1)
-        self.assertEqual(calls, ["/tmp/first.png", "/tmp/second.png"])
+        self.assertEqual([image.size for image in calls], [(14, 7), (18, 9)])
+
+    def create_temp_image(self, name, size):
+        if not hasattr(self, "_temp_context"):
+            self._temp_context = TemporaryDirectory()
+            self.addCleanup(self._temp_context.cleanup)
+        path = Path(self._temp_context.name) / name
+        Image.new("RGB", size, (255, 255, 255)).save(path)
+        return path
 
 
 @override_settings(FORMULA_LAB_MAX_IMAGE_SIDE=1600)
