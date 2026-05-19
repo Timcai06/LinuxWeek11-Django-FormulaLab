@@ -1,9 +1,12 @@
+import logging
+
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from apps.formulas.services.health import build_health_snapshot
 from apps.formulas.tasks import warmup_model_task
+
+logger = logging.getLogger(__name__)
 
 
 def _temporary_page(name: str) -> HttpResponse:
@@ -50,8 +53,11 @@ def health_api(request):
     return JsonResponse(build_health_snapshot())
 
 
-@csrf_exempt
 @require_POST
 def warmup_api(request):
-    warmup_model_task.delay()
+    try:
+        warmup_model_task.delay()
+    except Exception:
+        logger.exception("Unable to queue model warmup task")
+        return JsonResponse({"status": "unavailable", "error": "warmup broker unavailable"}, status=503)
     return JsonResponse({"status": "queued"})
