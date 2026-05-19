@@ -36,6 +36,8 @@
 
         if (!file) {
             previewWrap.hidden = true;
+            previewImage.hidden = true;
+            previewImage.removeAttribute("src");
             dropZone.classList.remove("has-file");
             dropStatus.textContent = "AWAITING IMAGE INPUT";
             launchButton.disabled = true;
@@ -44,6 +46,7 @@
 
         previewUrl = URL.createObjectURL(file);
         previewImage.src = previewUrl;
+        previewImage.hidden = false;
         previewName.textContent = file.name;
         previewMeta.textContent = `${file.type || "image"} / ${formatBytes(file.size)}`;
         dropZone.classList.add("has-file");

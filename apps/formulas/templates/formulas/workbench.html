@@ -22,19 +22,19 @@
             {% csrf_token %}
             <label class="drop-zone" for="id_image" data-drop-zone>
                 {{ form.image }}
-                <span class="drop-reticle" aria-hidden="true"></span>
+                <span class="preview-stage">
+                    <span class="drop-reticle" aria-hidden="true"></span>
+                    <img data-preview-image hidden alt="Selected formula preview">
+                </span>
                 <span class="drop-status" data-drop-status>AWAITING IMAGE INPUT</span>
                 <strong>DROP FORMULA IMAGE</strong>
-                <span>PNG / JPG / JPEG, max 10MB. 选择一张公式截图开始识别。</span>
-            </label>
-            <div class="preview-strip" data-preview-wrap hidden>
-                <img data-preview-image alt="Selected formula preview">
-                <div class="preview-copy">
+                <span class="drop-help">PNG / JPG / JPEG, max 10MB. 选择一张公式截图开始识别。</span>
+                <div class="preview-copy" data-preview-wrap hidden>
                     <span class="preview-label">SELECTED IMAGE</span>
                     <strong data-preview-name>Awaiting input</strong>
                     <span data-preview-meta>Format and dimensions pending</span>
                 </div>
-            </div>
+            </label>
             <button class="button button-primary launch-button" type="submit" data-launch-button>START RECOGNITION</button>
         </form>
     </div>
