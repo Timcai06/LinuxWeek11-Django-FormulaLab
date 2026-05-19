@@ -1,0 +1,28 @@
+{% extends "formulas/base.html" %}
+{% load static %}
+
+{% block title %}Formula Lab Mission Control{% endblock %}
+{% block body_class %}formula-page landing-shell{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'formulas/css/pages/landing.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="landing-hero" style="background-image: url('{% static 'formulas/visuals/landing-mission-bg.png' %}');">
+    <div class="hero-scanline" aria-hidden="true"></div>
+    <div class="landing-copy">
+        <p class="mission-kicker">OPTICAL FORMULA RECOGNITION</p>
+        <h1>FORMULA LAB</h1>
+        <p class="mission-subtitle">MISSION CONTROL FOR LATEX RECOGNITION</p>
+        <div class="mission-actions">
+            <a class="button button-primary" href="{% url 'workbench' %}">ENTER WORKBENCH</a>
+            <a class="button button-secondary" href="{% url 'history' %}">VIEW MISSION LOG</a>
+        </div>
+    </div>
+    <div class="landing-readout" aria-label="System readout">
+        <span>SCAN GRID ACTIVE</span>
+        <span>LATEX TELEMETRY ONLINE</span>
+        <span>IMAGE INPUT READY</span>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,89 @@
+.landing-shell .site-main {
+    padding-top: 0;
+}
+
+.landing-hero {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    align-items: end;
+    padding: calc(var(--nav-height) + 32px) clamp(18px, 5vw, 72px) clamp(24px, 8vh, 72px);
+    overflow: hidden;
+    background-position: center;
+    background-size: cover;
+}
+
+.landing-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.9) 72%);
+}
+
+.hero-scanline {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 7px);
+    opacity: 0.32;
+    pointer-events: none;
+}
+
+.landing-copy {
+    position: relative;
+    max-width: 920px;
+}
+
+.mission-kicker,
+.mission-subtitle {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.74);
+    font-weight: 900;
+    letter-spacing: 0.1em;
+}
+
+.landing-copy h1 {
+    margin: 10px 0;
+    color: #fff;
+    font-size: clamp(4rem, 15vw, 12rem);
+    font-weight: 950;
+    line-height: 0.82;
+}
+
+.mission-subtitle {
+    font-size: clamp(1rem, 2.2vw, 1.65rem);
+}
+
+.mission-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.landing-readout {
+    position: absolute;
+    right: clamp(18px, 5vw, 72px);
+    bottom: 28px;
+    display: grid;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-align: right;
+}
+
+@media (max-width: 720px) {
+    .landing-hero {
+        min-height: 100vh;
+        padding-top: 128px;
+    }
+
+    .landing-readout {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        margin-top: 32px;
+        text-align: left;
+    }
+}

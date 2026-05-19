@@ -1,0 +1,53 @@
+.history-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: clamp(18px, 4vw, 54px);
+}
+
+.timeline {
+    display: grid;
+    gap: 14px;
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.timeline-entry {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.timeline-primary {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.timeline-primary a,
+.timeline-primary span:first-child {
+    overflow-wrap: anywhere;
+    font-weight: 900;
+}
+
+.timeline-primary span:last-child {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.timeline-entry p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.timeline-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.status-failed {
+    border-color: rgba(255, 255, 255, 0.48);
+}

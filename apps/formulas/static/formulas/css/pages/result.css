@@ -1,0 +1,89 @@
+.result-grid {
+    min-height: calc(100vh - var(--nav-height));
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+    gap: clamp(18px, 3vw, 34px);
+    padding: clamp(18px, 4vw, 54px);
+    background-image: var(--result-texture);
+    background-position: center;
+    background-size: cover;
+}
+
+.source-panel,
+.latex-console {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+    border: 1px solid var(--line);
+    background: rgba(0, 0, 0, 0.84);
+    padding: clamp(18px, 3vw, 34px);
+}
+
+.source-panel img {
+    width: 100%;
+    max-height: 460px;
+    object-fit: contain;
+    background: #fff;
+}
+
+.console-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--line);
+}
+
+.console-tabs button {
+    min-height: 42px;
+    border: 0;
+    border-right: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    font-weight: 900;
+}
+
+.console-tabs button:last-child {
+    border-right: 0;
+}
+
+.console-tabs button[aria-selected="true"] {
+    background: #fff;
+    color: #050505;
+}
+
+.latex-output {
+    width: 100%;
+    min-height: 180px;
+    padding: 16px;
+    border: 1px solid var(--line-strong);
+    background: #020202;
+    color: #fff;
+    resize: vertical;
+}
+
+.console-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.katex-preview {
+    min-height: 150px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    padding: 18px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.025);
+    overflow: auto;
+}
+
+.katex-preview [data-katex-preview] {
+    color: #fff;
+    font-size: clamp(1rem, 2vw, 1.35rem);
+}
+
+@media (max-width: 900px) {
+    .result-grid {
+        grid-template-columns: 1fr;
+    }
+}

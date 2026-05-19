@@ -1,0 +1,37 @@
+{% extends "formulas/base.html" %}
+{% load static %}
+
+{% block title %}System - Formula Lab{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'formulas/css/pages/system.css' %}">
+{% endblock %}
+
+{% block content %}
+{{ health_snapshot|json_script:"initial-health" }}
+<section class="system-shell" data-health-url="{% url 'api-system-health' %}" data-warmup-url="{% url 'api-system-warmup' %}">
+    <div class="section-header">
+        <p>SYSTEM</p>
+        <h1>TELEMETRY MATRIX</h1>
+    </div>
+    <div class="system-grid" data-system-grid>
+        <article><span>WEB</span><strong>{{ health_snapshot.web.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
+        <article><span>DATABASE</span><strong>{{ health_snapshot.database.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
+        <article><span>REDIS</span><strong>{{ health_snapshot.redis.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
+        <article><span>WORKER</span><strong>{{ health_snapshot.worker.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
+        <article><span>MODEL</span><strong>{{ health_snapshot.model.status|default:"UNKNOWN"|upper }}</strong></article>
+        <article><span>MEDIA</span><strong>{{ health_snapshot.media.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
+    </div>
+    <form class="warmup-console" action="{% url 'api-system-warmup' %}" method="post" data-warmup-form>
+        {% csrf_token %}
+        <div>
+            <span class="telemetry-label">MODEL WARMUP</span>
+            <p data-warmup-status>{{ health_snapshot.model.message|default:"Ready to request model warmup" }}</p>
+        </div>
+        <button class="button button-primary" type="submit">WARMUP MODEL</button>
+    </form>
+</section>
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'formulas/js/system.js' %}"></script>
+{% endblock %}

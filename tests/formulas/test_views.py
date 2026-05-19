@@ -33,6 +33,47 @@ class FormulaMissionViewTests(TestCase):
         self.settings_context.disable()
         self.media_root_context.cleanup()
 
+    def test_landing_renders_mission_control_entry_points(self):
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "formulas/landing.html")
+        self.assertContains(response, "FORMULA LAB")
+        self.assertContains(response, "MISSION CONTROL FOR LATEX RECOGNITION")
+        self.assertContains(response, "ENTER WORKBENCH")
+
+    def test_workbench_renders_upload_form_and_telemetry_context(self):
+        FormulaJob.objects.create(original_image="formula_uploads/source.png")
+
+        with patch("apps.formulas.views.build_health_snapshot") as health_snapshot:
+            health_snapshot.return_value = {
+                "model": {"status": "ready", "message": "pix2tex model ready", "ok": True},
+                "queues": {"queued": 1, "running": 0, "succeeded": 0, "failed": 0, "total": 1},
+            }
+            response = self.client.get("/workbench/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "formulas/workbench.html")
+        self.assertContains(response, 'action="/jobs/"')
+        self.assertContains(response, 'enctype="multipart/form-data"')
+        self.assertEqual(response.context["queue_counts"]["queued"], 1)
+        self.assertEqual(len(response.context["recent_jobs"]), 1)
+
+    def test_report_renders_latex_format_context(self):
+        job = FormulaJob.objects.create(
+            original_image="formula_uploads/source.png",
+            status=FormulaJob.Status.SUCCEEDED,
+            latex_result=r"\frac{a}{b}",
+        )
+
+        response = self.client.get(f"/missions/{job.id}/report/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "formulas/result.html")
+        self.assertEqual(response.context["formats"]["raw"], r"\frac{a}{b}")
+        self.assertEqual(response.context["formats"]["block"], r"$$\frac{a}{b}$$")
+        self.assertContains(response, "COPY CURRENT")
+
     def test_create_job_accepts_valid_upload_creates_job_and_dispatches_worker(self):
         with patch("apps.formulas.views.run_formula_job.delay") as delay:
             response = self.client.post("/jobs/", {"image": upload_file("formula.jpeg")})

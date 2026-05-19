@@ -1,0 +1,52 @@
+{% extends "formulas/base.html" %}
+{% load static %}
+
+{% block title %}Mission Log - Formula Lab{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'formulas/css/pages/history.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="history-shell">
+    <div class="section-header">
+        <p>MISSION LOG</p>
+        <h1>RECOGNITION TIMELINE</h1>
+    </div>
+    <ol class="timeline">
+        {% for job in jobs %}
+            <li class="timeline-entry status-{{ job.status }}">
+                <div class="timeline-primary">
+                    <a href="{% url 'mission-progress' job.id %}">{{ job.id }}</a>
+                    <span>{{ job.status|upper }}</span>
+                </div>
+                <p>{{ job.stage_label }} / {{ job.stage_message }}</p>
+                <details>
+                    <summary>TIMINGS</summary>
+                    <dl class="metadata-grid">
+                        <div><dt>CREATED</dt><dd>{{ job.created_at|date:"Y-m-d H:i:s" }}</dd></div>
+                        <div><dt>STARTED</dt><dd>{{ job.started_at|date:"Y-m-d H:i:s"|default:"N/A" }}</dd></div>
+                        <div><dt>FINISHED</dt><dd>{{ job.finished_at|date:"Y-m-d H:i:s"|default:"N/A" }}</dd></div>
+                        <div><dt>DURATION</dt><dd>{% if job.duration_ms %}{{ job.duration_ms }} ms{% else %}N/A{% endif %}</dd></div>
+                    </dl>
+                    {% if job.timings %}<pre>{{ job.timings }}</pre>{% endif %}
+                </details>
+                <div class="timeline-actions">
+                    {% if job.status == "succeeded" %}
+                        <a class="button button-secondary" href="{% url 'mission-report' job.id %}">OPEN REPORT</a>
+                    {% elif job.status == "failed" %}
+                        <form action="{% url 'retry-mission' job.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="button button-secondary" type="submit">RETRY MISSION</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </li>
+        {% empty %}
+            <li class="timeline-entry">
+                <div class="timeline-primary"><span>No missions recorded</span></div>
+                <p>Workbench is ready for the first upload.</p>
+            </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endblock %}

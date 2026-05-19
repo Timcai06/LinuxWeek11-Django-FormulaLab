@@ -1,0 +1,11 @@
+<header class="mission-nav">
+    <a class="mission-brand" href="{% url 'landing' %}" aria-label="Formula Lab home">
+        <span class="brand-mark" aria-hidden="true">FL</span>
+        <span>FORMULA LAB</span>
+    </a>
+    <nav class="mission-links" aria-label="Primary navigation">
+        <a href="{% url 'workbench' %}" {% if request.resolver_match.url_name == "workbench" %}aria-current="page"{% endif %}>WORKBENCH</a>
+        <a href="{% url 'history' %}" {% if request.resolver_match.url_name == "history" %}aria-current="page"{% endif %}>MISSION LOG</a>
+        <a href="{% url 'system' %}" {% if request.resolver_match.url_name == "system" %}aria-current="page"{% endif %}>SYSTEM</a>
+    </nav>
+</header>

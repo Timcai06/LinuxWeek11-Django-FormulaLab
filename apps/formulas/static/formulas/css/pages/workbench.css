@@ -1,0 +1,170 @@
+.workbench-grid {
+    min-height: calc(100vh - var(--nav-height));
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    gap: clamp(18px, 3vw, 34px);
+    padding: clamp(18px, 4vw, 54px);
+    background-image: var(--workbench-texture);
+    background-position: center;
+    background-size: cover;
+}
+
+.workbench-panel,
+.telemetry-panel {
+    border: 1px solid var(--line);
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(10px);
+}
+
+.workbench-panel {
+    display: grid;
+    gap: 28px;
+    align-content: start;
+    padding: clamp(18px, 4vw, 44px);
+}
+
+.upload-console {
+    display: grid;
+    gap: 16px;
+}
+
+.drop-zone {
+    position: relative;
+    min-height: 340px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 12px;
+    padding: 28px;
+    overflow: hidden;
+    border: 1px dashed rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.025);
+    text-align: center;
+    cursor: pointer;
+}
+
+.drop-zone input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.drop-reticle {
+    width: min(48vw, 260px);
+    aspect-ratio: 1;
+    border: 1px solid rgba(255, 255, 255, 0.48);
+    background:
+        linear-gradient(90deg, transparent 49%, rgba(255, 255, 255, 0.36) 50%, transparent 51%),
+        linear-gradient(0deg, transparent 49%, rgba(255, 255, 255, 0.36) 50%, transparent 51%);
+}
+
+.drop-zone strong {
+    font-size: clamp(1.4rem, 4vw, 3rem);
+    font-weight: 950;
+}
+
+.drop-zone span:last-child {
+    max-width: 520px;
+    color: var(--muted);
+}
+
+.drop-zone.is-dragging {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.preview-strip {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.preview-strip img {
+    width: 120px;
+    height: 80px;
+    object-fit: contain;
+    background: #fff;
+}
+
+.launch-button {
+    width: fit-content;
+}
+
+.telemetry-panel {
+    display: grid;
+    align-content: start;
+}
+
+.telemetry-section {
+    padding: 22px;
+    border-bottom: 1px solid var(--line);
+}
+
+.telemetry-section strong {
+    display: block;
+    color: var(--cold);
+    font-size: 1.4rem;
+}
+
+.telemetry-section p {
+    margin: 6px 0 0;
+    color: var(--muted);
+}
+
+.queue-grid dl {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    margin: 10px 0 0;
+    background: var(--line);
+}
+
+.queue-grid div {
+    padding: 12px;
+    background: #050505;
+}
+
+.queue-grid dt {
+    color: var(--dim);
+    font-size: 0.68rem;
+}
+
+.queue-grid dd {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 900;
+}
+
+.recent-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.recent-list li {
+    display: grid;
+    gap: 2px;
+}
+
+.recent-list a {
+    overflow-wrap: anywhere;
+    color: var(--text);
+    font-size: 0.74rem;
+}
+
+.recent-list span {
+    color: var(--muted);
+    font-size: 0.7rem;
+}
+
+@media (max-width: 900px) {
+    .workbench-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,52 @@
+{% extends "formulas/base.html" %}
+{% load static %}
+
+{% block title %}Mission Progress - Formula Lab{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'formulas/css/pages/progress.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="mission-layout" data-status-url="{% url 'api-mission-status' job.id %}" data-report-url="{% url 'mission-report' job.id %}">
+    <div class="image-console">
+        <div class="section-header">
+            <p>MISSION {{ job.id }}</p>
+            <h1>RECOGNITION PROGRESS</h1>
+        </div>
+        <img src="{{ job.original_image.url }}" alt="Original formula upload">
+        <dl class="metadata-grid">
+            <div><dt>STATUS</dt><dd data-status>{{ job.status|upper }}</dd></div>
+            <div><dt>STAGE</dt><dd data-stage>{{ job.stage_label }}</dd></div>
+            <div><dt>ENGINE</dt><dd>{{ job.engine_name }}</dd></div>
+            <div><dt>CREATED</dt><dd>{{ job.created_at|date:"Y-m-d H:i:s" }}</dd></div>
+        </dl>
+    </div>
+    <div class="progress-console">
+        <div class="progress-bar"><span data-progress-bar style="width: {{ job.progress }}%;"></span></div>
+        <p class="stage-message" data-message>{{ job.stage_message }}</p>
+        <ol class="stage-list">
+            <li data-stage-item="UPLOAD_LOCKED">UPLOAD LOCKED</li>
+            <li data-stage-item="QUEUED">QUEUED</li>
+            <li data-stage-item="MODEL_WARMUP">MODEL WARMUP</li>
+            <li data-stage-item="IMAGE_PREPROCESS">IMAGE PREPROCESS</li>
+            <li data-stage-item="INFERENCE">INFERENCE</li>
+            <li data-stage-item="LATEX_POSTPROCESS">LATEX POSTPROCESS</li>
+            <li data-stage-item="RESULT_READY">RESULT READY</li>
+        </ol>
+        <a class="button button-primary" data-report-link href="{% url 'mission-report' job.id %}" {% if job.status != "succeeded" %}hidden{% endif %}>OPEN REPORT</a>
+        <details class="failure-details" data-failure {% if job.status != "failed" %}hidden{% endif %}>
+            <summary>FAILURE DETAILS</summary>
+            <p data-error>{{ job.error_message|default:"No failure telemetry recorded" }}</p>
+            {% if job.error_detail %}<pre>{{ job.error_detail }}</pre>{% endif %}
+            <form action="{% url 'retry-mission' job.id %}" method="post">
+                {% csrf_token %}
+                <button class="button button-secondary" type="submit">RETRY MISSION</button>
+            </form>
+        </details>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'formulas/js/progress.js' %}"></script>
+{% endblock %}

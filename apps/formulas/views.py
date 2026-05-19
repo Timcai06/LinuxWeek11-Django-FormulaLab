@@ -1,7 +1,7 @@
 import logging
 
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -9,23 +9,46 @@ from django.views.decorators.http import require_POST
 from apps.formulas.forms import FormulaUploadForm
 from apps.formulas.models import FormulaJob
 from apps.formulas.services.health import build_health_snapshot
+from apps.formulas.services.latex_formats import build_latex_formats
 from apps.formulas.tasks import run_formula_job, warmup_model_task
 
 logger = logging.getLogger(__name__)
 
 
-def _temporary_page(name: str) -> HttpResponse:
-    return HttpResponse(f"Temporary Formula Lab placeholder: {name}")
+def _safe_health_snapshot() -> dict:
+    try:
+        return build_health_snapshot()
+    except Exception:
+        logger.exception("Unable to build formula lab health snapshot")
+        return {
+            "web": {"ok": True},
+            "database": {"ok": False, "error": "health snapshot unavailable"},
+            "redis": {"ok": False, "error": "health snapshot unavailable"},
+            "worker": {"ok": False, "heartbeat_at": None, "error": "health snapshot unavailable"},
+            "model": {"ok": False, "status": None, "message": "health snapshot unavailable"},
+            "media": {"ok": False, "error": "health snapshot unavailable"},
+            "queues": {"queued": 0, "running": 0, "succeeded": 0, "failed": 0, "total": 0},
+            "last_job": None,
+        }
 
 
 def landing(request):
-    return _temporary_page("landing")
+    return render(request, "formulas/landing.html")
 
 
 def workbench(request):
-    response = _temporary_page("workbench")
-    response.context_data = {"form": FormulaUploadForm()}
-    return response
+    health_snapshot = _safe_health_snapshot()
+    return render(
+        request,
+        "formulas/workbench.html",
+        {
+            "form": FormulaUploadForm(),
+            "recent_jobs": FormulaJob.objects.all()[:5],
+            "health_snapshot": health_snapshot,
+            "queue_counts": health_snapshot.get("queues", {}),
+            "model_status": health_snapshot.get("model", {}),
+        },
+    )
 
 
 @require_POST
@@ -46,13 +69,20 @@ def create_job(request):
 
 
 def mission_progress(request, job_id):
-    get_object_or_404(FormulaJob, id=job_id)
-    return _temporary_page(f"mission-progress:{job_id}")
+    job = get_object_or_404(FormulaJob, id=job_id)
+    return render(request, "formulas/progress.html", {"job": job})
 
 
 def mission_report(request, job_id):
-    get_object_or_404(FormulaJob, id=job_id)
-    return _temporary_page(f"mission-report:{job_id}")
+    job = get_object_or_404(FormulaJob, id=job_id)
+    return render(
+        request,
+        "formulas/result.html",
+        {
+            "job": job,
+            "formats": build_latex_formats(job.latex_result),
+        },
+    )
 
 
 @require_POST
@@ -73,11 +103,11 @@ def retry_mission(request, job_id):
 
 
 def history(request):
-    return _temporary_page("history")
+    return render(request, "formulas/history.html", {"jobs": FormulaJob.objects.all()[:25]})
 
 
 def system_page(request):
-    return _temporary_page("system")
+    return render(request, "formulas/system.html", {"health_snapshot": _safe_health_snapshot()})
 
 
 def mission_status_api(request, job_id):

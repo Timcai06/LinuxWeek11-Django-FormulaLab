@@ -1,0 +1,73 @@
+{% extends "formulas/base.html" %}
+{% load static %}
+
+{% block title %}Workbench - Formula Lab{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'formulas/css/pages/workbench.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="workbench-grid" style="--workbench-texture: url('{% static 'formulas/visuals/workbench-texture.png' %}');">
+    <div class="workbench-panel">
+        <div class="section-header">
+            <p>IMAGE ACQUISITION</p>
+            <h1>WORKBENCH</h1>
+        </div>
+        <form id="upload-form" class="upload-console" action="{% url 'create-job' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label class="drop-zone" for="id_image" data-drop-zone>
+                {{ form.image }}
+                <span class="drop-reticle" aria-hidden="true"></span>
+                <strong>DROP FORMULA IMAGE</strong>
+                <span>PNG / JPG / JPEG, max 10MB. 选择一张公式截图开始识别。</span>
+            </label>
+            <div class="preview-strip" data-preview-wrap hidden>
+                <img data-preview-image alt="Selected formula preview">
+                <div>
+                    <span class="preview-label">SELECTED IMAGE</span>
+                    <strong data-preview-name>Awaiting input</strong>
+                </div>
+            </div>
+            <button class="button button-primary launch-button" type="submit">START RECOGNITION</button>
+        </form>
+    </div>
+
+    <aside class="telemetry-panel" aria-label="Workbench telemetry">
+        <div class="telemetry-section">
+            <span class="telemetry-label">MODEL STATUS</span>
+            <strong>{{ model_status.status|default:"unknown"|upper }}</strong>
+            <p>{{ model_status.message|default:"Awaiting pix2tex telemetry" }}</p>
+        </div>
+        <div class="telemetry-section queue-grid">
+            <span class="telemetry-label">QUEUE STATUS</span>
+            <dl>
+                <div><dt>QUEUED</dt><dd>{{ queue_counts.queued|default:0 }}</dd></div>
+                <div><dt>RUNNING</dt><dd>{{ queue_counts.running|default:0 }}</dd></div>
+                <div><dt>SUCCESS</dt><dd>{{ queue_counts.succeeded|default:0 }}</dd></div>
+                <div><dt>FAILED</dt><dd>{{ queue_counts.failed|default:0 }}</dd></div>
+            </dl>
+        </div>
+        <div class="telemetry-section">
+            <span class="telemetry-label">SUPPORTED FORMATS</span>
+            <p>PNG, JPG, JPEG</p>
+        </div>
+        <div class="telemetry-section">
+            <span class="telemetry-label">RECENT MISSIONS</span>
+            <ol class="recent-list">
+                {% for job in recent_jobs %}
+                    <li>
+                        <a href="{% url 'mission-progress' job.id %}">{{ job.id }}</a>
+                        <span>{{ job.status|upper }} / {{ job.stage_label }}</span>
+                    </li>
+                {% empty %}
+                    <li><span>No missions recorded</span></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </aside>
+</section>
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'formulas/js/workbench.js' %}"></script>
+{% endblock %}
