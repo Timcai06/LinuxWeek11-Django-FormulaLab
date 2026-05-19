@@ -40,12 +40,12 @@ def system_page(request):
 
 
 def mission_status_api(request, job_id):
-    return JsonResponse({"temporary": True, "job_id": str(job_id), "status": "pending_task_7"})
+    return JsonResponse({"temporary": True, "job_id": str(job_id), "status": "pending_task_7"}, status=501)
 
 
 def health_api(request):
-    return JsonResponse({"temporary": True, "status": "pending_task_7"})
+    return JsonResponse({"temporary": True, "status": "pending_task_7"}, status=501)
 
 
 def warmup_api(request):
-    return JsonResponse({"temporary": True, "status": "pending_task_7"})
+    return JsonResponse({"temporary": True, "status": "pending_task_7"}, status=501)
