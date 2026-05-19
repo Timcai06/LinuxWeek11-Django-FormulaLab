@@ -12,7 +12,7 @@
     gap: 22px;
     align-content: start;
     border: 1px solid var(--line);
-    background: rgba(0, 0, 0, 0.82);
+    background: var(--canvas-night-panel);
     padding: clamp(18px, 3vw, 34px);
 }
 
@@ -20,19 +20,19 @@
     width: 100%;
     max-height: 430px;
     object-fit: contain;
-    background: #fff;
+    background: var(--canvas-light);
 }
 
 .progress-bar {
     height: 12px;
     border: 1px solid var(--line-strong);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--canvas-night-soft);
 }
 
 .progress-bar span {
     display: block;
     height: 100%;
-    background: #fff;
+    background: var(--on-night);
     transition: width 220ms ease;
 }
 
@@ -52,7 +52,7 @@
 
 .stage-list li {
     padding: 14px;
-    background: #050505;
+    background: var(--canvas-night);
     color: var(--dim);
     font-weight: 800;
 }
@@ -63,7 +63,7 @@
 }
 
 .stage-list li.is-active {
-    box-shadow: inset 4px 0 0 #fff;
+    box-shadow: inset 4px 0 0 var(--on-night);
 }
 
 .failure-details {

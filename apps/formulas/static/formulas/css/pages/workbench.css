@@ -9,7 +9,7 @@
 .workbench-panel,
 .telemetry-panel {
     border: 1px solid var(--line);
-    background: rgba(0, 0, 0, 0.78);
+    background: var(--canvas-night-panel);
     backdrop-filter: blur(10px);
 }
 
@@ -34,8 +34,8 @@
     gap: 12px;
     padding: 28px;
     overflow: hidden;
-    border: 1px dashed rgba(255, 255, 255, 0.68);
-    background: rgba(255, 255, 255, 0.025);
+    border: 1px dashed var(--hairline-on-dark);
+    background: var(--canvas-night-panel);
     text-align: center;
     cursor: pointer;
 }
@@ -67,7 +67,8 @@
 }
 
 .drop-zone.is-dragging {
-    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--on-night);
+    background: var(--canvas-night-soft);
 }
 
 .preview-strip {
@@ -77,14 +78,14 @@
     align-items: center;
     padding: 10px;
     border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--canvas-night-soft);
 }
 
 .preview-strip img {
     width: 120px;
     height: 80px;
     object-fit: contain;
-    background: #fff;
+    background: var(--canvas-light);
 }
 
 .launch-button {
@@ -122,7 +123,7 @@
 
 .queue-grid div {
     padding: 12px;
-    background: #050505;
+    background: var(--canvas-night);
 }
 
 .queue-grid dt {

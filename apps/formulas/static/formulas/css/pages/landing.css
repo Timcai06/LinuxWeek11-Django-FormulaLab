@@ -45,7 +45,7 @@
 
 .landing-copy h1 {
     margin: 10px 0;
-    color: #fff;
+    color: var(--on-night);
     font-size: clamp(4rem, 15vw, 12rem);
     font-weight: 950;
     line-height: 0.82;

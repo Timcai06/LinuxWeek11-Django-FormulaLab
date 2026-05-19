@@ -15,7 +15,7 @@
     gap: 20px;
     align-content: start;
     border: 1px solid var(--line);
-    background: rgba(0, 0, 0, 0.84);
+    background: var(--canvas-night-panel);
     padding: clamp(18px, 3vw, 34px);
 }
 
@@ -23,7 +23,7 @@
     width: 100%;
     max-height: 460px;
     object-fit: contain;
-    background: #fff;
+    background: var(--canvas-light);
 }
 
 .console-tabs {
@@ -46,8 +46,8 @@
 }
 
 .console-tabs button[aria-selected="true"] {
-    background: #fff;
-    color: #050505;
+    background: var(--canvas-light);
+    color: var(--ink);
 }
 
 .latex-output {
@@ -55,9 +55,12 @@
     min-height: 180px;
     padding: 16px;
     border: 1px solid var(--line-strong);
-    background: #020202;
-    color: #fff;
+    background: var(--canvas-night);
+    color: var(--on-night);
     resize: vertical;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.55;
 }
 
 .console-actions {
@@ -73,12 +76,12 @@
     align-content: start;
     padding: 18px;
     border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.025);
+    background: var(--canvas-night-panel);
     overflow: auto;
 }
 
 .katex-preview [data-katex-preview] {
-    color: #fff;
+    color: var(--on-night);
     font-size: clamp(1rem, 2vw, 1.35rem);
 }
 

@@ -18,7 +18,7 @@
     align-content: space-between;
     gap: 20px;
     padding: 18px;
-    background: rgba(0, 0, 0, 0.86);
+    background: var(--canvas-night-panel);
 }
 
 .system-grid span {
@@ -29,7 +29,7 @@
 }
 
 .system-grid strong {
-    color: #fff;
+    color: var(--on-night);
     font-size: clamp(1.35rem, 3vw, 2.5rem);
     font-weight: 950;
 }
@@ -42,7 +42,7 @@
     margin-top: 22px;
     padding: 18px;
     border: 1px solid var(--line);
-    background: rgba(0, 0, 0, 0.78);
+    background: var(--canvas-night-panel);
 }
 
 .warmup-console p {
