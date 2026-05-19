@@ -9,12 +9,16 @@ from apps.formulas.services.preprocessing import preprocess_image_file
 
 
 def recognize_formula(job: FormulaJob) -> str:
+    preprocessed_path = prepare_formula_image(job)
+    latex_output = Pix2TexEngine().recognize(str(preprocessed_path))
+    return normalize_latex(latex_output)
+
+
+def prepare_formula_image(job: FormulaJob) -> Path:
     preprocessed_path = preprocess_image_file(job.original_image.path)
     job.preprocessed_image.name = _media_relative_path(preprocessed_path)
     job.save(update_fields=["preprocessed_image"])
-
-    latex = Pix2TexEngine().recognize(str(preprocessed_path))
-    return normalize_latex(latex)
+    return preprocessed_path
 
 
 def _media_relative_path(path: Path) -> str:

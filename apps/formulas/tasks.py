@@ -8,9 +8,10 @@ from celery.signals import worker_process_init
 from django.utils import timezone
 
 from apps.formulas.models import FormulaJob
+from apps.formulas.services.latex_formats import normalize_latex
 from apps.formulas.services.model_state import WORKER_HEARTBEAT_KEY, set_model_status
 from apps.formulas.services.pix2tex_engine import Pix2TexEngine
-from apps.formulas.services.recognizer import recognize_formula
+from apps.formulas.services.recognizer import prepare_formula_image
 from apps.formulas.services.telemetry import get_redis_client
 
 
@@ -119,11 +120,15 @@ def run_formula_job(job_id: str) -> None:
 
         current_stage = "IMAGE_PREPROCESS"
         _mark_stage(job, current_stage)
-        latex_result = recognize_formula(job)
+        preprocessed_path = prepare_formula_image(job)
 
-        for stage in ("INFERENCE", "LATEX_POSTPROCESS"):
-            current_stage = stage
-            _mark_stage(job, stage)
+        current_stage = "INFERENCE"
+        _mark_stage(job, current_stage)
+        latex_output = Pix2TexEngine().recognize(str(preprocessed_path))
+
+        current_stage = "LATEX_POSTPROCESS"
+        _mark_stage(job, current_stage)
+        latex_result = normalize_latex(latex_output)
 
         job.latex_result = latex_result
         job.save(update_fields=["latex_result"])

@@ -9,6 +9,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from PIL import Image
 
 from apps.formulas.models import FormulaJob
+from apps.formulas.services.recognizer import prepare_formula_image, recognize_formula
 
 
 class Pix2TexEngineTests(SimpleTestCase):
@@ -74,7 +75,7 @@ class RecognizerTests(TestCase):
         with patch("apps.formulas.services.recognizer.Pix2TexEngine") as engine_class:
             engine_class.return_value.recognize.return_value = "$$  x   +   y  $$"
 
-            result = importlib.import_module("apps.formulas.services.recognizer").recognize_formula(job)
+            result = recognize_formula(job)
 
         job.refresh_from_db()
         self.assertEqual(result, "x + y")
@@ -82,3 +83,15 @@ class RecognizerTests(TestCase):
         preprocessed_path = self.media_root / job.preprocessed_image.name
         self.assertTrue(preprocessed_path.exists())
         engine_class.return_value.recognize.assert_called_once_with(str(preprocessed_path))
+
+    def test_prepare_formula_image_only_preprocesses_and_updates_job(self):
+        source = self.media_root / "formula_uploads" / "source.png"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (24, 12), (255, 255, 255)).save(source)
+        job = FormulaJob.objects.create(original_image="formula_uploads/source.png")
+
+        preprocessed_path = prepare_formula_image(job)
+
+        job.refresh_from_db()
+        self.assertTrue(preprocessed_path.exists())
+        self.assertEqual(job.preprocessed_image.name, preprocessed_path.relative_to(self.media_root).as_posix())

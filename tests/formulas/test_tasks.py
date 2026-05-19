@@ -62,11 +62,25 @@ class FormulaTaskTests(TestCase):
             stage_codes.append(code)
             return original_mark_stage(instance, code, label, message, progress)
 
+        preprocessed_path = self.media_root / "formula_preprocessed" / "source.png"
+
+        def recognize_with_inference_stage(image_path):
+            job.refresh_from_db()
+            self.assertEqual(job.stage_code, "INFERENCE")
+            return "$$ a + b $$"
+
+        def normalize_with_postprocess_stage(value):
+            job.refresh_from_db()
+            self.assertEqual(job.stage_code, "LATEX_POSTPROCESS")
+            return "a + b"
+
         with (
             patch.object(FormulaJob, "mark_stage", autospec=True, side_effect=record_stage),
             patch("apps.formulas.tasks.Pix2TexEngine") as engine_class,
-            patch("apps.formulas.tasks.recognize_formula", return_value="a + b"),
+            patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
+            patch("apps.formulas.tasks.normalize_latex", side_effect=normalize_with_postprocess_stage),
         ):
+            engine_class.return_value.recognize.side_effect = recognize_with_inference_stage
             run_formula_job.run(str(job.id))
 
         job.refresh_from_db()
@@ -79,26 +93,47 @@ class FormulaTaskTests(TestCase):
         self.assertEqual(job.progress, 100)
         self.assertEqual(job.stage_code, "RESULT_READY")
         self.assertEqual(job.latex_result, "a + b")
+        engine_class.return_value.recognize.assert_called_once_with(str(preprocessed_path))
         self.assertIsNotNone(job.started_at)
         self.assertIsNotNone(job.finished_at)
         self.assertIsNotNone(job.duration_ms)
 
-    def test_run_formula_job_failure_records_failure_fields_without_raising_success(self):
+    def test_run_formula_job_inference_failure_records_inference_stage(self):
         job = self.create_job()
         long_detail = "boom " * 1200
+        preprocessed_path = self.media_root / "formula_preprocessed" / "source.png"
 
         with (
-            patch("apps.formulas.tasks.Pix2TexEngine"),
-            patch("apps.formulas.tasks.recognize_formula", side_effect=RuntimeError(long_detail)),
+            patch("apps.formulas.tasks.Pix2TexEngine") as engine_class,
+            patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
         ):
+            engine_class.return_value.recognize.side_effect = RuntimeError(long_detail)
             result = run_formula_job.run(str(job.id))
 
         job.refresh_from_db()
         self.assertIsNone(result)
         self.assertEqual(job.status, FormulaJob.Status.FAILED)
-        self.assertEqual(job.failure_stage, "IMAGE_PREPROCESS")
+        self.assertEqual(job.failure_stage, "INFERENCE")
         self.assertEqual(job.error_message, long_detail[:255])
         self.assertLessEqual(len(job.error_detail), 4000)
         self.assertIn("RuntimeError", job.error_detail)
         self.assertIsNotNone(job.finished_at)
         self.assertIsNotNone(job.duration_ms)
+
+    def test_run_formula_job_postprocess_failure_records_latex_postprocess_stage(self):
+        job = self.create_job()
+        preprocessed_path = self.media_root / "formula_preprocessed" / "source.png"
+
+        with (
+            patch("apps.formulas.tasks.Pix2TexEngine") as engine_class,
+            patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
+            patch("apps.formulas.tasks.normalize_latex", side_effect=RuntimeError("bad latex")),
+        ):
+            engine_class.return_value.recognize.return_value = "$$ bad latex $$"
+            result = run_formula_job.run(str(job.id))
+
+        job.refresh_from_db()
+        self.assertIsNone(result)
+        self.assertEqual(job.status, FormulaJob.Status.FAILED)
+        self.assertEqual(job.failure_stage, "LATEX_POSTPROCESS")
+        self.assertIn("bad latex", job.error_message)
