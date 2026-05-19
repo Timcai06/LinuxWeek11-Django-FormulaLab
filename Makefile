@@ -31,7 +31,7 @@ verify:
 	./scripts/verify.sh
 
 warmup:
-	curl -fsS -X POST http://localhost:8000/api/system/warmup/ | python -m json.tool
+	./scripts/warmup.sh
 
 e2e:
 	npm run e2e
