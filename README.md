@@ -39,8 +39,8 @@ make test
 本机开发可使用项目内 `.conda` 环境：
 
 ```bash
-./.conda/bin/python manage.py migrate
-./.conda/bin/python manage.py runserver 127.0.0.1:8000
+make dev-migrate
+make dev
 ```
 
 Open: http://127.0.0.1:8000/
@@ -48,7 +48,8 @@ Open: http://127.0.0.1:8000/
 本机单元测试：
 
 ```bash
-./.conda/bin/python manage.py test tests.formulas -v 2
+make dev-check
+make dev-test
 ```
 
 开发模式默认使用项目内 `db.sqlite3` 和 `redis://localhost:6379/0`。不启动 Redis/Celery worker 时，可以浏览页面和验证基础接口，但公式识别异步任务不会完整执行。Docker Compose 是最终运行方式。
