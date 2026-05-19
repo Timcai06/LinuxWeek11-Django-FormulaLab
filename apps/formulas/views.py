@@ -1,10 +1,14 @@
 import logging
 
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from apps.formulas.forms import FormulaUploadForm
+from apps.formulas.models import FormulaJob
 from apps.formulas.services.health import build_health_snapshot
-from apps.formulas.tasks import warmup_model_task
+from apps.formulas.tasks import run_formula_job, warmup_model_task
 
 logger = logging.getLogger(__name__)
 
@@ -18,23 +22,51 @@ def landing(request):
 
 
 def workbench(request):
-    return _temporary_page("workbench")
+    response = _temporary_page("workbench")
+    response.context_data = {"form": FormulaUploadForm()}
+    return response
 
 
+@require_POST
 def create_job(request):
-    return _temporary_page("create-job")
+    form = FormulaUploadForm(request.POST, request.FILES)
+    if not form.is_valid():
+        return JsonResponse({"status": "invalid", "errors": form.errors}, status=400)
+
+    job = FormulaJob.objects.create(original_image=form.cleaned_data["image"])
+    try:
+        run_formula_job.delay(str(job.id))
+    except Exception:
+        logger.exception("Unable to queue formula job %s", job.id)
+        return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
+
+    return redirect("mission-progress", job_id=job.id)
 
 
 def mission_progress(request, job_id):
+    get_object_or_404(FormulaJob, id=job_id)
     return _temporary_page(f"mission-progress:{job_id}")
 
 
 def mission_report(request, job_id):
+    get_object_or_404(FormulaJob, id=job_id)
     return _temporary_page(f"mission-report:{job_id}")
 
 
+@require_POST
 def retry_mission(request, job_id):
-    return _temporary_page(f"retry-mission:{job_id}")
+    old_job = get_object_or_404(FormulaJob, id=job_id)
+    if old_job.status != FormulaJob.Status.FAILED:
+        return JsonResponse({"status": "rejected", "error": "only failed missions can be retried"}, status=409)
+
+    new_job = FormulaJob.objects.create(original_image=old_job.original_image, retry_of=old_job)
+    try:
+        run_formula_job.delay(str(new_job.id))
+    except Exception:
+        logger.exception("Unable to queue retry formula job %s from %s", new_job.id, old_job.id)
+        return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
+
+    return redirect("mission-progress", job_id=new_job.id)
 
 
 def history(request):
@@ -46,7 +78,23 @@ def system_page(request):
 
 
 def mission_status_api(request, job_id):
-    return JsonResponse({"temporary": True, "job_id": str(job_id), "status": "pending_task_7"}, status=501)
+    job = get_object_or_404(FormulaJob, id=job_id)
+    result_url = None
+    if job.status == FormulaJob.Status.SUCCEEDED:
+        result_url = reverse("mission-report", kwargs={"job_id": job.id})
+
+    return JsonResponse(
+        {
+            "status": job.status,
+            "progress": job.progress,
+            "stage_code": job.stage_code,
+            "stage_label": job.stage_label,
+            "stage_message": job.stage_message,
+            "result_url": result_url,
+            "error_message": job.error_message,
+            "failure_stage": job.failure_stage,
+        }
+    )
 
 
 def health_api(request):
