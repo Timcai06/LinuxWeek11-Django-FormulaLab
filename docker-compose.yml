@@ -1,0 +1,45 @@
+services:
+  web:
+    build: .
+    command: /app/scripts/entrypoint-web.sh
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./media:/app/media
+      - ./.model-cache:/app/.model-cache
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    command: /app/scripts/entrypoint-worker.sh
+    env_file: .env
+    volumes:
+      - .:/app
+      - ./media:/app/media
+      - ./.model-cache:/app/.model-cache
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: formula_lab
+      POSTGRES_USER: formula_lab
+      POSTGRES_PASSWORD: formula_lab_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+node_modules/
+test-results/
+playwright-report/
+media/
+.model-cache/
+*.sqlite3
+.DS_Store
