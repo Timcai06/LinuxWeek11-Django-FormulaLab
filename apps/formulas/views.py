@@ -1,6 +1,9 @@
-"""Temporary Task 2 import stubs; Task 7 replaces these with real views."""
-
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+from apps.formulas.services.health import build_health_snapshot
+from apps.formulas.tasks import warmup_model_task
 
 
 def _temporary_page(name: str) -> HttpResponse:
@@ -44,8 +47,11 @@ def mission_status_api(request, job_id):
 
 
 def health_api(request):
-    return JsonResponse({"temporary": True, "status": "pending_task_7"}, status=501)
+    return JsonResponse(build_health_snapshot())
 
 
+@csrf_exempt
+@require_POST
 def warmup_api(request):
-    return JsonResponse({"temporary": True, "status": "pending_task_7"}, status=501)
+    warmup_model_task.delay()
+    return JsonResponse({"status": "queued"})
