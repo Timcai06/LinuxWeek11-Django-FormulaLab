@@ -3,6 +3,12 @@
     const grid = document.querySelector("[data-system-grid]");
     const form = document.querySelector("[data-warmup-form]");
     const statusText = document.querySelector("[data-warmup-status]");
+    const healthScore = document.querySelector("[data-health-score]");
+    const healthSummary = document.querySelector("[data-health-summary]");
+    const queueCounts = Array.from(document.querySelectorAll("[data-queue-count]"));
+    const lastJobStatus = document.querySelector("[data-last-job-status]");
+    const lastJobDetail = document.querySelector("[data-last-job-detail]");
+    const refreshLabel = document.querySelector("[data-refresh-label]");
 
     if (!root) {
         return;
@@ -20,23 +26,102 @@
         return ok ? "ONLINE" : "OFFLINE";
     }
 
+    function statusClass(ok) {
+        return ok ? "is-online" : "is-offline";
+    }
+
+    function renderDetail(value, fallback) {
+        return value || fallback;
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll("\"", "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function serviceEntries(payload) {
+        return [
+            {
+                name: "WEB",
+                value: label(payload.web?.ok),
+                ok: Boolean(payload.web?.ok),
+                detail: "Django request path",
+            },
+            {
+                name: "DATABASE",
+                value: label(payload.database?.ok),
+                ok: Boolean(payload.database?.ok),
+                detail: renderDetail(payload.database?.error, "Primary relational store"),
+            },
+            {
+                name: "REDIS",
+                value: label(payload.redis?.ok),
+                ok: Boolean(payload.redis?.ok),
+                detail: renderDetail(payload.redis?.error, "Broker and telemetry cache"),
+            },
+            {
+                name: "WORKER",
+                value: label(payload.worker?.ok),
+                ok: Boolean(payload.worker?.ok),
+                detail: renderDetail(payload.worker?.heartbeat_at, payload.worker?.error || "Celery recognition executor"),
+            },
+            {
+                name: "MODEL",
+                value: String(payload.model?.status || "UNKNOWN").toUpperCase(),
+                ok: Boolean(payload.model?.ok),
+                detail: renderDetail(payload.model?.message, payload.model?.last_error || "pix2tex status pending"),
+            },
+            {
+                name: "MEDIA",
+                value: label(payload.media?.ok),
+                ok: Boolean(payload.media?.ok),
+                detail: renderDetail(payload.media?.error, payload.media?.root || "Upload and output storage"),
+            },
+        ];
+    }
+
     function renderHealth(payload) {
         if (!grid || !payload) {
             return;
         }
-        const entries = [
-            ["WEB", label(payload.web?.ok)],
-            ["DATABASE", label(payload.database?.ok)],
-            ["REDIS", label(payload.redis?.ok)],
-            ["WORKER", label(payload.worker?.ok)],
-            ["MODEL", String(payload.model?.status || "UNKNOWN").toUpperCase()],
-            ["MEDIA", label(payload.media?.ok)],
-        ];
+        const entries = serviceEntries(payload);
+        const onlineCount = entries.filter((entry) => entry.ok).length;
         grid.innerHTML = entries
-            .map(([name, value]) => `<article><span>${name}</span><strong>${value}</strong></article>`)
+            .map((entry) => `
+                <article class="service-card ${statusClass(entry.ok)}">
+                    <span>${escapeHtml(entry.name)}</span>
+                    <strong>${escapeHtml(entry.value)}</strong>
+                    <p>${escapeHtml(entry.detail)}</p>
+                </article>
+            `)
             .join("");
+
+        if (healthScore) {
+            healthScore.textContent = `${onlineCount}/${entries.length}`;
+        }
+        if (healthSummary) {
+            healthSummary.textContent = onlineCount === entries.length
+                ? "All runtime systems are online."
+                : `${entries.length - onlineCount} runtime service needs attention.`;
+        }
         if (statusText) {
             statusText.textContent = payload.model?.message || "Ready to request model warmup";
+        }
+        queueCounts.forEach((node) => {
+            node.textContent = payload.queues?.[node.dataset.queueCount] ?? 0;
+        });
+        if (lastJobStatus) {
+            lastJobStatus.textContent = String(payload.last_job?.status || "NONE").toUpperCase();
+        }
+        if (lastJobDetail) {
+            lastJobDetail.textContent = payload.last_job?.stage_label || payload.last_job?.error || "No mission has been recorded yet";
+        }
+        if (refreshLabel) {
+            refreshLabel.textContent = `Updated ${new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}`;
         }
     }
 
@@ -80,5 +165,13 @@
         });
     }
 
+    try {
+        const initialHealth = JSON.parse(document.getElementById("initial-health")?.textContent || "null");
+        renderHealth(initialHealth);
+    } catch (error) {
+        if (statusText) {
+            statusText.textContent = "Initial health telemetry unavailable";
+        }
+    }
     window.setTimeout(refreshHealth, 600);
 })();

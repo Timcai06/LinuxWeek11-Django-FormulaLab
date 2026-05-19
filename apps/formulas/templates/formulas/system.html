@@ -9,26 +9,65 @@
 {% block content %}
 {{ health_snapshot|json_script:"initial-health" }}
 <section class="system-shell" data-health-url="{% url 'api-system-health' %}" data-warmup-url="{% url 'api-system-warmup' %}">
-    <div class="section-header">
-        <p>SYSTEM</p>
-        <h1>TELEMETRY MATRIX</h1>
-    </div>
-    <div class="system-grid" data-system-grid>
-        <article><span>WEB</span><strong>{{ health_snapshot.web.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
-        <article><span>DATABASE</span><strong>{{ health_snapshot.database.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
-        <article><span>REDIS</span><strong>{{ health_snapshot.redis.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
-        <article><span>WORKER</span><strong>{{ health_snapshot.worker.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
-        <article><span>MODEL</span><strong>{{ health_snapshot.model.status|default:"UNKNOWN"|upper }}</strong></article>
-        <article><span>MEDIA</span><strong>{{ health_snapshot.media.ok|yesno:"ONLINE,OFFLINE" }}</strong></article>
-    </div>
-    <form class="warmup-console" action="{% url 'api-system-warmup' %}" method="post" data-warmup-form>
-        {% csrf_token %}
-        <div>
-            <span class="telemetry-label">MODEL WARMUP</span>
-            <p data-warmup-status>{{ health_snapshot.model.message|default:"Ready to request model warmup" }}</p>
+    <div class="system-hero">
+        <div class="section-header">
+            <p>SYSTEM</p>
+            <h1>OPERATIONS DASHBOARD</h1>
         </div>
-        <button class="button button-primary" type="submit">WARMUP MODEL</button>
-    </form>
+        <article class="health-score-card" aria-label="System health score">
+            <span class="telemetry-label">LIVE HEALTH</span>
+            <strong data-health-score>--/6</strong>
+            <p data-health-summary>Reading runtime telemetry...</p>
+        </article>
+    </div>
+
+    <div class="system-dashboard">
+        <div class="runtime-zone">
+            <div class="dashboard-heading">
+                <div>
+                    <span class="telemetry-label">RUNTIME SERVICES</span>
+                    <h2>Dependency Map</h2>
+                </div>
+                <span data-refresh-label>Auto refresh</span>
+            </div>
+            <div class="system-grid" data-system-grid>
+                <article class="service-card"><span>WEB</span><strong>{{ health_snapshot.web.ok|yesno:"ONLINE,OFFLINE" }}</strong><p>Django request path</p></article>
+                <article class="service-card"><span>DATABASE</span><strong>{{ health_snapshot.database.ok|yesno:"ONLINE,OFFLINE" }}</strong><p>Primary relational store</p></article>
+                <article class="service-card"><span>REDIS</span><strong>{{ health_snapshot.redis.ok|yesno:"ONLINE,OFFLINE" }}</strong><p>Broker and telemetry cache</p></article>
+                <article class="service-card"><span>WORKER</span><strong>{{ health_snapshot.worker.ok|yesno:"ONLINE,OFFLINE" }}</strong><p>Celery recognition executor</p></article>
+                <article class="service-card"><span>MODEL</span><strong>{{ health_snapshot.model.status|default:"UNKNOWN"|upper }}</strong><p>{{ health_snapshot.model.message|default:"pix2tex status pending" }}</p></article>
+                <article class="service-card"><span>MEDIA</span><strong>{{ health_snapshot.media.ok|yesno:"ONLINE,OFFLINE" }}</strong><p>Upload and output storage</p></article>
+            </div>
+        </div>
+
+        <aside class="ops-column" aria-label="System operations">
+            <form class="warmup-console dashboard-card" action="{% url 'api-system-warmup' %}" method="post" data-warmup-form>
+                {% csrf_token %}
+                <div>
+                    <span class="telemetry-label">MODEL WARMUP</span>
+                    <h2>Inference Readiness</h2>
+                    <p data-warmup-status>{{ health_snapshot.model.message|default:"Ready to request model warmup" }}</p>
+                </div>
+                <button class="button button-primary" type="submit">WARMUP MODEL</button>
+            </form>
+
+            <article class="queue-card dashboard-card">
+                <span class="telemetry-label">MISSION QUEUE</span>
+                <div class="queue-metrics">
+                    <div><span>Queued</span><strong data-queue-count="queued">{{ health_snapshot.queues.queued|default:0 }}</strong></div>
+                    <div><span>Running</span><strong data-queue-count="running">{{ health_snapshot.queues.running|default:0 }}</strong></div>
+                    <div><span>Success</span><strong data-queue-count="succeeded">{{ health_snapshot.queues.succeeded|default:0 }}</strong></div>
+                    <div><span>Failed</span><strong data-queue-count="failed">{{ health_snapshot.queues.failed|default:0 }}</strong></div>
+                </div>
+            </article>
+
+            <article class="last-job-card dashboard-card">
+                <span class="telemetry-label">LATEST MISSION</span>
+                <strong data-last-job-status>{{ health_snapshot.last_job.status|default:"NONE"|upper }}</strong>
+                <p data-last-job-detail>{{ health_snapshot.last_job.stage_label|default:"No mission has been recorded yet" }}</p>
+            </article>
+        </aside>
+    </div>
 </section>
 {% endblock %}
 
