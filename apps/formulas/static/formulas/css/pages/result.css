@@ -4,9 +4,6 @@
     grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
     gap: clamp(18px, 3vw, 34px);
     padding: clamp(18px, 4vw, 54px);
-    background-image: var(--result-texture);
-    background-position: center;
-    background-size: cover;
 }
 
 .source-panel,

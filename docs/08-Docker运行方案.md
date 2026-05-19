@@ -121,10 +121,9 @@ MEDIA_ROOT=/app/media
 ```text
 static/formulas/visuals/
   landing-mission-bg.png
-  result-texture.png
 ```
 
-这些视觉资产纳入版本库，保证 Mac 和 Ubuntu 环境都能直接呈现完整页面。
+Landing 背景资产纳入版本库，保证 Mac 和 Ubuntu 环境都能直接呈现完整首页；其余页面统一使用 CSS 全局细网格背景。
 
 媒体文件和模型缓存仍然不进入版本库：
 

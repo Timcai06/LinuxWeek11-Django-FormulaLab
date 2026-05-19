@@ -84,7 +84,6 @@ Create or modify these paths under `/Users/tim/Desktop/shared-Linux/formula-lab`
         js/history.js
         js/system.js
         visuals/landing-mission-bg.png
-        visuals/result-texture.png
   tests/
     formulas/
       test_latex_formats.py
@@ -968,7 +967,6 @@ Create:
 
 ```text
 apps/formulas/static/formulas/visuals/landing-mission-bg.png
-apps/formulas/static/formulas/visuals/result-texture.png
 ```
 
 Landing prompt:
@@ -979,6 +977,8 @@ paper and scanner texture, geometric measurement lines, cold white light, subtle
 recognition boxes, mission control atmosphere, cinematic high contrast, no rockets,
 no planets, no spacecraft, no colorful gradients
 ```
+
+Current visual direction: Landing keeps the cinematic bitmap background; all other pages use the global fine-grid CSS background.
 
 - [ ] **Step 2: Create base template**
 
