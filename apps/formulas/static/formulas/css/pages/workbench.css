@@ -4,9 +4,6 @@
     grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
     gap: clamp(18px, 3vw, 34px);
     padding: clamp(18px, 4vw, 54px);
-    background-image: var(--workbench-texture);
-    background-position: center;
-    background-size: cover;
 }
 
 .workbench-panel,

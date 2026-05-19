@@ -119,7 +119,6 @@ MEDIA_ROOT=/app/media
 ```text
 static/formulas/visuals/
   landing-mission-bg.png
-  workbench-texture.png
   result-texture.png
 ```
 
