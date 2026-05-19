@@ -1,14 +1,24 @@
 from pathlib import Path
+from io import BytesIO
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
+from PIL import Image
 
 from apps.formulas.models import FormulaJob
 
 
-def upload_file(name: str = "formula.png", content: bytes = b"fake-image-bytes") -> SimpleUploadedFile:
+def image_bytes(format_name: str = "PNG") -> bytes:
+    buffer = BytesIO()
+    Image.new("RGB", (10, 5), (255, 255, 255)).save(buffer, format=format_name)
+    return buffer.getvalue()
+
+
+def upload_file(name: str = "formula.png", content: bytes | None = None) -> SimpleUploadedFile:
+    if content is None:
+        content = image_bytes("JPEG" if name.lower().endswith((".jpg", ".jpeg")) else "PNG")
     return SimpleUploadedFile(name, content, content_type="image/png")
 
 
@@ -42,6 +52,15 @@ class FormulaMissionViewTests(TestCase):
         self.assertIn("image", response.json()["errors"])
         delay.assert_not_called()
 
+    def test_create_job_rejects_spoofed_png_content(self):
+        with patch("apps.formulas.views.run_formula_job.delay") as delay:
+            response = self.client.post("/jobs/", {"image": upload_file("spoofed.png", b"not a real image")})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(FormulaJob.objects.count(), 0)
+        self.assertIn("image", response.json()["errors"])
+        delay.assert_not_called()
+
     def test_create_job_rejects_uploads_over_configured_limit(self):
         too_large = b"x" * ((10 * 1024 * 1024) + 1)
 
@@ -58,6 +77,20 @@ class FormulaMissionViewTests(TestCase):
 
         self.assertEqual(response.status_code, 405)
         self.assertEqual(FormulaJob.objects.count(), 0)
+
+    def test_create_job_marks_failed_when_dispatch_fails(self):
+        with (
+            patch("apps.formulas.views.run_formula_job.delay", side_effect=RuntimeError("broker down")),
+            patch("apps.formulas.views.logger.exception") as log_exception,
+        ):
+            response = self.client.post("/jobs/", {"image": upload_file("formula.png")})
+
+        self.assertEqual(response.status_code, 503)
+        job = FormulaJob.objects.get()
+        self.assertEqual(job.status, FormulaJob.Status.FAILED)
+        self.assertEqual(job.failure_stage, "DISPATCH")
+        self.assertEqual(job.error_message, "mission broker unavailable")
+        log_exception.assert_called_once()
 
     def test_mission_status_api_returns_expected_shape_and_result_url_for_success(self):
         job = FormulaJob.objects.create(
@@ -126,3 +159,25 @@ class FormulaMissionViewTests(TestCase):
         self.assertEqual(response.json()["error"], "only failed missions can be retried")
         self.assertEqual(FormulaJob.objects.count(), 1)
         delay.assert_not_called()
+
+    def test_retry_marks_new_job_failed_when_dispatch_fails(self):
+        failed = FormulaJob.objects.create(
+            original_image="formula_uploads/source.png",
+            status=FormulaJob.Status.FAILED,
+            error_message="inference failed",
+            failure_stage="INFERENCE",
+        )
+
+        with (
+            patch("apps.formulas.views.run_formula_job.delay", side_effect=RuntimeError("broker down")),
+            patch("apps.formulas.views.logger.exception") as log_exception,
+        ):
+            response = self.client.post(f"/missions/{failed.id}/retry/")
+
+        self.assertEqual(response.status_code, 503)
+        retry = FormulaJob.objects.exclude(id=failed.id).get()
+        self.assertEqual(retry.retry_of, failed)
+        self.assertEqual(retry.status, FormulaJob.Status.FAILED)
+        self.assertEqual(retry.failure_stage, "RETRY_DISPATCH")
+        self.assertEqual(retry.error_message, "mission broker unavailable")
+        log_exception.assert_called_once()

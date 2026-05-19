@@ -3,6 +3,7 @@ import logging
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.formulas.forms import FormulaUploadForm
@@ -38,6 +39,7 @@ def create_job(request):
         run_formula_job.delay(str(job.id))
     except Exception:
         logger.exception("Unable to queue formula job %s", job.id)
+        _mark_dispatch_failed(job, "DISPATCH")
         return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
 
     return redirect("mission-progress", job_id=job.id)
@@ -64,6 +66,7 @@ def retry_mission(request, job_id):
         run_formula_job.delay(str(new_job.id))
     except Exception:
         logger.exception("Unable to queue retry formula job %s from %s", new_job.id, old_job.id)
+        _mark_dispatch_failed(new_job, "RETRY_DISPATCH")
         return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
 
     return redirect("mission-progress", job_id=new_job.id)
@@ -94,6 +97,31 @@ def mission_status_api(request, job_id):
             "error_message": job.error_message,
             "failure_stage": job.failure_stage,
         }
+    )
+
+
+def _mark_dispatch_failed(job: FormulaJob, failure_stage: str) -> None:
+    job.status = FormulaJob.Status.FAILED
+    job.failure_stage = failure_stage
+    job.error_message = "mission broker unavailable"
+    job.stage_code = failure_stage
+    job.stage_label = "DISPATCH FAILED"
+    job.stage_message = "任务无法进入异步识别队列"
+    job.progress = 100
+    job.finished_at = timezone.now()
+    job.duration_ms = job.calculate_duration_ms()
+    job.save(
+        update_fields=[
+            "status",
+            "failure_stage",
+            "error_message",
+            "stage_code",
+            "stage_label",
+            "stage_message",
+            "progress",
+            "finished_at",
+            "duration_ms",
+        ]
     )
 
 
