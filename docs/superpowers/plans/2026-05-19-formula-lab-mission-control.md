@@ -84,7 +84,6 @@ Create or modify these paths under `/Users/tim/Desktop/shared-Linux/formula-lab`
         js/history.js
         js/system.js
         visuals/landing-mission-bg.png
-        visuals/workbench-texture.png
         visuals/result-texture.png
   tests/
     formulas/
@@ -176,8 +175,13 @@ Write `Dockerfile` with:
 ```dockerfile
 FROM python:3.10-slim
 
+COPY --from=ghcr.io/astral-sh/uv:0.11.11 /uv /uvx /bin/
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV UV_SYSTEM_PYTHON=1
 
 WORKDIR /app
 
@@ -190,7 +194,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && pip install -r /app/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system -r /app/requirements.txt
 
 COPY . /app
 
@@ -963,7 +968,6 @@ Create:
 
 ```text
 apps/formulas/static/formulas/visuals/landing-mission-bg.png
-apps/formulas/static/formulas/visuals/workbench-texture.png
 apps/formulas/static/formulas/visuals/result-texture.png
 ```
 

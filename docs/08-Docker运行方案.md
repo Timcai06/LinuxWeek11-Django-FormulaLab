@@ -17,6 +17,8 @@ docker compose up --build
 - PostgreSQL 数据库。
 - Redis 消息队列。
 
+镜像构建使用 `uv pip install --system` 安装 Python 依赖，并通过 BuildKit cache 缓存 `/root/.cache/uv`。这样比直接 `pip install -r requirements.txt` 更适合包含 `torch`、`torchvision`、`pix2tex` 的重依赖构建。
+
 ## 服务设计
 
 ```text

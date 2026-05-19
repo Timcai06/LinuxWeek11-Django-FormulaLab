@@ -18,15 +18,16 @@ HEIGHT = 1100
 RANDOM_SEED = 20260519
 
 FORMULAS = [
-    r"$\int_0^\pi e^x \sin x\,dx = \frac{1+e^\pi}{2}$",
-    r"$\sum_{k=1}^{n} k^2 = \frac{n(n+1)(2n+1)}{6}$",
-    r"$\frac{\partial u}{\partial t} = \alpha \Delta u$",
-    r"$\lim_{x\to0}\frac{\sin x}{x}=1$",
-    r"$\nabla\cdot\vec{E}=\frac{\rho}{\varepsilon_0}$",
-    r"$\mathcal{L}\{f(t)\}=\int_0^\infty f(t)e^{-st}\,dt$",
-    r"$P(A\mid B)=\frac{P(B\mid A)P(A)}{P(B)}$",
-    r"$\sigma(x)=\frac{1}{1+e^{-x}}$",
-    r"$\oint_{\partial\Omega}\omega=\int_\Omega d\omega$",
+    r"$R_{\mu\nu}-\frac{1}{2}Rg_{\mu\nu}+\Lambda g_{\mu\nu}=\frac{8\pi G}{c^4}T_{\mu\nu}$",
+    r"$i\hbar\frac{\partial\Psi}{\partial t}=\hat{H}\Psi$",
+    r"$\nabla\times\vec{B}=\mu_0\vec{J}+\mu_0\varepsilon_0\frac{\partial\vec{E}}{\partial t}$",
+    r"$\mathcal{F}\{f\}(\omega)=\int_{-\infty}^{\infty}f(t)e^{-i\omega t}\,dt$",
+    r"$\zeta(s)=\prod_{p}(1-p^{-s})^{-1}$",
+    r"$D_{KL}(p\|q)=\sum_x p(x)\log\frac{p(x)}{q(x)}$",
+    r"$\frac{\partial \rho}{\partial t}+\nabla\cdot(\rho\vec{u})=0$",
+    r"$\mathcal{H}\Psi_n=E_n\Psi_n$",
+    r"$S=-k_B\sum_i p_i\log p_i$",
+    r"$\dot{x}=Ax+Bu,\quad y=Cx+Du$",
 ]
 
 
@@ -62,12 +63,20 @@ def draw_measurement_rectangles(image: Image.Image) -> None:
     rectangles = [
         (120, 118, 470, 268),
         (520, 78, 910, 198),
+        (735, 240, 960, 376),
         (1030, 150, 1210, 360),
+        (1332, 260, 1486, 392),
         (1540, 92, 1780, 202),
         (210, 500, 612, 704),
+        (654, 422, 832, 590),
         (860, 602, 1236, 820),
+        (1094, 470, 1196, 548),
         (1250, 450, 1512, 596),
         (1560, 430, 1715, 510),
+        (72, 742, 332, 874),
+        (404, 826, 636, 996),
+        (720, 782, 862, 958),
+        (1460, 768, 1764, 948),
     ]
     for i, box in enumerate(rectangles):
         alpha = 34 if i % 2 else 24
@@ -90,13 +99,16 @@ def draw_measurement_rectangles(image: Image.Image) -> None:
 
 def draw_formula_field(image: Image.Image) -> None:
     placements = [
-        (210, 238, 28, 0.18, -1.2),
-        (1180, 318, 31, 0.16, 0.4),
-        (520, 512, 38, 0.17, -0.8),
-        (1290, 690, 32, 0.13, 1.0),
-        (90, 784, 24, 0.12, 0.3),
-        (830, 904, 30, 0.14, -0.5),
-        (1380, 916, 28, 0.10, 0.7),
+        (135, 214, 24, 0.18, -0.8),
+        (1088, 282, 29, 0.2, 0.4),
+        (618, 438, 26, 0.17, -0.5),
+        (1120, 616, 25, 0.18, 0.7),
+        (52, 720, 23, 0.13, 0.4),
+        (792, 832, 25, 0.16, -0.4),
+        (1390, 808, 22, 0.2, 0.3),
+        (430, 596, 30, 0.18, -0.6),
+        (1485, 232, 24, 0.19, 0.2),
+        (1220, 928, 24, 0.16, -0.2),
     ]
     for index, placement in enumerate(placements):
         x, y, size, opacity, rotation = placement
@@ -153,11 +165,11 @@ def draw_scanlines(image: Image.Image) -> None:
 def draw_vignette(image: Image.Image) -> None:
     radial = Image.new("L", (WIDTH, HEIGHT), 0)
     draw = ImageDraw.Draw(radial)
-    draw.ellipse((-420, -260, WIDTH + 220, HEIGHT + 360), fill=255)
-    radial = radial.filter(ImageFilter.GaussianBlur(radius=120))
+    draw.ellipse((-520, -300, WIDTH + 480, HEIGHT + 410), fill=255)
+    radial = radial.filter(ImageFilter.GaussianBlur(radius=140))
     inverse = ImageChops.invert(radial)
-    vignette = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 150))
-    vignette.putalpha(inverse.point(lambda value: int(value * 0.78)))
+    vignette = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 110))
+    vignette.putalpha(inverse.point(lambda value: int(value * 0.48)))
     image.alpha_composite(vignette)
 
 
