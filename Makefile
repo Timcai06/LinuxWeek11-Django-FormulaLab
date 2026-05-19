@@ -3,7 +3,7 @@ HOST ?= 127.0.0.1
 PORT ?= 8000
 DOCKER_BUILDKIT ?= 1
 
-.PHONY: up down logs web-logs worker-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell docker-build
+.PHONY: up down logs web-logs worker-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis docker-build
 
 up:
 	docker compose up --build
@@ -37,6 +37,12 @@ test:
 
 dev:
 	$(PYTHON) manage.py runserver $(HOST):$(PORT)
+
+dev-redis:
+	docker compose up redis
+
+dev-worker:
+	DJANGO_SETTINGS_MODULE=config.settings.dev $(PYTHON) -m celery -A config worker --loglevel=info --pool=solo
 
 dev-migrate:
 	$(PYTHON) manage.py migrate

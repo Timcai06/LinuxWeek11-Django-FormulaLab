@@ -54,6 +54,16 @@ make dev-test
 
 开发模式默认使用项目内 `db.sqlite3` 和 `redis://localhost:6379/0`。不启动 Redis/Celery worker 时，可以浏览页面和验证基础接口，但公式识别异步任务不会完整执行。Docker Compose 是最终运行方式。
 
+本机完整识别链路需要三个终端：
+
+```bash
+make dev-redis
+make dev-worker
+make dev
+```
+
+其中 `make dev-redis` 只启动 Redis 容器，不构建 Formula Lab 镜像；Web 和 worker 仍使用本机 `.conda` 环境。
+
 ## Documentation
 
 - [文档索引](docs/00-文档索引.md)
