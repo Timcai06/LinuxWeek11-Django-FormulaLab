@@ -18,8 +18,8 @@
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(90deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.42) 68%, rgba(0, 0, 0, 0.55)),
-        linear-gradient(0deg, rgba(0, 0, 0, 0.16), transparent 34%);
+        linear-gradient(90deg, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.36) 28%, rgba(0, 0, 0, 0.28) 58%, rgba(0, 0, 0, 0.38)),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.18), transparent 36%);
 }
 
 .hero-scanline {

@@ -99,23 +99,25 @@ def draw_measurement_rectangles(image: Image.Image) -> None:
 
 def draw_formula_field(image: Image.Image) -> None:
     placements = [
-        (135, 214, 24, 0.18, -0.8),
-        (1088, 282, 29, 0.2, 0.4),
-        (618, 438, 26, 0.17, -0.5),
-        (1120, 616, 25, 0.18, 0.7),
-        (52, 720, 23, 0.13, 0.4),
-        (792, 832, 25, 0.16, -0.4),
-        (1390, 808, 22, 0.2, 0.3),
-        (430, 596, 30, 0.18, -0.6),
-        (1485, 232, 24, 0.19, 0.2),
-        (1220, 928, 24, 0.16, -0.2),
+        (116, 214, 21, 0.11, -0.8, 1.4),
+        (1088, 282, 34, 0.22, 0.4, 1.0),
+        (616, 438, 23, 0.13, -0.5, 1.8),
+        (1090, 608, 29, 0.18, 0.7, 1.2),
+        (56, 736, 18, 0.08, 0.4, 2.3),
+        (784, 842, 23, 0.12, -0.4, 1.8),
+        (1366, 782, 28, 0.16, 0.2, 1.1),
+        (424, 594, 36, 0.2, -0.6, 0.7),
+        (1466, 214, 19, 0.09, 0.2, 2.2),
+        (1216, 936, 20, 0.1, -0.2, 2.0),
     ]
     for index, placement in enumerate(placements):
-        x, y, size, opacity, rotation = placement
+        x, y, size, opacity, rotation, blur_radius = placement
         formula = FORMULAS[index % len(FORMULAS)]
         rendered = render_formula(formula, size=size, opacity=opacity)
         if rotation:
             rendered = rendered.rotate(rotation, resample=Image.Resampling.BICUBIC, expand=True)
+        if blur_radius:
+            rendered = rendered.filter(ImageFilter.GaussianBlur(radius=blur_radius))
         image.alpha_composite(rendered, (x, y))
 
 
