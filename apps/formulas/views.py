@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from apps.formulas.forms import FormulaUploadForm
 from apps.formulas.models import FormulaJob
 from apps.formulas.services.health import build_health_snapshot
-from apps.formulas.services.latex_formats import build_latex_formats
+from apps.formulas.services.latex_formats import build_latex_formats, correct_latex_result
 from apps.formulas.tasks import run_formula_job, warmup_model_task
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ def mission_report(request, job_id):
         "formulas/result.html",
         {
             "job": job,
-            "formats": build_latex_formats(job.latex_result),
+            "formats": build_latex_formats(correct_latex_result(job.latex_result, job.original_image.path)),
         },
     )
 

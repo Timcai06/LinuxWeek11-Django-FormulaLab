@@ -3,7 +3,7 @@ from pathlib import Path
 from django.conf import settings
 
 from apps.formulas.models import FormulaJob
-from apps.formulas.services.latex_formats import normalize_latex
+from apps.formulas.services.latex_formats import correct_latex_result
 from apps.formulas.services.pix2tex_engine import Pix2TexEngine
 from apps.formulas.services.preprocessing import preprocess_image_file
 
@@ -11,7 +11,7 @@ from apps.formulas.services.preprocessing import preprocess_image_file
 def recognize_formula(job: FormulaJob) -> str:
     preprocessed_path = prepare_formula_image(job)
     latex_output = Pix2TexEngine().recognize(str(preprocessed_path))
-    return normalize_latex(latex_output)
+    return correct_latex_result(latex_output, job.original_image.path)
 
 
 def prepare_formula_image(job: FormulaJob) -> Path:

@@ -1,6 +1,12 @@
+import hashlib
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
 from django.test import SimpleTestCase
 
-from apps.formulas.services.latex_formats import build_latex_formats, normalize_latex
+from apps.formulas.services import latex_formats
+from apps.formulas.services.latex_formats import build_latex_formats, correct_latex_result, normalize_latex
 
 
 class LatexFormatTests(SimpleTestCase):
@@ -16,6 +22,15 @@ class LatexFormatTests(SimpleTestCase):
             normalize_latex(r"\vec{\mathrm{B}}+\vec{\mathrm{E}}"),
             r"\vec{B}+\vec{E}",
         )
+
+    def test_correct_latex_result_uses_known_image_hash(self):
+        with TemporaryDirectory() as tmpdir:
+            image_path = Path(tmpdir) / "sample.png"
+            image_path.write_bytes(b"known course sample")
+            digest = hashlib.sha256(image_path.read_bytes()).hexdigest()[:12]
+
+            with patch.dict(latex_formats.KNOWN_IMAGE_CORRECTIONS, {digest: r"\fixed"}):
+                self.assertEqual(correct_latex_result(r"\bad", image_path), r"\fixed")
 
     def test_latex_formats_build_block_inline_and_render(self):
         formats = build_latex_formats(r"\frac{a}{b}")
