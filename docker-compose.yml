@@ -2,7 +2,10 @@ services:
   web:
     build: .
     command: /app/scripts/entrypoint-web.sh
-    env_file: .env
+    env_file:
+      - path: .env.example
+      - path: .env
+        required: false
     ports:
       - "8000:8000"
     volumes:
@@ -18,7 +21,10 @@ services:
   worker:
     build: .
     command: /app/scripts/entrypoint-worker.sh
-    env_file: .env
+    env_file:
+      - path: .env.example
+      - path: .env
+        required: false
     volumes:
       - .:/app
       - ./media:/app/media
