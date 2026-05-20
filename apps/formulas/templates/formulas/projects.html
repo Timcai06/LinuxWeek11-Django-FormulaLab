@@ -1,0 +1,85 @@
+{% extends "formulas/base.html" %}
+{% load static %}
+
+{% block title %}Projects - Formula Lab{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'formulas/css/pages/projects.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="projects-shell">
+    <div class="projects-header">
+        <div class="section-header">
+            <p>PROJECTS</p>
+            <h1>PAPER WORKSPACES</h1>
+        </div>
+        <a class="button button-secondary" href="{% url 'workbench' %}">OPEN WORKBENCH</a>
+    </div>
+
+    {% if projects %}
+        <div class="project-card-grid">
+            {% for project in projects %}
+                {% with project_key=project.id|stringformat:"s" %}
+                    <article class="project-card">
+                        <div class="project-card-topline">
+                            <span>{{ project.project_code }}</span>
+                            <span>{{ project.default_export_format|default:"PDF"|upper }}</span>
+                        </div>
+                        <div class="project-card-main">
+                            <h2>{{ project.name }}</h2>
+                            <p>{{ project.writing_goal|default:"No writing goal recorded yet." }}</p>
+                        </div>
+                        <dl class="project-metrics">
+                            {% for metrics_key, metrics in project_metrics.items %}
+                                {% if metrics_key == project_key %}
+                                    <div>
+                                        <dt>FORMULAS</dt>
+                                        <dd>{{ metrics.total_formulas|default:0 }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>BATCHES</dt>
+                                        <dd>{{ metrics.batch_count|default:0 }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>REVIEW</dt>
+                                        <dd>{{ metrics.needs_review|default:0 }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>READY</dt>
+                                        <dd>{{ metrics.ready_to_export|default:0 }}</dd>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <div>
+                                    <dt>FORMULAS</dt>
+                                    <dd>0</dd>
+                                </div>
+                                <div>
+                                    <dt>BATCHES</dt>
+                                    <dd>0</dd>
+                                </div>
+                                <div>
+                                    <dt>REVIEW</dt>
+                                    <dd>0</dd>
+                                </div>
+                                <div>
+                                    <dt>READY</dt>
+                                    <dd>0</dd>
+                                </div>
+                            {% endfor %}
+                        </dl>
+                        <a class="button button-primary project-open" href="{% url 'project-workspace' project.id %}">OPEN WORKSPACE</a>
+                    </article>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="project-empty-state">
+            <span class="empty-kicker">NO PAPER WORKSPACES</span>
+            <h2>Start with a recognition mission, then organize formulas into a project.</h2>
+            <p>Workbench remains the intake path while the Projects core comes online.</p>
+            <a class="button button-primary" href="{% url 'workbench' %}">OPEN WORKBENCH</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

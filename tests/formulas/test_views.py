@@ -4,10 +4,12 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
 from django.test import Client, TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 from PIL import Image
 
-from apps.formulas.models import FormulaJob
+from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
 
 
 def image_bytes(format_name: str = "PNG") -> bytes:
@@ -65,6 +67,85 @@ class FormulaMissionViewTests(TestCase):
         self.assertNotContains(response, "PNG, JPG, JPEG")
         self.assertEqual(response.context["queue_counts"]["queued"], 1)
         self.assertEqual(len(response.context["recent_jobs"]), 1)
+
+    def test_projects_renders_empty_product_workspace_state(self):
+        response = self.client.get("/projects/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "formulas/projects.html")
+        self.assertContains(response, "PAPER WORKSPACES")
+        self.assertContains(response, "NO PAPER WORKSPACES")
+        self.assertContains(response, 'href="/workbench/"')
+
+    def test_projects_renders_project_cards_with_metrics(self):
+        project = PaperProject.objects.create(
+            name="Transformer survey",
+            writing_goal="Collect attention equations",
+            default_export_format=PaperProject.ExportFormat.LATEX,
+        )
+        batch = BatchMission.objects.create(project=project, title="Section 2")
+        FormulaItem.objects.create(project=project, batch=batch, status=FormulaItem.Status.NEEDS_REVIEW)
+        FormulaItem.objects.create(project=project, batch=batch, status=FormulaItem.Status.CONFIRMED)
+
+        response = self.client.get("/projects/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, project.project_code)
+        self.assertContains(response, "Transformer survey")
+        self.assertContains(response, "Collect attention equations")
+        self.assertContains(response, 'href="/projects/')
+        metrics = response.context["project_metrics"][str(project.id)]
+        self.assertEqual(metrics["total_formulas"], 2)
+        self.assertEqual(metrics["batch_count"], 1)
+        self.assertEqual(metrics["needs_review"], 1)
+        self.assertEqual(metrics["ready_to_export"], 1)
+        self.assertEqual(metrics["latest_batch"], batch)
+
+    def test_projects_metrics_query_count_does_not_grow_per_project(self):
+        for index in range(12):
+            project = PaperProject.objects.create(name=f"Paper {index}")
+            batch = BatchMission.objects.create(project=project, title=f"Batch {index}")
+            FormulaItem.objects.create(project=project, batch=batch, status=FormulaItem.Status.CONFIRMED)
+            FormulaItem.objects.create(project=project, batch=batch, status=FormulaItem.Status.NEEDS_REVIEW)
+
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get("/projects/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLessEqual(len(queries), 4)
+
+    def test_project_workspace_renders_overview_and_formula_items(self):
+        project = PaperProject.objects.create(name="Thesis chapter three", writing_goal="Model derivation")
+        batch = BatchMission.objects.create(project=project, title="Derivation screenshots", status=BatchMission.Status.READY)
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\alpha+\beta",
+            status=FormulaItem.Status.NEEDS_REVIEW,
+            quality_score=42,
+        )
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"E=mc^2",
+            status=FormulaItem.Status.AUTO_READY,
+            quality_score=91,
+            sort_order=2,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "formulas/project_workspace.html")
+        self.assertContains(response, "PROJECT WORKSPACE")
+        self.assertContains(response, "Thesis chapter three")
+        self.assertContains(response, "NEEDS REVIEW")
+        self.assertContains(response, "READY TO EXPORT")
+        self.assertContains(response, r"\alpha+\beta")
+        self.assertContains(response, r"E=mc^2")
+        self.assertEqual(response.context["overview"]["total_formulas"], 2)
+        self.assertEqual(response.context["overview"]["needs_review"], 1)
+        self.assertEqual(response.context["overview"]["ready_to_export"], 1)
 
     def test_system_renders_summary_first_and_compact_service_list(self):
         payload = {
@@ -296,11 +377,15 @@ class FormulaMissionViewTests(TestCase):
         self.assertIsNone(response.json()["result_url"])
 
     def test_retry_failed_job_creates_linked_job_and_dispatches_worker(self):
+        project = PaperProject.objects.create(name="Retry paper")
+        batch = BatchMission.objects.create(project=project)
         failed = FormulaJob.objects.create(
             original_image="formula_uploads/source.png",
             status=FormulaJob.Status.FAILED,
             error_message="inference failed",
             failure_stage="INFERENCE",
+            project=project,
+            batch=batch,
         )
 
         with patch("apps.formulas.views.run_formula_job.delay") as delay:
@@ -310,6 +395,8 @@ class FormulaMissionViewTests(TestCase):
         retry = FormulaJob.objects.exclude(id=failed.id).get()
         self.assertEqual(retry.retry_of, failed)
         self.assertEqual(retry.original_image.name, failed.original_image.name)
+        self.assertEqual(retry.project, project)
+        self.assertEqual(retry.batch, batch)
         self.assertEqual(response["Location"], f"/missions/{retry.id}/progress/")
         delay.assert_called_once_with(str(retry.id))
 

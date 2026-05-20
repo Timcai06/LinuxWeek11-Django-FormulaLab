@@ -1,10 +1,116 @@
 import uuid
 
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, models, transaction
 from django.utils import timezone
 
 
 MISSION_CODE_PREFIX = "FL"
+CODE_GENERATION_RETRY_LIMIT = 20
+
+
+def _next_dated_code(model, field_name: str, prefix: str) -> str:
+    date_prefix = f"{prefix}-{timezone.localdate():%Y%m%d}"
+    lookup = {f"{field_name}__startswith": f"{date_prefix}-"}
+    last_code = (
+        model.objects.filter(**lookup)
+        .order_by(f"-{field_name}")
+        .values_list(field_name, flat=True)
+        .first()
+    )
+    next_sequence = _next_sequence_from_code(last_code)
+
+    for sequence in range(next_sequence, next_sequence + 1000):
+        code = f"{date_prefix}-{sequence:04d}"
+        if not model.objects.filter(**{field_name: code}).exists():
+            return code
+
+    raise RuntimeError(f"Unable to allocate {field_name}")
+
+
+def _save_with_generated_code(instance, field_name: str, prefix: str, save_callable, args, kwargs) -> None:
+    if getattr(instance, field_name):
+        save_callable(*args, **kwargs)
+        return
+
+    last_error = None
+    for _ in range(CODE_GENERATION_RETRY_LIMIT):
+        setattr(instance, field_name, _next_dated_code(type(instance), field_name, prefix))
+        try:
+            with transaction.atomic():
+                save_callable(*args, **kwargs)
+            return
+        except IntegrityError as error:
+            last_error = error
+            setattr(instance, field_name, "")
+
+    raise RuntimeError(f"Unable to allocate unique {field_name}") from last_error
+
+
+def _inherit_or_validate_batch_project(instance) -> None:
+    if instance.batch_id and not instance.project_id:
+        instance.project = instance.batch.project
+
+    if instance.project_id and instance.batch_id and instance.batch.project_id != instance.project_id:
+        raise ValidationError({"batch": "Batch belongs to a different project."})
+
+
+class PaperProject(models.Model):
+    class ExportFormat(models.TextChoices):
+        MARKDOWN = "markdown", "Markdown"
+        LATEX = "latex", "LaTeX"
+        ALIGN = "align", "Align"
+        INLINE = "inline", "Inline"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project_code = models.CharField(max_length=32, unique=True, db_index=True, blank=True)
+    name = models.CharField(max_length=120)
+    writing_goal = models.CharField(max_length=255, blank=True)
+    default_export_format = models.CharField(
+        max_length=20,
+        choices=ExportFormat.choices,
+        default=ExportFormat.LATEX,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at", "-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.project_code or self.id} {self.name}"
+
+    def save(self, *args, **kwargs) -> None:
+        _save_with_generated_code(self, "project_code", "FP", super().save, args, kwargs)
+
+
+class BatchMission(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        RUNNING = "running", "Running"
+        READY = "ready", "Ready"
+        FAILED = "failed", "Failed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    batch_code = models.CharField(max_length=36, unique=True, db_index=True, blank=True)
+    project = models.ForeignKey(
+        PaperProject,
+        on_delete=models.CASCADE,
+        related_name="batches",
+    )
+    title = models.CharField(max_length=160, default="Untitled batch")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.batch_code or self.id} {self.title}"
+
+    def save(self, *args, **kwargs) -> None:
+        _save_with_generated_code(self, "batch_code", "FB", super().save, args, kwargs)
 
 
 class FormulaJob(models.Model):
@@ -16,6 +122,20 @@ class FormulaJob(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     mission_code = models.CharField(max_length=32, unique=True, db_index=True, blank=True)
+    project = models.ForeignKey(
+        PaperProject,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="formula_jobs",
+    )
+    batch = models.ForeignKey(
+        BatchMission,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="formula_jobs",
+    )
     original_image = models.ImageField(upload_to="formula_uploads/%Y/%m/")
     preprocessed_image = models.ImageField(upload_to="formula_preprocessed/%Y/%m/", blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.QUEUED)
@@ -42,9 +162,8 @@ class FormulaJob(models.Model):
         return f"FormulaJob {self.mission_code or self.id} {self.status}"
 
     def save(self, *args, **kwargs) -> None:
-        if not self.mission_code:
-            self.mission_code = self._next_mission_code()
-        super().save(*args, **kwargs)
+        _inherit_or_validate_batch_project(self)
+        _save_with_generated_code(self, "mission_code", MISSION_CODE_PREFIX, super().save, args, kwargs)
 
     @property
     def is_terminal(self) -> bool:
@@ -70,21 +189,54 @@ class FormulaJob(models.Model):
 
     @classmethod
     def _next_mission_code(cls) -> str:
-        prefix = f"{MISSION_CODE_PREFIX}-{timezone.localdate():%Y%m%d}"
-        last_code = (
-            cls.objects.filter(mission_code__startswith=f"{prefix}-")
-            .order_by("-mission_code")
-            .values_list("mission_code", flat=True)
-            .first()
-        )
-        next_sequence = _next_sequence_from_code(last_code)
+        return _next_dated_code(cls, "mission_code", MISSION_CODE_PREFIX)
 
-        for sequence in range(next_sequence, next_sequence + 1000):
-            code = f"{prefix}-{sequence:04d}"
-            if not cls.objects.filter(mission_code=code).exists():
-                return code
 
-        raise RuntimeError("Unable to allocate mission code")
+class FormulaItem(models.Model):
+    class Status(models.TextChoices):
+        AUTO_READY = "auto_ready", "Auto ready"
+        NEEDS_REVIEW = "needs_review", "Needs review"
+        EDITED = "edited", "Edited"
+        CONFIRMED = "confirmed", "Confirmed"
+        EXPORTED = "exported", "Exported"
+        REJECTED = "rejected", "Rejected"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    formula_code = models.CharField(max_length=40, unique=True, db_index=True, blank=True)
+    project = models.ForeignKey(
+        PaperProject,
+        on_delete=models.CASCADE,
+        related_name="formula_items",
+    )
+    batch = models.ForeignKey(
+        BatchMission,
+        on_delete=models.CASCADE,
+        related_name="formula_items",
+    )
+    recognition_job = models.OneToOneField(
+        FormulaJob,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="formula_item",
+    )
+    latex_current = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEEDS_REVIEW)
+    quality_score = models.PositiveSmallIntegerField(default=0)
+    quality_flags = models.JSONField(default=list, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["batch", "sort_order", "created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.formula_code or self.id} {self.status}"
+
+    def save(self, *args, **kwargs) -> None:
+        _inherit_or_validate_batch_project(self)
+        _save_with_generated_code(self, "formula_code", "FF", super().save, args, kwargs)
 
 
 def _next_sequence_from_code(code: str | None) -> int:

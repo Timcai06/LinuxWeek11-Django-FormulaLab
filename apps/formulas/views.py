@@ -2,6 +2,7 @@ import logging
 from urllib.parse import urlencode
 
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -9,13 +10,18 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.formulas.forms import FormulaUploadForm
-from apps.formulas.models import FormulaJob
+from apps.formulas.models import FormulaItem, FormulaJob, PaperProject
 from apps.formulas.services.health import build_health_snapshot
 from apps.formulas.services.latex_formats import build_latex_formats, correct_latex_result
 from apps.formulas.tasks import run_formula_job, warmup_model_task
 
 logger = logging.getLogger(__name__)
 HISTORY_PAGE_SIZE = 20
+EXPORT_READY_STATUSES = [
+    FormulaItem.Status.AUTO_READY,
+    FormulaItem.Status.CONFIRMED,
+    FormulaItem.Status.EDITED,
+]
 
 
 def _safe_health_snapshot() -> dict:
@@ -50,6 +56,66 @@ def workbench(request):
             "health_snapshot": health_snapshot,
             "queue_counts": health_snapshot.get("queues", {}),
             "model_status": health_snapshot.get("model", {}),
+        },
+    )
+
+
+def projects(request):
+    project_list = list(
+        PaperProject.objects.annotate(
+            total_formula_count=Count("formula_items", distinct=True),
+            batch_count=Count("batches", distinct=True),
+            review_formula_count=Count(
+                "formula_items",
+                filter=Q(formula_items__status=FormulaItem.Status.NEEDS_REVIEW),
+                distinct=True,
+            ),
+            export_ready_formula_count=Count(
+                "formula_items",
+                filter=Q(formula_items__status__in=EXPORT_READY_STATUSES),
+                distinct=True,
+            ),
+        ).prefetch_related("batches")
+    )
+    project_metrics = {}
+    for project in project_list:
+        batches = list(project.batches.all())
+        project_metrics[str(project.id)] = {
+            "total_formulas": project.total_formula_count,
+            "batch_count": project.batch_count,
+            "needs_review": project.review_formula_count,
+            "ready_to_export": project.export_ready_formula_count,
+            "latest_batch": batches[0] if batches else None,
+        }
+    return render(
+        request,
+        "formulas/projects.html",
+        {
+            "projects": project_list,
+            "project_metrics": project_metrics,
+        },
+    )
+
+
+def project_workspace(request, project_id):
+    project = get_object_or_404(PaperProject, id=project_id)
+    batches = project.batches.all()[:6]
+    formula_items = project.formula_items.select_related("batch", "recognition_job")[:20]
+    overview = {
+        "total_formulas": project.formula_items.count(),
+        "needs_review": project.formula_items.filter(status=FormulaItem.Status.NEEDS_REVIEW).count(),
+        "ready_to_export": project.formula_items.filter(status__in=EXPORT_READY_STATUSES).count(),
+        "exported": project.formula_items.filter(status=FormulaItem.Status.EXPORTED).count(),
+        "recent_batches": project.batches.count(),
+    }
+    return render(
+        request,
+        "formulas/project_workspace.html",
+        {
+            "project": project,
+            "batches": batches,
+            "formula_items": formula_items,
+            "overview": overview,
         },
     )
 
@@ -94,7 +160,12 @@ def retry_mission(request, job_id):
     if old_job.status != FormulaJob.Status.FAILED:
         return JsonResponse({"status": "rejected", "error": "only failed missions can be retried"}, status=409)
 
-    new_job = FormulaJob.objects.create(original_image=old_job.original_image, retry_of=old_job)
+    new_job = FormulaJob.objects.create(
+        original_image=old_job.original_image,
+        retry_of=old_job,
+        project=old_job.project,
+        batch=old_job.batch,
+    )
     try:
         run_formula_job.delay(str(new_job.id))
     except Exception:

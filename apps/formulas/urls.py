@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("projects/", views.projects, name="projects"),
+    path("projects/<uuid:project_id>/", views.project_workspace, name="project-workspace"),
     path("workbench/", views.workbench, name="workbench"),
     path("jobs/", views.create_job, name="create-job"),
     path("missions/<uuid:job_id>/progress/", views.mission_progress, name="mission-progress"),

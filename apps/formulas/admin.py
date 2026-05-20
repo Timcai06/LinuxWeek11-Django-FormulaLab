@@ -1,9 +1,80 @@
 from django.contrib import admin
 
-from .models import FormulaJob
+from .models import BatchMission, FormulaItem, FormulaJob, PaperProject
+
+
+@admin.register(PaperProject)
+class PaperProjectAdmin(admin.ModelAdmin):
+    list_display = (
+        "project_code",
+        "name",
+        "default_export_format",
+        "updated_at",
+        "created_at",
+    )
+    search_fields = ("project_code", "name", "writing_goal")
+    list_filter = ("default_export_format", "created_at", "updated_at")
+    readonly_fields = ("project_code", "id", "created_at", "updated_at")
+
+
+@admin.register(BatchMission)
+class BatchMissionAdmin(admin.ModelAdmin):
+    list_display = (
+        "batch_code",
+        "title",
+        "project",
+        "status",
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("batch_code", "title", "project__project_code", "project__name")
+    list_filter = ("status", "created_at", "updated_at")
+    readonly_fields = ("batch_code", "id", "created_at", "updated_at")
+
+
+@admin.register(FormulaItem)
+class FormulaItemAdmin(admin.ModelAdmin):
+    list_display = (
+        "formula_code",
+        "project",
+        "batch",
+        "status",
+        "quality_score",
+        "sort_order",
+        "updated_at",
+    )
+    search_fields = (
+        "formula_code",
+        "latex_current",
+        "project__project_code",
+        "project__name",
+        "batch__batch_code",
+        "batch__title",
+    )
+    list_filter = ("status", "quality_score", "created_at", "updated_at")
+    readonly_fields = ("formula_code", "id", "created_at", "updated_at")
 
 
 @admin.register(FormulaJob)
 class FormulaJobAdmin(admin.ModelAdmin):
-    list_display = ("mission_code", "id", "status", "stage_label", "engine_name", "retry_of", "created_at", "duration_ms")
+    list_display = (
+        "mission_code",
+        "id",
+        "project",
+        "batch",
+        "status",
+        "stage_label",
+        "engine_name",
+        "retry_of",
+        "created_at",
+        "duration_ms",
+    )
+    search_fields = (
+        "mission_code",
+        "project__project_code",
+        "project__name",
+        "batch__batch_code",
+        "batch__title",
+    )
+    list_filter = ("status", "engine_name", "project", "batch", "created_at")
     readonly_fields = ("mission_code", "id")

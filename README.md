@@ -39,6 +39,8 @@ make up
 3. Access the Mission Control Center:
 👉 Open http://localhost:8000/ in your browser.
 
+Product-core pages begin at `http://localhost:8000/projects/`, while the existing single-image recognition flow remains available from Workbench.
+
 The Docker image installs both the base web stack and PaddleOCR Formula Recognition dependencies. The default Compose environment uses:
 
 ```bash
@@ -55,6 +57,8 @@ Model files are cached under `.model-cache/` through a Compose volume mount, so 
 make local
 ```
 👉 Open http://127.0.0.1:8000/
+
+For the Projects-first product core, open http://127.0.0.1:8000/projects/ after the local server starts.
 
 `make local` 会并行启动 Redis、Django Web 和 Celery Worker，并默认设置：
 

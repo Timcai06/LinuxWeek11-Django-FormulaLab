@@ -1,0 +1,140 @@
+{% extends "formulas/base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} - Formula Lab{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'formulas/css/pages/projects.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="workspace-shell">
+    <div class="workspace-header">
+        <div class="section-header">
+            <p>PROJECT WORKSPACE</p>
+            <h1>{{ project.name }}</h1>
+        </div>
+        <div class="workspace-header-meta">
+            <span>{{ project.project_code }}</span>
+            <span>{{ project.default_export_format|default:"PDF"|upper }}</span>
+        </div>
+    </div>
+
+    <section class="workspace-overview" aria-label="Project overview">
+        <div>
+            <span>TOTAL FORMULAS</span>
+            <strong>{{ overview.total_formulas|default:0 }}</strong>
+        </div>
+        <div>
+            <span>NEEDS REVIEW</span>
+            <strong>{{ overview.needs_review|default:0 }}</strong>
+        </div>
+        <div>
+            <span>READY TO EXPORT</span>
+            <strong>{{ overview.ready_to_export|default:0 }}</strong>
+        </div>
+        <div>
+            <span>EXPORTED</span>
+            <strong>{{ overview.exported|default:0 }}</strong>
+        </div>
+        <div>
+            <span>RECENT BATCHES</span>
+            <strong>{{ overview.recent_batches|default:0 }}</strong>
+        </div>
+    </section>
+
+    <div class="workspace-grid">
+        <section class="workspace-panel review-panel">
+            <div class="panel-heading">
+                <p>QUEUE</p>
+                <h2>Needs Review</h2>
+            </div>
+            {% if overview.needs_review %}
+                <ol class="compact-item-list">
+                    {% for item in formula_items %}
+                        {% if item.status == "needs_review" %}
+                            <li>
+                                <span>{{ item.formula_code }}</span>
+                                <strong>{{ item.quality_score|default:0 }}</strong>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p class="panel-empty">No formulas are waiting for review.</p>
+            {% endif %}
+        </section>
+
+        <section class="workspace-panel export-panel">
+            <div class="panel-heading">
+                <p>EXPORT</p>
+                <h2>Ready to Export</h2>
+            </div>
+            {% if overview.ready_to_export %}
+                <ol class="compact-item-list">
+                    {% for item in formula_items %}
+                        {% if item.status == "auto_ready" or item.status == "confirmed" or item.status == "edited" %}
+                            <li>
+                                <span>{{ item.formula_code }}</span>
+                                <strong>{{ item.status|upper }}</strong>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p class="panel-empty">No formulas are export-ready yet.</p>
+            {% endif %}
+        </section>
+
+        <section class="workspace-panel batches-panel">
+            <div class="panel-heading">
+                <p>MISSIONS</p>
+                <h2>Recent Batches</h2>
+            </div>
+            <ol class="batch-list">
+                {% for batch in batches %}
+                    <li>
+                        <span>{{ batch.batch_code }}</span>
+                        <strong>{{ batch.title|default:"Untitled batch" }}</strong>
+                        <em>{{ batch.status|default:"queued"|upper }}</em>
+                    </li>
+                {% empty %}
+                    <li class="list-empty">No batch missions recorded.</li>
+                {% endfor %}
+            </ol>
+        </section>
+
+        <section class="workspace-panel intelligence-panel">
+            <div class="panel-heading">
+                <p>SYMBOLS</p>
+                <h2>Symbol Intelligence</h2>
+            </div>
+            <p class="panel-empty">Reserved for notation consistency, glossary links, and local model suggestions.</p>
+        </section>
+    </div>
+
+    <section class="formula-items-panel">
+        <div class="panel-heading">
+            <p>ITEMS</p>
+            <h2>Formula Items</h2>
+        </div>
+        <div class="formula-item-list">
+            {% for item in formula_items %}
+                <article class="formula-item-row status-{{ item.status }}">
+                    <div class="formula-item-meta">
+                        <span>{{ item.formula_code }}</span>
+                        <span>{{ item.status|upper }}</span>
+                        <span>Q {{ item.quality_score|default:0 }}</span>
+                    </div>
+                    <pre>{% if item.latex_current %}{{ item.latex_current }}{% elif item.recognition_job.latex_result %}{{ item.recognition_job.latex_result }}{% else %}No LaTeX captured{% endif %}</pre>
+                </article>
+            {% empty %}
+                <div class="project-empty-state compact">
+                    <span class="empty-kicker">NO FORMULA ITEMS</span>
+                    <h2>This workspace is ready for its first batch.</h2>
+                    <a class="button button-secondary" href="{% url 'workbench' %}">OPEN WORKBENCH</a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</section>
+{% endblock %}
