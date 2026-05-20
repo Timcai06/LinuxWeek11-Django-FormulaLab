@@ -266,6 +266,48 @@
     box-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
 }
 
+.queue-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.queue-metrics div {
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.queue-metrics div:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.queue-metrics span {
+    color: var(--muted);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.queue-metrics strong {
+    margin: 0;
+    font-size: clamp(1.2rem, 2vw, 2rem);
+}
+
+.queue-metrics div:nth-child(1) strong { color: var(--on-night-muted); }
+.queue-metrics div:nth-child(2) strong { color: var(--status-warming); }
+.queue-metrics div:nth-child(3) strong { color: var(--status-ready); }
+.queue-metrics div:nth-child(4) strong { color: var(--status-error); }
+
 .last-job-card p {
     overflow-wrap: anywhere;
 }
@@ -274,6 +316,20 @@
     display: grid;
     gap: 18px;
     padding: 22px;
+}
+
+.dashboard-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.dashboard-heading h2 {
+    margin: 0;
+    color: var(--on-night);
+    font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+    font-weight: 900;
 }
 
 /* Service Flow Topology Map */
@@ -395,6 +451,26 @@
     background: rgba(255, 77, 77, 0.08);
 }
 
+.service-row.is-online .status-dot,
+.service-row.is-ready .status-dot {
+    background: var(--status-ready);
+    box-shadow: 0 0 10px rgba(92, 255, 176, 0.72);
+}
+
+.service-row.is-warming .status-dot,
+.service-row.is-warning .status-dot {
+    background: var(--status-warming);
+    box-shadow: 0 0 12px rgba(246, 200, 95, 0.68);
+    animation: statusPulse 1.8s ease-in-out infinite;
+}
+
+.service-row.is-offline .status-dot,
+.service-row.is-error .status-dot {
+    background: var(--status-error);
+    box-shadow: 0 0 12px rgba(255, 77, 77, 0.78);
+    animation: statusPulse 1.15s ease-in-out infinite;
+}
+
 @keyframes statusPulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
@@ -427,4 +503,7 @@
         50% { opacity: 0.8; transform: rotate(90deg) scale(1.05); color: var(--status-ready); }
     }
 
+    .queue-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
