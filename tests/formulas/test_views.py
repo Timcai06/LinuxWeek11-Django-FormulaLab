@@ -46,6 +46,7 @@ class FormulaMissionViewTests(TestCase):
         self.assertContains(response, "ENTER WORKBENCH")
 
     def test_workbench_renders_upload_form_and_telemetry_context(self):
+        project = PaperProject.objects.create(name="Active paper", writing_goal="Collect formulas")
         FormulaJob.objects.create(original_image="formula_uploads/source.png")
 
         with patch("apps.formulas.views.build_health_snapshot") as health_snapshot:
@@ -59,6 +60,10 @@ class FormulaMissionViewTests(TestCase):
         self.assertTemplateUsed(response, "formulas/workbench.html")
         self.assertContains(response, 'action="/jobs/"')
         self.assertContains(response, 'enctype="multipart/form-data"')
+        self.assertContains(response, 'name="project"')
+        self.assertContains(response, 'name="project_name"')
+        self.assertContains(response, "Active paper")
+        self.assertEqual(list(response.context["projects"]), [project])
         self.assertNotContains(response, "model-indicator")
         self.assertContains(response, "model-status-light is-ready")
         self.assertContains(response, "status-readout is-ready")
@@ -345,6 +350,46 @@ class FormulaMissionViewTests(TestCase):
         job = FormulaJob.objects.get()
         self.assertEqual(job.original_image.name.rsplit("/", 1)[-1], "formula.jpeg")
         self.assertEqual(response["Location"], f"/missions/{job.id}/progress/")
+        delay.assert_called_once_with(str(job.id))
+
+    def test_create_job_attaches_existing_project_and_creates_batch(self):
+        project = PaperProject.objects.create(name="Existing paper")
+
+        with patch("apps.formulas.views.run_formula_job.delay") as delay:
+            response = self.client.post(
+                "/jobs/",
+                {
+                    "image": upload_file("formula.png"),
+                    "project": str(project.id),
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        job = FormulaJob.objects.get()
+        batch = BatchMission.objects.get()
+        self.assertEqual(job.project, project)
+        self.assertEqual(job.batch, batch)
+        self.assertEqual(batch.project, project)
+        self.assertEqual(batch.status, BatchMission.Status.RUNNING)
+        self.assertEqual(batch.title, "formula.png")
+        delay.assert_called_once_with(str(job.id))
+
+    def test_create_job_creates_new_project_from_project_name(self):
+        with patch("apps.formulas.views.run_formula_job.delay") as delay:
+            response = self.client.post(
+                "/jobs/",
+                {
+                    "image": upload_file("formula.png"),
+                    "project_name": "New theorem draft",
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        project = PaperProject.objects.get()
+        job = FormulaJob.objects.get()
+        self.assertEqual(project.name, "New theorem draft")
+        self.assertEqual(job.project, project)
+        self.assertEqual(job.batch.project, project)
         delay.assert_called_once_with(str(job.id))
 
     def test_create_job_rejects_invalid_extension(self):

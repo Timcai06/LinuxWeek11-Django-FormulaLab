@@ -8,7 +8,7 @@ from celery.signals import worker_process_init
 from django.db import transaction
 from django.utils import timezone
 
-from apps.formulas.models import FormulaJob
+from apps.formulas.models import BatchMission, FormulaItem, FormulaJob
 from apps.formulas.services.latex_formats import correct_latex_result
 from apps.formulas.services.model_state import WORKER_HEARTBEAT_KEY, set_model_status
 from apps.formulas.services.ocr_engines import get_formula_engine
@@ -151,6 +151,8 @@ def run_formula_job(job_id: str) -> None:
         current_stage = "RESULT_READY"
         _mark_stage(job, current_stage)
         job.finish(FormulaJob.Status.SUCCEEDED)
+        _materialize_formula_item(job)
+        _mark_batch_status(job.batch, BatchMission.Status.READY)
     except Exception as exc:
         job.status = FormulaJob.Status.FAILED
         job.failure_stage = current_stage
@@ -168,6 +170,32 @@ def run_formula_job(job_id: str) -> None:
                 "duration_ms",
             ]
         )
+        _mark_batch_status(job.batch, BatchMission.Status.FAILED)
         return None
 
     return None
+
+
+def _materialize_formula_item(job: FormulaJob) -> None:
+    if not job.project_id or not job.batch_id or not job.latex_result:
+        return
+
+    next_sort_order = FormulaItem.objects.filter(batch=job.batch).count() + 1
+    FormulaItem.objects.update_or_create(
+        recognition_job=job,
+        defaults={
+            "project": job.project,
+            "batch": job.batch,
+            "latex_current": job.latex_result,
+            "status": FormulaItem.Status.AUTO_READY,
+            "quality_score": 90,
+            "sort_order": next_sort_order,
+        },
+    )
+
+
+def _mark_batch_status(batch: BatchMission | None, status: str) -> None:
+    if not batch:
+        return
+    batch.status = status
+    batch.save(update_fields=["status", "updated_at"])

@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 from django.test import TestCase, override_settings
 from PIL import Image
 
-from apps.formulas.models import FormulaJob
+from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
 from apps.formulas.services.model_state import MODEL_MESSAGE_KEY, MODEL_STATUS_KEY
 from apps.formulas.tasks import run_formula_job, warmup_model_task
 
@@ -43,6 +43,15 @@ class FormulaTaskTests(TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         Image.new("RGB", (20, 10), (255, 255, 255)).save(source)
         return FormulaJob.objects.create(original_image="formula_uploads/source.png")
+
+    def create_attached_job(self):
+        project = PaperProject.objects.create(name="Task paper")
+        batch = BatchMission.objects.create(project=project, title="Upload one", status=BatchMission.Status.RUNNING)
+        job = self.create_job()
+        job.project = project
+        job.batch = batch
+        job.save(update_fields=["project", "batch"])
+        return job, project, batch
 
     def test_warmup_model_task_sets_warming_then_ready(self):
         redis_client = FakeRedis()
@@ -124,6 +133,31 @@ class FormulaTaskTests(TestCase):
         self.assertIsNotNone(job.started_at)
         self.assertIsNotNone(job.finished_at)
         self.assertIsNotNone(job.duration_ms)
+
+    def test_run_formula_job_success_materializes_formula_item_for_attached_project(self):
+        job, project, batch = self.create_attached_job()
+        preprocessed_path = self.media_root / "formula_preprocessed" / "source.png"
+        engine = make_engine("paddle")
+        engine.recognize.return_value = "$$ \\alpha + \\beta $$"
+
+        with (
+            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
+            patch("apps.formulas.tasks.correct_latex_result", return_value=r"\alpha + \beta"),
+        ):
+            run_formula_job.run(str(job.id))
+
+        job.refresh_from_db()
+        batch.refresh_from_db()
+        item = FormulaItem.objects.get()
+        self.assertEqual(job.status, FormulaJob.Status.SUCCEEDED)
+        self.assertEqual(batch.status, BatchMission.Status.READY)
+        self.assertEqual(item.project, project)
+        self.assertEqual(item.batch, batch)
+        self.assertEqual(item.recognition_job, job)
+        self.assertEqual(item.latex_current, r"\alpha + \beta")
+        self.assertEqual(item.status, FormulaItem.Status.AUTO_READY)
+        self.assertEqual(item.quality_score, 90)
 
     def test_run_formula_job_skips_non_queued_job(self):
         job = self.create_job()

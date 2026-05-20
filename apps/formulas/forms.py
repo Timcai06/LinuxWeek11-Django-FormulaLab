@@ -4,12 +4,24 @@ from django import forms
 from django.conf import settings
 from PIL import Image, UnidentifiedImageError
 
+from apps.formulas.models import PaperProject
+
 
 class FormulaUploadForm(forms.Form):
     image = forms.FileField()
+    project = forms.ModelChoiceField(
+        queryset=PaperProject.objects.none(),
+        required=False,
+        empty_label="No project routing",
+    )
+    project_name = forms.CharField(max_length=120, required=False)
 
     allowed_extensions = {".png", ".jpg", ".jpeg"}
     allowed_image_formats = {"PNG", "JPEG"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["project"].queryset = PaperProject.objects.all()
 
     def clean_image(self):
         uploaded_file = self.cleaned_data["image"]

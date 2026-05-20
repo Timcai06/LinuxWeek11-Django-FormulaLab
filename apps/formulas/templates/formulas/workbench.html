@@ -16,6 +16,23 @@
 
         <form id="upload-form" class="upload-console" action="{% url 'create-job' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            <section class="project-routing-panel" aria-label="Project routing">
+                <div>
+                    <span class="telemetry-label">PROJECT ROUTING</span>
+                    <strong>Attach this recognition to a paper workspace</strong>
+                </div>
+                <div class="project-routing-fields">
+                    <label>
+                        <span>EXISTING PROJECT</span>
+                        {{ form.project }}
+                    </label>
+                    <label>
+                        <span>NEW PROJECT</span>
+                        {{ form.project_name }}
+                    </label>
+                </div>
+                <p>Select an existing project, or type a new project name. Leave both empty for a standalone mission.</p>
+            </section>
             <label class="drop-zone" for="id_image" data-drop-zone>
                 {{ form.image }}
                 <div class="hud-corners" aria-hidden="true"></div>

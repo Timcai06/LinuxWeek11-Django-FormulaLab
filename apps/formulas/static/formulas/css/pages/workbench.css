@@ -57,6 +57,71 @@
     min-height: 0;
 }
 
+.project-routing-panel {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.project-routing-panel > div:first-child {
+    display: grid;
+    gap: 4px;
+}
+
+.project-routing-panel strong {
+    color: var(--on-night);
+    font-family: var(--font-industrial);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.project-routing-panel p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+.project-routing-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.project-routing-fields label {
+    min-width: 0;
+    display: grid;
+    gap: 7px;
+}
+
+.project-routing-fields label > span {
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+}
+
+.project-routing-fields select,
+.project-routing-fields input {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(0, 0, 0, 0.42);
+    color: var(--on-night);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+.project-routing-fields input::placeholder {
+    color: var(--dim);
+}
+
 .drop-zone {
     position: relative;
     flex: 1;
@@ -520,6 +585,10 @@
 
 @media (max-width: 900px) {
     .workbench-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .project-routing-fields {
         grid-template-columns: 1fr;
     }
 }

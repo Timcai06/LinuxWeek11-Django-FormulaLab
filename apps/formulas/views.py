@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.formulas.forms import FormulaUploadForm
-from apps.formulas.models import FormulaItem, FormulaJob, PaperProject
+from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
 from apps.formulas.services.health import build_health_snapshot
 from apps.formulas.services.latex_formats import build_latex_formats, correct_latex_result
 from apps.formulas.tasks import run_formula_job, warmup_model_task
@@ -52,6 +52,7 @@ def workbench(request):
         "formulas/workbench.html",
         {
             "form": FormulaUploadForm(),
+            "projects": PaperProject.objects.all(),
             "recent_jobs": FormulaJob.objects.all()[:5],
             "health_snapshot": health_snapshot,
             "queue_counts": health_snapshot.get("queues", {}),
@@ -141,12 +142,16 @@ def create_job(request):
     if not form.is_valid():
         return JsonResponse({"status": "invalid", "errors": form.errors}, status=400)
 
-    job = FormulaJob.objects.create(original_image=form.cleaned_data["image"])
+    image = form.cleaned_data["image"]
+    project = _resolve_upload_project(form)
+    batch = _create_upload_batch(project, image.name) if project else None
+    job = FormulaJob.objects.create(original_image=image, project=project, batch=batch)
     try:
         run_formula_job.delay(str(job.id))
     except Exception:
         logger.exception("Unable to queue formula job %s", job.id)
         _mark_dispatch_failed(job, "DISPATCH")
+        _mark_batch_failed(batch)
         return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
 
     return redirect("mission-progress", job_id=job.id)
@@ -282,6 +287,31 @@ def _mark_dispatch_failed(job: FormulaJob, failure_stage: str) -> None:
             "duration_ms",
         ]
     )
+
+
+def _resolve_upload_project(form: FormulaUploadForm) -> PaperProject | None:
+    project = form.cleaned_data.get("project")
+    project_name = form.cleaned_data.get("project_name", "").strip()
+    if project:
+        return project
+    if project_name:
+        return PaperProject.objects.create(name=project_name)
+    return None
+
+
+def _create_upload_batch(project: PaperProject, image_name: str) -> BatchMission:
+    return BatchMission.objects.create(
+        project=project,
+        title=image_name,
+        status=BatchMission.Status.RUNNING,
+    )
+
+
+def _mark_batch_failed(batch: BatchMission | None) -> None:
+    if not batch:
+        return
+    batch.status = BatchMission.Status.FAILED
+    batch.save(update_fields=["status", "updated_at"])
 
 
 def _formula_item_latex(item: FormulaItem) -> str:
