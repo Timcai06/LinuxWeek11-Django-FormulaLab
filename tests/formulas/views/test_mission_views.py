@@ -1,6 +1,9 @@
+import hashlib
+from pathlib import Path
 from unittest.mock import patch
 
 from apps.formulas.models import BatchMission, FormulaJob, PaperProject
+from apps.formulas.services import latex_formats
 from tests.formulas.views.base import FormulaViewTestCase
 
 
@@ -125,6 +128,24 @@ class FormulaMissionViewTests(FormulaViewTestCase):
         self.assertEqual(context["job"], job)
         self.assertEqual(context["job"].mission_code, job.mission_code)
         self.assertEqual(context["formats"]["raw"], "x + y")
+
+    def test_report_applies_known_image_correction_before_formatting(self):
+        job = FormulaJob.objects.create(
+            original_image="formula_uploads/known-course-sample.png",
+            status=FormulaJob.Status.SUCCEEDED,
+            latex_result=r"\bad",
+        )
+        image_path = Path(job.original_image.path)
+        image_path.parent.mkdir(parents=True, exist_ok=True)
+        image_path.write_bytes(b"known course sample")
+        digest = hashlib.sha256(image_path.read_bytes()).hexdigest()[:12]
+
+        with patch.dict(latex_formats.KNOWN_IMAGE_CORRECTIONS, {digest: r"\fixed"}):
+            response = self.client.get(f"/missions/{job.id}/report/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["formats"]["raw"], r"\fixed")
+        self.assertEqual(response.context["formats"]["block"], r"$$\fixed$$")
 
     def test_mission_status_api_returns_expected_shape_and_result_url_for_success(self):
         job = FormulaJob.objects.create(

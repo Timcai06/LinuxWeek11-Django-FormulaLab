@@ -111,6 +111,14 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertEqual(context["formula_items"], formula_items)
         self.assertEqual(context["paper_preview_items"], paper_preview_items)
 
+    def test_project_workspace_presenter_rejects_project_override(self):
+        from apps.formulas.presenters.projects import project_workspace_context
+
+        project = PaperProject.objects.create(name="Presenter paper")
+
+        with self.assertRaisesMessage(ValueError, "project cannot be provided in extra context"):
+            project_workspace_context(project, project="override")
+
     def test_project_workspace_builds_paper_preview_items_from_formula_sources(self):
         project = PaperProject.objects.create(name="Preview paper", writing_goal="Draft theorem section")
         batch = BatchMission.objects.create(project=project, title="Section 4")
