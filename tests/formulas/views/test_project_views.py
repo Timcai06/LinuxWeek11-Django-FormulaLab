@@ -1,24 +1,11 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
-
 from django.db import connection
-from django.test import Client, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 
 from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
+from tests.formulas.views.base import FormulaViewTestCase
 
 
-class FormulaProjectViewTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.media_root_context = TemporaryDirectory()
-        self.settings_context = override_settings(MEDIA_ROOT=Path(self.media_root_context.name))
-        self.settings_context.enable()
-
-    def tearDown(self):
-        self.settings_context.disable()
-        self.media_root_context.cleanup()
-
+class FormulaProjectViewTests(FormulaViewTestCase):
     def test_projects_renders_empty_product_workspace_state(self):
         response = self.client.get("/projects/")
 

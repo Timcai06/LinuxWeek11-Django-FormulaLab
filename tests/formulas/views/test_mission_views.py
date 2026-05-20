@@ -1,23 +1,10 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from django.test import Client, TestCase, override_settings
-
 from apps.formulas.models import BatchMission, FormulaJob, PaperProject
+from tests.formulas.views.base import FormulaViewTestCase
 
 
-class FormulaMissionViewTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.media_root_context = TemporaryDirectory()
-        self.settings_context = override_settings(MEDIA_ROOT=Path(self.media_root_context.name))
-        self.settings_context.enable()
-
-    def tearDown(self):
-        self.settings_context.disable()
-        self.media_root_context.cleanup()
-
+class FormulaMissionViewTests(FormulaViewTestCase):
     def test_history_limits_initial_timeline_and_exposes_load_more(self):
         for index in range(1, 22):
             FormulaJob.objects.create(

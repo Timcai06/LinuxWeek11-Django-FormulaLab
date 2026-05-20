@@ -1,24 +1,26 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from django.test import Client, TestCase, override_settings
+from django.test import SimpleTestCase
 
 from apps.formulas.models import BatchMission, FormulaJob, PaperProject
 from tests.formulas.helpers import upload_file
+from tests.formulas.views.base import FormulaViewTestCase
 
 
-class FormulaWorkbenchViewTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.media_root_context = TemporaryDirectory()
-        self.settings_context = override_settings(MEDIA_ROOT=Path(self.media_root_context.name))
-        self.settings_context.enable()
+class UploadFileHelperTests(SimpleTestCase):
+    def test_upload_file_uses_png_content_type_for_png_suffix(self):
+        self.assertEqual(upload_file("formula.png").content_type, "image/png")
 
-    def tearDown(self):
-        self.settings_context.disable()
-        self.media_root_context.cleanup()
+    def test_upload_file_uses_jpeg_content_type_for_jpeg_suffixes(self):
+        self.assertEqual(upload_file("formula.jpg").content_type, "image/jpeg")
+        self.assertEqual(upload_file("formula.jpeg").content_type, "image/jpeg")
+        self.assertEqual(upload_file("formula.JPG").content_type, "image/jpeg")
 
+    def test_upload_file_uses_octet_stream_content_type_for_unknown_suffix(self):
+        self.assertEqual(upload_file("formula.gif").content_type, "application/octet-stream")
+
+
+class FormulaWorkbenchViewTests(FormulaViewTestCase):
     def test_landing_renders_mission_control_entry_points(self):
         response = self.client.get("/")
 
