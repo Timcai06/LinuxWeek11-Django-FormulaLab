@@ -3,6 +3,9 @@ from pathlib import Path
 
 
 VECTOR_ROMAN_PATTERN = re.compile(r"\\vec\{\\mathrm\{([A-Za-z])\}\}")
+SIMPLE_DOUBLE_BRACE_COMMAND_PATTERN = re.compile(
+    r"\\(overline|underline|hat|bar|tilde|vec)\{\{([^{}]+)\}\}"
+)
 KNOWN_IMAGE_CORRECTIONS = {
     "74b4c8e8fa07": r"\left\{6\frac{4}{5},\sqrt{49},6.\overline{3},7\sqrt{5}\right\}",
 }
@@ -15,6 +18,7 @@ def normalize_latex(value: str) -> str:
     elif text.startswith("$") and text.endswith("$") and len(text) >= 2:
         text = text[1:-1].strip()
     text = VECTOR_ROMAN_PATTERN.sub(r"\\vec{\1}", text)
+    text = SIMPLE_DOUBLE_BRACE_COMMAND_PATTERN.sub(r"\\\1{\2}", text)
     return " ".join(text.split())
 
 

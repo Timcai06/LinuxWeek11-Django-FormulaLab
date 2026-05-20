@@ -9,9 +9,9 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.formulas.models import FormulaJob
-from apps.formulas.services.latex_formats import normalize_latex
+from apps.formulas.services.latex_formats import correct_latex_result
 from apps.formulas.services.model_state import WORKER_HEARTBEAT_KEY, set_model_status
-from apps.formulas.services.pix2tex_engine import Pix2TexEngine
+from apps.formulas.services.ocr_engines import get_formula_engine
 from apps.formulas.services.recognizer import prepare_formula_image
 from apps.formulas.services.telemetry import get_redis_client
 
@@ -25,7 +25,7 @@ ERROR_MESSAGE_MAX_LENGTH = 255
 
 STAGES = {
     "QUEUED": ("QUEUED", "任务已进入识别队列", 25),
-    "MODEL_WARMUP": ("MODEL WARMUP", "正在确认 pix2tex 模型可用", 40),
+    "MODEL_WARMUP": ("MODEL WARMUP", "正在确认公式识别模型可用", 40),
     "IMAGE_PREPROCESS": ("IMAGE PREPROCESS", "正在预处理公式图片", 60),
     "INFERENCE": ("INFERENCE", "正在运行公式识别推理", 80),
     "LATEX_POSTPROCESS": ("LATEX POSTPROCESS", "正在归一化 LaTeX 输出", 95),
@@ -84,14 +84,15 @@ def _safe_set_model_status(redis_client, status: str, message: str) -> None:
 @shared_task
 def warmup_model_task():
     redis_client = get_redis_client()
-    _safe_set_model_status(redis_client, "warming", "loading pix2tex model")
+    engine = get_formula_engine()
+    _safe_set_model_status(redis_client, "warming", f"loading {engine.name} model")
     try:
-        Pix2TexEngine().warmup()
+        engine.warmup()
     except Exception as exc:
         _safe_set_model_status(redis_client, "error", _short_error_message(exc))
         raise
 
-    _safe_set_model_status(redis_client, "ready", "pix2tex model ready")
+    _safe_set_model_status(redis_client, "ready", f"{engine.name} model ready")
     return {"status": "ready"}
 
 
@@ -128,7 +129,8 @@ def run_formula_job(job_id: str) -> None:
             current_stage = stage
             _mark_stage(job, stage)
 
-        Pix2TexEngine().warmup()
+        engine = get_formula_engine()
+        engine.warmup()
 
         current_stage = "IMAGE_PREPROCESS"
         _mark_stage(job, current_stage)
@@ -136,14 +138,15 @@ def run_formula_job(job_id: str) -> None:
 
         current_stage = "INFERENCE"
         _mark_stage(job, current_stage)
-        latex_output = Pix2TexEngine().recognize(str(preprocessed_path))
+        latex_output = engine.recognize(str(preprocessed_path))
 
         current_stage = "LATEX_POSTPROCESS"
         _mark_stage(job, current_stage)
-        latex_result = normalize_latex(latex_output)
+        latex_result = correct_latex_result(latex_output, job.original_image.path)
 
         job.latex_result = latex_result
-        job.save(update_fields=["latex_result"])
+        job.engine_name = engine.name
+        job.save(update_fields=["latex_result", "engine_name"])
 
         current_stage = "RESULT_READY"
         _mark_stage(job, current_stage)

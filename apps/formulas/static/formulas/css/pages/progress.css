@@ -1,26 +1,36 @@
 .mission-layout {
-    min-height: calc(100vh - var(--nav-height));
+    height: calc(100vh - var(--nav-height));
+    min-height: 600px;
     display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
     gap: clamp(18px, 3vw, 34px);
     padding: clamp(18px, 4vw, 54px);
+    overflow: hidden;
 }
 
 .image-console,
 .progress-console {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 22px;
-    align-content: start;
-    border: 1px solid var(--line);
-    background: var(--canvas-night-panel);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 12px 40px rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
     padding: clamp(18px, 3vw, 34px);
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .image-console img {
     width: 100%;
-    max-height: 430px;
+    flex: 1;
+    min-height: 0;
     object-fit: contain;
     background: var(--canvas-light);
+    border-radius: 8px;
 }
 
 .progress-readout {
@@ -49,71 +59,158 @@
 }
 
 .progress-bar {
-    height: 12px;
-    border: 1px solid var(--line-strong);
-    background: var(--canvas-night-soft);
+    height: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    overflow: hidden;
 }
 
 .progress-bar span {
     display: block;
     height: 100%;
-    background: var(--on-night);
-    transition: width 220ms ease;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), var(--on-night));
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.progress-bar span::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    filter: blur(3px);
 }
 
 .stage-message {
     margin: 0;
-    color: var(--muted);
+    color: var(--status-ready);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.stage-message::before {
+    content: "> ";
+    color: var(--status-ready);
+    font-weight: 800;
 }
 
 .stage-list {
     counter-reset: stage;
-    display: grid;
-    gap: 1px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     margin: 0;
-    padding: 0;
-    background: var(--line);
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.04);
     list-style: none;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    border-radius: 6px;
+    position: relative;
+}
+
+/* Vertical telemetry connection line with pulsing scrolling glow */
+@keyframes lineScroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 -40px; }
+}
+
+.stage-list::before {
+    content: "";
+    position: absolute;
+    top: 32px;
+    bottom: 32px;
+    left: 31px; /* 16px padding + 16px half-bubble - 1px half-line width */
+    width: 2px;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0.3) 100%
+    );
+    background-size: 100% 40px;
+    animation: lineScroll 2s linear infinite;
+    z-index: 1;
 }
 
 .stage-list li {
     counter-increment: stage;
     display: grid;
-    grid-template-columns: 42px 1fr;
+    grid-template-columns: 32px 1fr;
     align-items: center;
-    gap: 12px;
-    padding: 14px;
-    background: var(--canvas-night);
+    gap: 16px;
+    padding: 8px 12px;
+    background: transparent;
     color: var(--dim);
     font-weight: 800;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+    border-radius: 6px;
 }
 
 .stage-list li::before {
     content: counter(stage, decimal-leading-zero);
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     display: grid;
     place-items: center;
-    border: 1px solid var(--hairline-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--canvas-night);
     border-radius: 50%;
     color: var(--dim);
     font-family: var(--font-mono);
     font-size: 0.66rem;
+    z-index: 2;
+    transition: all 0.3s ease;
 }
 
 .stage-list li.is-active,
 .stage-list li.is-complete {
-    color: var(--text);
-}
-
-.stage-list li.is-active::before,
-.stage-list li.is-complete::before {
-    border-color: var(--on-night);
     color: var(--on-night);
 }
 
+.stage-list li.is-complete::before {
+    border-color: var(--on-night);
+    background: var(--on-night);
+    color: var(--canvas-night);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
+}
+
+.stage-list li.is-complete {
+    color: var(--on-night);
+}
+
+@keyframes stageSonar {
+    0% { box-shadow: 0 0 0 0 rgba(246, 200, 95, 0.45), 0 0 8px rgba(246, 200, 95, 0.2); }
+    70% { box-shadow: 0 0 0 8px transparent, 0 0 14px rgba(246, 200, 95, 0.5); }
+    100% { box-shadow: 0 0 0 0 transparent, 0 0 8px rgba(246, 200, 95, 0.2); }
+}
+
+.stage-list li.is-active::before {
+    border-color: var(--status-warming);
+    color: var(--status-warming);
+    background: var(--canvas-night);
+    animation: stageSonar 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
 .stage-list li.is-active {
-    box-shadow: inset 4px 0 0 var(--on-night);
+    background: rgba(246, 200, 95, 0.03);
+    box-shadow: inset 3px 0 0 var(--status-warming);
+    padding-left: 18px; /* slight indentation shift when active */
 }
 
 .failure-details {

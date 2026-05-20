@@ -23,6 +23,9 @@ class LatexFormatTests(SimpleTestCase):
             r"\vec{B}+\vec{E}",
         )
 
+    def test_normalize_latex_simplifies_simple_double_brace_commands(self):
+        self.assertEqual(normalize_latex(r"6.\overline{{3}}"), r"6.\overline{3}")
+
     def test_correct_latex_result_uses_known_image_hash(self):
         with TemporaryDirectory() as tmpdir:
             image_path = Path(tmpdir) / "sample.png"

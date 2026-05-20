@@ -11,13 +11,17 @@
 <section class="result-grid">
     <div class="source-panel">
         <div class="section-header">
-            <p>MISSION REPORT</p>
+            <div class="mission-tag">
+                <span class="pulse-dot status-{{ job.status|lower }}"></span>
+                <span class="mission-label">MISSION REPORT</span>
+                <strong class="mission-code">{{ job.mission_code }}</strong>
+            </div>
             <h1>ORIGINAL IMAGE</h1>
         </div>
         <img src="{{ job.original_image.url }}" alt="Original formula upload">
         <dl class="metadata-grid">
-            <div><dt>MISSION ID</dt><dd>{{ job.id }}</dd></div>
-            <div><dt>STATUS</dt><dd>{{ job.status|upper }}</dd></div>
+            <div><dt>MISSION CODE</dt><dd>{{ job.mission_code }}</dd></div>
+            <div><dt>STATUS</dt><dd class="status-val status-{{ job.status|lower }}">{{ job.status|upper }}</dd></div>
             <div><dt>DURATION</dt><dd>{% if job.duration_ms %}{{ job.duration_ms }} ms{% else %}N/A{% endif %}</dd></div>
             <div><dt>ENGINE</dt><dd>{{ job.engine_name }}</dd></div>
         </dl>
@@ -31,18 +35,22 @@
             <span>{{ job.status|upper }}</span>
         </div>
         <div class="console-tabs" role="tablist" aria-label="LaTeX formats">
+            <span class="tab-slider" aria-hidden="true"></span>
             <button type="button" data-format-tab="raw">RAW</button>
             <button type="button" data-format-tab="block" aria-selected="true">BLOCK</button>
             <button type="button" data-format-tab="inline">INLINE</button>
         </div>
         <textarea class="latex-output" data-latex-output spellcheck="false">{{ formats.block }}</textarea>
-        <div class="console-actions">
-            <button class="button button-primary" type="button" data-copy-current>COPY CURRENT</button>
-            <a class="button button-secondary" href="{% url 'history' %}">MISSION LOG</a>
+        <div class="console-actions compact-actions">
+            <button class="button button-primary" type="button" data-copy-current>COPY</button>
+            <a class="button button-secondary" href="{% url 'history' %}">LOG</a>
         </div>
         <div class="katex-preview">
-            <span class="telemetry-label">KATEX PREVIEW</span>
-            <div data-katex-preview></div>
+            <div class="katex-preview-header">
+                <span class="telemetry-label">KATEX PREVIEW</span>
+                <span>RENDERED OUTPUT</span>
+            </div>
+            <div class="katex-surface" data-katex-preview></div>
         </div>
     </div>
 </section>

@@ -47,7 +47,7 @@ class FormulaMissionViewTests(TestCase):
 
         with patch("apps.formulas.views.build_health_snapshot") as health_snapshot:
             health_snapshot.return_value = {
-                "model": {"status": "ready", "message": "pix2tex model ready", "ok": True},
+                "model": {"status": "ready", "state": "ready", "message": "pix2tex model ready", "ok": True},
                 "queues": {"queued": 1, "running": 0, "succeeded": 0, "failed": 0, "total": 1},
             }
             response = self.client.get("/workbench/")
@@ -56,8 +56,101 @@ class FormulaMissionViewTests(TestCase):
         self.assertTemplateUsed(response, "formulas/workbench.html")
         self.assertContains(response, 'action="/jobs/"')
         self.assertContains(response, 'enctype="multipart/form-data"')
+        self.assertNotContains(response, "model-indicator")
+        self.assertContains(response, "model-status-light is-ready")
+        self.assertContains(response, "status-readout is-ready")
+        self.assertNotContains(response, "pix2tex model ready")
+        self.assertNotContains(response, "SUPPORTED FORMATS")
+        self.assertNotContains(response, "PNG, JPG, JPEG")
         self.assertEqual(response.context["queue_counts"]["queued"], 1)
         self.assertEqual(len(response.context["recent_jobs"]), 1)
+
+    def test_system_renders_summary_first_and_compact_service_list(self):
+        payload = {
+            "web": {"ok": True},
+            "database": {"ok": True},
+            "redis": {"ok": True},
+            "worker": {"ok": False, "heartbeat_at": None},
+            "model": {"status": "warming", "state": "warming", "message": "loading paddle model", "ok": False},
+            "media": {"ok": True},
+            "queues": {"queued": 2, "running": 1, "succeeded": 8, "failed": 1, "total": 12},
+            "last_job": {"status": "running", "stage_label": "INFERENCE"},
+        }
+
+        with patch("apps.formulas.views.build_health_snapshot", return_value=payload):
+            response = self.client.get("/system/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "formulas/system.html")
+        self.assertContains(response, "dashboard-grid")
+        self.assertContains(response, "service-flow")
+        self.assertContains(response, 'data-service="MODEL"')
+        self.assertContains(response, "is-warming")
+        self.assertNotContains(response, "system-dashboard")
+
+    def test_history_limits_initial_timeline_and_exposes_load_more(self):
+        for index in range(1, 22):
+            FormulaJob.objects.create(
+                mission_code=f"FL-20260519-{index:04d}",
+                original_image=f"formula_uploads/{index}.png",
+            )
+
+        response = self.client.get("/history/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "formulas/history.html")
+        self.assertEqual(len(response.context["jobs"]), 20)
+        self.assertTrue(response.context["page_obj"].has_next())
+        self.assertContains(response, "LOAD MORE")
+        self.assertContains(response, "FL-20260519-0021")
+        self.assertNotIn(
+            "FL-20260519-0001",
+            [job.mission_code for job in response.context["jobs"]],
+        )
+
+    def test_history_filters_by_status_and_mission_code_query(self):
+        target = FormulaJob.objects.create(
+            mission_code="FL-20260519-0105",
+            original_image="formula_uploads/target.png",
+            status=FormulaJob.Status.FAILED,
+        )
+        FormulaJob.objects.create(
+            mission_code="FL-20260519-0205",
+            original_image="formula_uploads/succeeded.png",
+            status=FormulaJob.Status.SUCCEEDED,
+        )
+        FormulaJob.objects.create(
+            mission_code="FL-20260519-0106",
+            original_image="formula_uploads/running.png",
+            status=FormulaJob.Status.RUNNING,
+        )
+
+        response = self.client.get("/history/", {"q": "0105", "status": "failed"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context["jobs"]), [target])
+        self.assertEqual(response.context["active_status"], "failed")
+        self.assertEqual(response.context["search_query"], "0105")
+        self.assertContains(response, "FL-20260519-0105")
+        self.assertNotContains(response, "FL-20260519-0205")
+        self.assertNotContains(response, "FL-20260519-0106")
+
+    def test_history_second_page_can_return_to_previous_page(self):
+        for index in range(1, 22):
+            FormulaJob.objects.create(
+                mission_code=f"FL-20260519-{index:04d}",
+                original_image=f"formula_uploads/{index}.png",
+                status=FormulaJob.Status.FAILED,
+            )
+
+        response = self.client.get("/history/", {"page": "2", "status": "failed", "q": "FL-20260519"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["page_obj"].has_previous())
+        self.assertContains(response, "PREVIOUS")
+        self.assertContains(response, 'href="/history/?page=1&amp;status=failed&amp;q=FL-20260519"')
+        self.assertContains(response, "FL-20260519-0001")
+        self.assertNotContains(response, "FL-20260519-0021")
 
     def test_report_renders_latex_format_context(self):
         job = FormulaJob.objects.create(
@@ -72,8 +165,14 @@ class FormulaMissionViewTests(TestCase):
         self.assertTemplateUsed(response, "formulas/result.html")
         self.assertEqual(response.context["formats"]["raw"], r"\frac{a}{b}")
         self.assertEqual(response.context["formats"]["block"], r"$$\frac{a}{b}$$")
-        self.assertContains(response, "COPY CURRENT")
+        self.assertContains(response, "COPY")
+        self.assertContains(response, "LOG")
+        self.assertContains(response, "compact-actions")
+        self.assertNotContains(response, "COPY CURRENT")
+        self.assertContains(response, job.mission_code)
         self.assertContains(response, 'data-katex-preview')
+        self.assertContains(response, "katex-surface")
+        self.assertContains(response, "RENDERED OUTPUT")
         self.assertContains(response, 'defer src="/static/formulas/js/result.js"')
 
     def test_create_job_accepts_valid_upload_creates_job_and_dispatches_worker(self):
@@ -154,6 +253,8 @@ class FormulaMissionViewTests(TestCase):
             set(response.json()),
             {
                 "status",
+                "id",
+                "mission_code",
                 "progress",
                 "stage_code",
                 "stage_label",
@@ -164,6 +265,8 @@ class FormulaMissionViewTests(TestCase):
             },
         )
         self.assertEqual(response.json()["status"], FormulaJob.Status.SUCCEEDED)
+        self.assertEqual(response.json()["id"], str(job.id))
+        self.assertEqual(response.json()["mission_code"], job.mission_code)
         self.assertEqual(response.json()["result_url"], f"/missions/{job.id}/report/")
 
     def test_mission_status_api_uses_null_result_url_until_success(self):

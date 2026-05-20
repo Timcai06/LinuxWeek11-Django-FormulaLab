@@ -4,6 +4,9 @@ from django.db import models
 from django.utils import timezone
 
 
+MISSION_CODE_PREFIX = "FL"
+
+
 class FormulaJob(models.Model):
     class Status(models.TextChoices):
         QUEUED = "queued", "Queued"
@@ -12,6 +15,7 @@ class FormulaJob(models.Model):
         FAILED = "failed", "Failed"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    mission_code = models.CharField(max_length=32, unique=True, db_index=True, blank=True)
     original_image = models.ImageField(upload_to="formula_uploads/%Y/%m/")
     preprocessed_image = models.ImageField(upload_to="formula_preprocessed/%Y/%m/", blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.QUEUED)
@@ -35,7 +39,12 @@ class FormulaJob(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return f"FormulaJob {self.id} {self.status}"
+        return f"FormulaJob {self.mission_code or self.id} {self.status}"
+
+    def save(self, *args, **kwargs) -> None:
+        if not self.mission_code:
+            self.mission_code = self._next_mission_code()
+        super().save(*args, **kwargs)
 
     @property
     def is_terminal(self) -> bool:
@@ -58,3 +67,30 @@ class FormulaJob(models.Model):
         self.finished_at = timezone.now()
         self.duration_ms = self.calculate_duration_ms()
         self.save(update_fields=["status", "finished_at", "duration_ms"])
+
+    @classmethod
+    def _next_mission_code(cls) -> str:
+        prefix = f"{MISSION_CODE_PREFIX}-{timezone.localdate():%Y%m%d}"
+        last_code = (
+            cls.objects.filter(mission_code__startswith=f"{prefix}-")
+            .order_by("-mission_code")
+            .values_list("mission_code", flat=True)
+            .first()
+        )
+        next_sequence = _next_sequence_from_code(last_code)
+
+        for sequence in range(next_sequence, next_sequence + 1000):
+            code = f"{prefix}-{sequence:04d}"
+            if not cls.objects.filter(mission_code=code).exists():
+                return code
+
+        raise RuntimeError("Unable to allocate mission code")
+
+
+def _next_sequence_from_code(code: str | None) -> int:
+    if not code:
+        return 1
+    try:
+        return int(code.rsplit("-", 1)[1]) + 1
+    except (IndexError, ValueError):
+        return 1

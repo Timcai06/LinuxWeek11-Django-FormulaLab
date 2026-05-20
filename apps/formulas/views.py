@@ -1,5 +1,7 @@
 import logging
+from urllib.parse import urlencode
 
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -13,6 +15,7 @@ from apps.formulas.services.latex_formats import build_latex_formats, correct_la
 from apps.formulas.tasks import run_formula_job, warmup_model_task
 
 logger = logging.getLogger(__name__)
+HISTORY_PAGE_SIZE = 20
 
 
 def _safe_health_snapshot() -> dict:
@@ -25,7 +28,7 @@ def _safe_health_snapshot() -> dict:
             "database": {"ok": False, "error": "health snapshot unavailable"},
             "redis": {"ok": False, "error": "health snapshot unavailable"},
             "worker": {"ok": False, "heartbeat_at": None, "error": "health snapshot unavailable"},
-            "model": {"ok": False, "status": None, "message": "health snapshot unavailable"},
+            "model": {"ok": False, "status": None, "state": "error", "message": "health snapshot unavailable"},
             "media": {"ok": False, "error": "health snapshot unavailable"},
             "queues": {"queued": 0, "running": 0, "succeeded": 0, "failed": 0, "total": 0},
             "last_job": None,
@@ -103,7 +106,45 @@ def retry_mission(request, job_id):
 
 
 def history(request):
-    return render(request, "formulas/history.html", {"jobs": FormulaJob.objects.all()[:25]})
+    search_query = request.GET.get("q", "").strip()
+    active_status = request.GET.get("status", "").strip().lower()
+    valid_statuses = {choice.value for choice in FormulaJob.Status}
+
+    jobs = FormulaJob.objects.all()
+    if search_query:
+        jobs = jobs.filter(mission_code__icontains=search_query)
+    if active_status in valid_statuses:
+        jobs = jobs.filter(status=active_status)
+    else:
+        active_status = ""
+
+    paginator = Paginator(jobs, HISTORY_PAGE_SIZE)
+    page_obj = paginator.get_page(request.GET.get("page", 1))
+    next_querystring = ""
+    previous_querystring = ""
+    if page_obj.has_next():
+        query_params = request.GET.copy()
+        query_params["page"] = page_obj.next_page_number()
+        next_querystring = urlencode(query_params, doseq=True)
+    if page_obj.has_previous():
+        query_params = request.GET.copy()
+        query_params["page"] = page_obj.previous_page_number()
+        previous_querystring = urlencode(query_params, doseq=True)
+
+    return render(
+        request,
+        "formulas/history.html",
+        {
+            "jobs": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "search_query": search_query,
+            "active_status": active_status,
+            "status_choices": FormulaJob.Status,
+            "next_querystring": next_querystring,
+            "previous_querystring": previous_querystring,
+        },
+    )
 
 
 def system_page(request):
@@ -118,6 +159,8 @@ def mission_status_api(request, job_id):
 
     return JsonResponse(
         {
+            "id": str(job.id),
+            "mission_code": job.mission_code,
             "status": job.status,
             "progress": job.progress,
             "stage_code": job.stage_code,

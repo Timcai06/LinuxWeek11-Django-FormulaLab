@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import connection
 
 from apps.formulas.models import FormulaJob
-from apps.formulas.services.model_state import SUCCESS_STATUSES, get_model_status, get_worker_heartbeat
+from apps.formulas.services.model_state import classify_model_state, get_model_status, get_worker_heartbeat
 from apps.formulas.services.telemetry import get_redis_client
 
 
@@ -58,7 +58,8 @@ def _check_model(redis_client):
         }
     try:
         model = get_model_status(redis_client)
-        model["ok"] = (model.get("status") or "").lower() in SUCCESS_STATUSES
+        model["state"] = classify_model_state(model)
+        model["ok"] = model["state"] == "ready"
         return model
     except Exception as exc:
         return {
@@ -67,9 +68,9 @@ def _check_model(redis_client):
             "message": None,
             "last_warmup_at": None,
             "last_error": None,
+            "state": "error",
             "error": _error_message(exc),
         }
-
 
 def _check_media():
     probe_path = None
@@ -116,6 +117,7 @@ def _last_job():
             return None
         return {
             "id": str(job.id),
+            "mission_code": job.mission_code,
             "status": job.status,
             "stage_code": job.stage_code,
             "stage_label": job.stage_label,

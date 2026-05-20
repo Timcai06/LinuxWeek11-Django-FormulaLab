@@ -12,6 +12,14 @@ def tiny_png(name: str = "formula.png") -> SimpleUploadedFile:
 
 
 class FormulaJobModelTests(TestCase):
+    def test_formula_job_generates_human_readable_mission_code(self):
+        first = FormulaJob.objects.create(original_image=tiny_png("first.png"))
+        second = FormulaJob.objects.create(original_image=tiny_png("second.png"))
+        today = timezone.localdate().strftime("%Y%m%d")
+
+        self.assertRegex(first.mission_code, rf"^FL-{today}-\d{{4}}$")
+        self.assertEqual(second.mission_code, f"FL-{today}-{int(first.mission_code.rsplit('-', 1)[1]) + 1:04d}")
+
     def test_formula_job_retry_relation_keeps_original_failed_job(self):
         failed = FormulaJob.objects.create(original_image=tiny_png("failed.png"), status=FormulaJob.Status.FAILED)
         retry = FormulaJob.objects.create(original_image=failed.original_image, retry_of=failed)

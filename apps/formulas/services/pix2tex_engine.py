@@ -8,6 +8,8 @@ _MODEL_LOCK = Lock()
 
 
 class Pix2TexEngine:
+    name = "pix2tex"
+
     def warmup(self) -> None:
         self._load_model()
 

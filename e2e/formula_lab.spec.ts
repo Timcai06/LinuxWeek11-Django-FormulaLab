@@ -43,7 +43,7 @@ test.describe("Formula Lab real-model flow", () => {
       await expect(page.getByRole("heading", { name: "RECOGNITION TIMELINE" })).toBeVisible();
 
       await page.getByRole("link", { name: "SYSTEM" }).click();
-      await expect(page.getByRole("heading", { name: "TELEMETRY MATRIX" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "OPERATIONS DASHBOARD" })).toBeVisible();
       await expect(page.getByRole("button", { name: "WARMUP MODEL" })).toBeVisible();
     });
   }

@@ -1,71 +1,80 @@
 # Formula Lab Mission Control
+![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white) ![Celery](https://img.shields.io/badge/celery-%2337814A.svg?style=for-the-badge&logo=celery&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-SpaceX-inspired formula recognition mission control for Linux System and Programming Practice.
+A high-performance, asynchronous formula recognition workbench inspired by aerospace control centers. Upload mathematical formula images and convert them to interactive LaTeX code through a configurable OCR engine. The current local development baseline uses **PaddleOCR Formula Recognition** for higher accuracy, while `pix2tex` remains available as a comparison engine.
 
-## 中文说明
+## 🌟 Key Features | 核心特性
 
-本项目用于《Linux系统与编程实践》大实验 2：上传公式图片，使用 pix2tex / LaTeX-OCR 识别为 LaTeX，并在网页中展示可复制源码和 KaTeX 渲染预览。
+- **🌌 Aerospace Monochrome UI**: A meticulously crafted, hardware-accelerated black-and-white UI featuring glassmorphism and dynamic micro-animations.
+- **⚡ Asynchronous AI Pipeline**: Utilizes **Celery** and **Redis** to offload heavy OCR inference, ensuring the web interface remains responsive.
+- **🧠 Configurable Recognition Engine**: Supports PaddleOCR Formula Recognition as the local default and keeps `pix2tex` as a fallback/comparison path.
+- **🐳 Zero-Config Docker Engine**: Fully containerized environment using Docker Compose. Just build and launch. (Now optimized with global/Tsinghua PyPI mirrors for lightning-fast deployments).
+- **📝 Real-time KaTeX Engine**: Instant preview of parsed formulas via KaTeX integration, with one-click copy to clipboard functionality.
+- **🛡️ Mission Resilience**: Comprehensive task tracking, automated retry mechanisms for failed inferences, and persistent mission logs backed by PostgreSQL.
 
-第一版实现包含：
+---
 
-- Landing page、Workbench、Mission Progress、Mission Report、Mission Log、System Telemetry
-- Django 表单上传与 PNG/JPG/JPEG 真实图片校验
-- PostgreSQL 持久化任务历史
-- Redis + Celery 异步识别任务
-- pix2tex 懒加载识别引擎
-- 失败任务重试与历史记录
-- Docker Compose 运行方案
+## 📖 中文说明 (Project Context)
 
-## Quick Start
+本项目为《Linux系统与编程实践》大实验设计。核心业务流：
+1. 用户在 **Workbench** (工作台) 上传公式图片。
+2. 任务持久化至 **PostgreSQL** 并被推入 **Redis** 消息队列。
+3. 后台 **Celery Worker** 拦截任务，加载 PaddleOCR Formula Recognition 或 `pix2tex` 模型执行推理。
+4. 前端通过 **Mission Progress** (任务进度页) 追踪状态。
+5. 完成后在 **Result** (报告页) 展示格式化后的 LaTeX 源码与 KaTeX 实时渲染画面。
 
+## 🚀 Quick Start | 快速启动
+
+1. Clone the repository and configure environments:
 ```bash
 cp .env.example .env
+```
+
+2. Launch the entire mission stack via Docker Compose:
+```bash
+# This will build and spin up the Web Server, Redis, DB, and Celery Worker
 make up
 ```
 
-Open: http://localhost:8000/
+3. Access the Mission Control Center:
+👉 Open http://localhost:8000/ in your browser.
 
-## Useful Commands
+## 🛠️ Local Development | 本地开发
 
-```bash
-make verify
-make warmup
-make e2e
-make test
-```
-
-## Local Development
-
-本机开发可使用项目内 `.conda` 环境：
+当前本机开发优先使用 PaddleOCR Formula Recognition。依赖和模型权重已经落在本机 `.conda` 与 `.model-cache/` 中，启动时直接运行：
 
 ```bash
-make dev-migrate
-make dev
+make local
+```
+👉 Open http://127.0.0.1:8000/
+
+`make local` 会并行启动 Redis、Django Web 和 Celery Worker，并默认设置：
+
+```bash
+FORMULA_LAB_OCR_ENGINE=paddle
 ```
 
-Open: http://127.0.0.1:8000/
+如果需要和旧模型做对照，可以运行：
 
-本机单元测试：
+```bash
+make local-pix2tex
+```
 
+## 🧪 Testing & CI | 测试与验证
+
+Run backend unit tests locally:
 ```bash
 make dev-check
 make dev-test
 ```
 
-开发模式默认使用项目内 `db.sqlite3` 和 `redis://localhost:6379/0`。不启动 Redis/Celery worker 时，可以浏览页面和验证基础接口，但公式识别异步任务不会完整执行。Docker Compose 是最终运行方式。
-
-本机完整识别链路需要三个终端：
-
+Run Playwright E2E Tests (End-to-End browser simulation):
 ```bash
-make dev-redis
-make dev-worker
-make dev
+make e2e
 ```
 
-其中 `make dev-redis` 只启动 Redis 容器，不构建 Formula Lab 镜像；Web 和 worker 仍使用本机 `.conda` 环境。
+## 📚 Documentation 
 
-## Documentation
-
-- [文档索引](docs/00-文档索引.md)
-- [实施计划](docs/superpowers/plans/2026-05-19-formula-lab-mission-control.md)
-- [UI 设计语言](DESIGN.md)
+- [文档索引 (Document Index)](docs/00-文档索引.md)
+- [实施计划 (Execution Plan)](docs/superpowers/plans/2026-05-19-formula-lab-mission-control.md)
+- [UI 设计语言 (Design System)](DESIGN.md)

@@ -11,6 +11,7 @@ from apps.formulas.services.model_state import (
     MODEL_MESSAGE_KEY,
     MODEL_STATUS_KEY,
     WORKER_HEARTBEAT_KEY,
+    classify_model_state,
     get_model_status,
     get_worker_heartbeat,
 )
@@ -71,6 +72,7 @@ class HealthSnapshotTests(TestCase):
         self.assertTrue(snapshot["redis"]["ok"])
         self.assertTrue(snapshot["worker"]["ok"])
         self.assertEqual(snapshot["model"]["status"], "ready")
+        self.assertEqual(snapshot["model"]["state"], "ready")
         self.assertEqual(snapshot["queues"]["queued"], 1)
         self.assertIsNotNone(snapshot["last_job"])
 
@@ -99,6 +101,13 @@ class HealthSnapshotTests(TestCase):
 
 
 class ModelStateTests(SimpleTestCase):
+    def test_model_state_classifies_ui_indicator_states(self):
+        self.assertEqual(classify_model_state({"status": "ready"}), "ready")
+        self.assertEqual(classify_model_state({"status": "warming"}), "warming")
+        self.assertEqual(classify_model_state({"status": "error"}), "error")
+        self.assertEqual(classify_model_state({"status": None, "last_error": "2026-05-19T12:00:00+08:00"}), "warning")
+        self.assertEqual(classify_model_state({"status": None}), "unknown")
+
     def test_model_state_decodes_bytes_and_strings(self):
         redis_client = FakeRedis()
         redis_client.values = {

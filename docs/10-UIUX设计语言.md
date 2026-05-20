@@ -221,7 +221,7 @@ Django Web
 PostgreSQL
 Redis
 Celery Worker
-pix2tex Model
+Recognition Model
 Last Recognition Job
 ```
 

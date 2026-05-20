@@ -13,15 +13,12 @@
             <p>IMAGE ACQUISITION</p>
             <h1>WORKBENCH</h1>
         </div>
-        <div class="command-strip" aria-label="Upload constraints">
-            <span>PNG / JPG / JPEG</span>
-            <span>MAX 10MB</span>
-            <span>LOCAL QUEUE</span>
-        </div>
+
         <form id="upload-form" class="upload-console" action="{% url 'create-job' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label class="drop-zone" for="id_image" data-drop-zone>
                 {{ form.image }}
+                <div class="hud-corners" aria-hidden="true"></div>
                 <span class="preview-stage">
                     <span class="drop-reticle" aria-hidden="true"></span>
                     <img data-preview-image hidden alt="Selected formula preview">
@@ -42,8 +39,13 @@
     <aside class="telemetry-panel" aria-label="Workbench telemetry">
         <div class="telemetry-section">
             <span class="telemetry-label">MODEL STATUS</span>
-            <strong>{{ model_status.status|default:"unknown"|upper }}</strong>
-            <p>{{ model_status.message|default:"Awaiting pix2tex telemetry" }}</p>
+            <div class="model-status-line">
+                <span class="model-status-light is-{{ model_status.state|default:'unknown' }}" aria-hidden="true"></span>
+                <strong class="status-readout is-{{ model_status.state|default:'unknown' }}">{{ model_status.status|default:"unknown"|upper }}</strong>
+            </div>
+            {% if model_status.state != "ready" %}
+                <p>{{ model_status.message|default:"Awaiting recognition model telemetry" }}</p>
+            {% endif %}
         </div>
         <div class="telemetry-section queue-grid">
             <span class="telemetry-label">QUEUE STATUS</span>
@@ -55,16 +57,15 @@
             </dl>
         </div>
         <div class="telemetry-section">
-            <span class="telemetry-label">SUPPORTED FORMATS</span>
-            <p>PNG, JPG, JPEG</p>
-        </div>
-        <div class="telemetry-section">
             <span class="telemetry-label">RECENT MISSIONS</span>
             <ol class="recent-list">
                 {% for job in recent_jobs %}
                     <li>
-                        <a href="{% url 'mission-progress' job.id %}">{{ job.id }}</a>
-                        <span>{{ job.status|upper }} / {{ job.stage_label }}</span>
+                        <a href="{% url 'mission-progress' job.id %}">{{ job.mission_code }}</a>
+                        <div class="recent-meta">
+                            <span class="status-badge status-{{ job.status|lower }}">{{ job.status|upper }}</span>
+                            <span class="stage-badge">{{ job.stage_label }}</span>
+                        </div>
                     </li>
                 {% empty %}
                     <li><span>No missions recorded</span></li>

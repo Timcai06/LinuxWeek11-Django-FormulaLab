@@ -2,12 +2,18 @@
 
 ## 运行目标
 
-Formula Lab 只采用 Docker Compose 作为运行方式。Mac 开发和 Ubuntu 验收都使用同一套 Compose 配置，减少环境差异。
+Formula Lab 的 Linux 验收与最终部署仍以 Docker Compose 为目标；Mac 本机开发阶段可以直接使用 `.conda` 环境和 `make local` 提高迭代速度。
 
 目标命令：
 
 ```bash
 docker compose up --build
+```
+
+本机开发命令：
+
+```bash
+make local
 ```
 
 启动后应包含：
@@ -17,7 +23,7 @@ docker compose up --build
 - PostgreSQL 数据库。
 - Redis 消息队列。
 
-镜像构建使用 `uv pip install --system` 安装 Python 依赖，并通过 BuildKit cache 缓存 `/root/.cache/uv`。这样比直接 `pip install -r requirements.txt` 更适合包含 `torch`、`torchvision`、`pix2tex` 的重依赖构建。
+镜像构建使用 `uv pip install --system` 安装 Python 依赖，并通过 BuildKit cache 缓存 `/root/.cache/uv`。为了缓解大 wheel 下载超时，Dockerfile 设置了 `UV_HTTP_TIMEOUT=300`，并配置 PyPI 镜像源。
 
 ## 服务设计
 
@@ -28,7 +34,7 @@ web
 
 worker
   Celery worker
-  调用 pix2tex 模型
+  调用公式识别模型
 
 db
   PostgreSQL
@@ -63,7 +69,7 @@ http://localhost:8000/
 - 启动 Celery。
 - 加载 Django settings。
 - 从 Redis 获取任务。
-- 调用 pix2tex。
+- 调用当前配置的公式识别模型。
 - 写入 PostgreSQL。
 
 worker 和 web 使用同一个镜像，但启动命令不同。
@@ -93,10 +99,10 @@ Redis 不保存业务数据，只作为消息队列。
 ```text
 postgres_data   保存数据库
 media_data      保存上传图片
-model_cache     保存 pix2tex 模型缓存
+model_cache     保存公式识别模型缓存
 ```
 
-模型缓存很重要，因为 pix2tex 可能需要下载模型权重。如果每次重建容器都重新下载，会明显影响开发体验和验收稳定性。
+模型缓存很重要，因为 PaddleOCR 和 pix2tex 都可能需要下载模型权重。如果每次重建容器都重新下载，会明显影响开发体验和验收稳定性。
 
 ## 环境变量
 
@@ -108,6 +114,8 @@ DJANGO_SECRET_KEY=change-me
 DATABASE_URL=postgres://formula_lab:formula_lab_password@db:5432/formula_lab
 REDIS_URL=redis://redis:6379/0
 MEDIA_ROOT=/app/media
+FORMULA_LAB_OCR_ENGINE=paddle
+FORMULA_LAB_PADDLE_MODEL_NAME=PP-FormulaNet_plus-S
 ```
 
 第一版不保存真实密钥，不连接外部服务。

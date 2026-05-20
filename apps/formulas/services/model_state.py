@@ -8,6 +8,7 @@ WORKER_HEARTBEAT_KEY = "formula_lab:worker:heartbeat"
 
 SUCCESS_STATUSES = {"ready", "warmed", "success", "succeeded"}
 ERROR_STATUSES = {"error", "failed", "failure"}
+WARMING_STATUSES = {"warming", "loading", "queued", "pending"}
 
 
 def _decode(value):
@@ -38,6 +39,19 @@ def get_model_status(redis_client):
         "last_warmup_at": _decode(redis_client.get(MODEL_LAST_WARMUP_KEY)),
         "last_error": _decode(redis_client.get(MODEL_LAST_ERROR_KEY)),
     }
+
+
+def classify_model_state(model):
+    status = (model.get("status") or "").lower()
+    if status in SUCCESS_STATUSES:
+        return "ready"
+    if status in ERROR_STATUSES:
+        return "error"
+    if status in WARMING_STATUSES:
+        return "warming"
+    if model.get("last_error"):
+        return "warning"
+    return "unknown"
 
 
 def write_worker_heartbeat(redis_client):

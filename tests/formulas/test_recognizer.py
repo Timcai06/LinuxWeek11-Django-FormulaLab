@@ -3,12 +3,13 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import ModuleType
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase, TestCase, override_settings
 from PIL import Image
 
 from apps.formulas.models import FormulaJob
+from apps.formulas.services.paddle_formula_engine import _extract_formula
 from apps.formulas.services.recognizer import prepare_formula_image, recognize_formula
 
 
@@ -65,6 +66,50 @@ class Pix2TexEngineTests(SimpleTestCase):
         return path
 
 
+class OcrEngineTests(SimpleTestCase):
+    def tearDown(self):
+        from apps.formulas.services import ocr_engines
+
+        ocr_engines._ENGINE_CACHE.clear()
+
+    def test_factory_defaults_to_pix2tex(self):
+        from apps.formulas.services.ocr_engines import get_formula_engine
+
+        engine = get_formula_engine()
+
+        self.assertEqual(engine.name, "pix2tex")
+
+    @override_settings(FORMULA_LAB_OCR_ENGINE="paddle")
+    def test_factory_can_select_paddle_without_importing_pix2tex_model(self):
+        fake_engine_class = Mock()
+        fake_engine_class.return_value.name = "paddle"
+
+        with patch("apps.formulas.services.paddle_formula_engine.PaddleFormulaEngine", fake_engine_class):
+            from apps.formulas.services.ocr_engines import get_formula_engine
+
+            engine = get_formula_engine()
+
+        self.assertEqual(engine.name, "paddle")
+        fake_engine_class.assert_called_once_with()
+
+    @override_settings(FORMULA_LAB_OCR_ENGINE="missing")
+    def test_factory_rejects_unknown_engine(self):
+        from apps.formulas.services.ocr_engines import get_formula_engine
+
+        with self.assertRaisesMessage(ValueError, "Unsupported formula OCR engine"):
+            get_formula_engine()
+
+    def test_paddle_formula_result_extracts_rec_formula(self):
+        result = SimpleResult({"res": {"rec_formula": r"\int_a^b f(x)\,dx"}})
+
+        self.assertEqual(_extract_formula([result]), r"\int_a^b f(x)\,dx")
+
+
+class SimpleResult:
+    def __init__(self, value):
+        self.json = value
+
+
 @override_settings(FORMULA_LAB_MAX_IMAGE_SIDE=1600)
 class RecognizerTests(TestCase):
     def setUp(self):
@@ -82,18 +127,20 @@ class RecognizerTests(TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         Image.new("RGB", (24, 12), (255, 255, 255)).save(source)
         job = FormulaJob.objects.create(original_image="formula_uploads/source.png")
+        engine = Mock()
+        engine.name = "pix2tex"
+        engine.recognize.return_value = "$$  x   +   y  $$"
 
-        with patch("apps.formulas.services.recognizer.Pix2TexEngine") as engine_class:
-            engine_class.return_value.recognize.return_value = "$$  x   +   y  $$"
-
+        with patch("apps.formulas.services.recognizer.get_formula_engine", return_value=engine):
             result = recognize_formula(job)
 
         job.refresh_from_db()
         self.assertEqual(result, "x + y")
+        self.assertEqual(job.engine_name, "pix2tex")
         self.assertTrue(job.preprocessed_image.name.startswith("formula_preprocessed/"))
         preprocessed_path = self.media_root / job.preprocessed_image.name
         self.assertTrue(preprocessed_path.exists())
-        engine_class.return_value.recognize.assert_called_once_with(str(preprocessed_path))
+        engine.recognize.assert_called_once_with(str(preprocessed_path))
 
     def test_prepare_formula_image_only_preprocesses_and_updates_job(self):
         source = self.media_root / "formula_uploads" / "source.png"

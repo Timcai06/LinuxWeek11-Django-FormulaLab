@@ -48,12 +48,18 @@
         }
     }
 
+    const consoleTabs = document.querySelector(".console-tabs");
+    const tabIndices = { "raw": 0, "block": 1, "inline": 2 };
+
     function selectFormat(name) {
         current = name;
         output.value = formats[name] || "";
         tabs.forEach((tab) => {
             tab.setAttribute("aria-selected", tab.dataset.formatTab === name ? "true" : "false");
         });
+        if (consoleTabs) {
+            consoleTabs.style.setProperty("--active-index", tabIndices[name] !== undefined ? tabIndices[name] : 1);
+        }
         renderPreview(output.value);
     }
 
@@ -68,7 +74,7 @@
             await navigator.clipboard.writeText(output.value);
             copyButton.textContent = "COPIED";
             window.setTimeout(() => {
-                copyButton.textContent = "COPY CURRENT";
+                copyButton.textContent = "COPY";
             }, 1100);
         });
     }

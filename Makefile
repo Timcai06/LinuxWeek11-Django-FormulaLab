@@ -2,8 +2,9 @@ PYTHON ?= ./.conda/bin/python
 HOST ?= 127.0.0.1
 PORT ?= 8000
 DOCKER_BUILDKIT ?= 1
+OCR_ENGINE ?= paddle
 
-.PHONY: up down logs web-logs worker-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis docker-build
+.PHONY: up down logs web-logs worker-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis docker-build local local-pix2tex paddle-web paddle-worker paddle-redis
 
 up:
 	docker compose up --build
@@ -43,6 +44,23 @@ dev-redis:
 
 dev-worker:
 	DJANGO_SETTINGS_MODULE=config.settings.dev $(PYTHON) -m celery -A config worker --loglevel=info --pool=solo
+
+local:
+	@echo "Starting Redis, Django, and Celery with FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE)"
+	@echo "Open http://$(HOST):$(PORT)/ after Django is ready. Press Ctrl-C to stop."
+	FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) $(MAKE) -j3 dev-redis dev-worker dev
+
+local-pix2tex:
+	$(MAKE) OCR_ENGINE=pix2tex local
+
+paddle-web:
+	FORMULA_LAB_OCR_ENGINE=paddle $(MAKE) dev
+
+paddle-worker:
+	FORMULA_LAB_OCR_ENGINE=paddle $(MAKE) dev-worker
+
+paddle-redis:
+	$(MAKE) dev-redis
 
 dev-migrate:
 	$(PYTHON) manage.py migrate

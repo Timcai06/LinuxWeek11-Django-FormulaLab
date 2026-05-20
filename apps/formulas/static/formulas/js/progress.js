@@ -14,6 +14,7 @@
     const reportLink = document.querySelector("[data-report-link]");
     const failureBox = document.querySelector("[data-failure]");
     const errorEl = document.querySelector("[data-error]");
+    const pulseDot = document.querySelector(".mission-tag .pulse-dot");
     const stageItems = Array.from(document.querySelectorAll("[data-stage-item]"));
     const stageOrder = stageItems.map((item) => item.dataset.stageItem);
 
@@ -26,12 +27,22 @@
     }
 
     function applyStatus(payload) {
-        statusEl.textContent = String(payload.status || "unknown").toUpperCase();
+        if (pulseDot) {
+            pulseDot.className = `pulse-dot status-${String(payload.status || "").toLowerCase()}`;
+        }
+        if (statusEl) {
+            statusEl.textContent = String(payload.status || "unknown").toUpperCase();
+        }
         if (progressStateEl) {
             progressStateEl.textContent = String(payload.status || "unknown").toUpperCase();
         }
         stageEl.textContent = payload.stage_label || "UNKNOWN";
-        messageEl.textContent = payload.stage_message || "";
+        if (payload.stage_code === "RESULT_READY" || payload.status === "succeeded") {
+            messageEl.style.display = "none";
+        } else {
+            messageEl.style.display = "";
+            messageEl.textContent = payload.stage_message || "";
+        }
         const progress = Number(payload.progress || 0);
         barEl.style.width = `${progress}%`;
         if (progressValueEl) {
@@ -69,6 +80,10 @@
         }
     }
 
+    if (barEl) {
+        const initialProgress = Number(barEl.dataset.initialProgress || 0);
+        barEl.style.width = `${initialProgress}%`;
+    }
     renderStages(root.dataset.currentStageCode || document.querySelector("[data-stage-item].is-active")?.dataset.stageItem || "UPLOAD_LOCKED");
     window.setTimeout(poll, 800);
 })();

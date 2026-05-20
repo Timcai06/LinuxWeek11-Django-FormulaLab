@@ -10,13 +10,17 @@
 <section class="mission-layout" data-status-url="{% url 'api-mission-status' job.id %}" data-report-url="{% url 'mission-report' job.id %}" data-current-stage-code="{{ job.stage_code }}">
     <div class="image-console">
         <div class="section-header">
-            <p>MISSION {{ job.id }}</p>
+            <div class="mission-tag">
+                <span class="pulse-dot status-{{ job.status|lower }}"></span>
+                <span class="mission-label">MISSION</span>
+                <strong class="mission-code">{{ job.mission_code }}</strong>
+            </div>
             <h1>RECOGNITION PROGRESS</h1>
         </div>
         <img src="{{ job.original_image.url }}" alt="Original formula upload">
         <dl class="metadata-grid">
-            <div><dt>STATUS</dt><dd data-status>{{ job.status|upper }}</dd></div>
             <div><dt>STAGE</dt><dd data-stage>{{ job.stage_label }}</dd></div>
+            <div><dt>MISSION CODE</dt><dd>{{ job.mission_code }}</dd></div>
             <div><dt>ENGINE</dt><dd>{{ job.engine_name }}</dd></div>
             <div><dt>CREATED</dt><dd>{{ job.created_at|date:"Y-m-d H:i:s" }}</dd></div>
         </dl>
@@ -29,8 +33,8 @@
             </div>
             <span data-progress-state>{{ job.status|upper }}</span>
         </div>
-        <div class="progress-bar"><span data-progress-bar style="width: {{ job.progress }}%;"></span></div>
-        <p class="stage-message" data-message>{{ job.stage_message }}</p>
+        <div class="progress-bar"><span data-progress-bar data-initial-progress="{{ job.progress }}"></span></div>
+        <p class="stage-message" data-message {% if job.stage_code == 'RESULT_READY' or job.status == 'succeeded' %}style="display: none;"{% endif %}>{{ job.stage_message }}</p>
         <ol class="stage-list">
             <li data-stage-item="UPLOAD_LOCKED">UPLOAD LOCKED</li>
             <li data-stage-item="QUEUED">QUEUED</li>
