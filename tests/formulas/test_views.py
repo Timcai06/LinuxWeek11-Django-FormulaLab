@@ -14,7 +14,13 @@ SPLIT_VIEW_TEST_MODULES = (
     "tests.formulas.views.test_system_views",
 )
 
-FormulaViewTests = FormulaMissionViewTests
+class FormulaViewTests(
+    FormulaWorkbenchViewTests,
+    FormulaMissionViewTests,
+    FormulaProjectViewTests,
+    FormulaSystemViewTests,
+):
+    pass
 
 
 def load_tests(loader, tests, pattern):
