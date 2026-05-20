@@ -39,6 +39,14 @@ make up
 3. Access the Mission Control Center:
 👉 Open http://localhost:8000/ in your browser.
 
+The Docker image installs both the base web stack and PaddleOCR Formula Recognition dependencies. The default Compose environment uses:
+
+```bash
+FORMULA_LAB_OCR_ENGINE=paddle
+```
+
+Model files are cached under `.model-cache/` through a Compose volume mount, so the first warmup or recognition may be slow, but later runs reuse the downloaded Paddle model.
+
 ## 🛠️ Local Development | 本地开发
 
 当前本机开发优先使用 PaddleOCR Formula Recognition。依赖和模型权重已经落在本机 `.conda` 与 `.model-cache/` 中，启动时直接运行：

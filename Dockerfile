@@ -19,11 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     libglib2.0-0 \
     libgl1 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
+COPY requirements-paddle.txt /app/requirements-paddle.txt
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system -r /app/requirements.txt
+    uv pip install --system -r /app/requirements.txt -r /app/requirements-paddle.txt
 
 COPY . /app
 
