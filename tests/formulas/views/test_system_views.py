@@ -10,6 +10,9 @@ class FormulaSystemViewTests(FormulaViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "/static/formulas/vendor/katex/katex.min.css")
         self.assertContains(response, "/static/formulas/vendor/katex/katex.min.js")
+        self.assertContains(response, "/static/formulas/css/components/console.css")
+        self.assertContains(response, "/static/formulas/css/components/katex-preview.css")
+        self.assertContains(response, "/static/formulas/css/components/dashboard.css")
         self.assertNotContains(response, "cdn.jsdelivr.net/npm/katex")
 
     def test_system_renders_summary_first_and_compact_service_list(self):
