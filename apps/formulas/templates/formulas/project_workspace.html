@@ -147,6 +147,11 @@
             <aside class="paper-preview-notes">
                 <span class="empty-kicker">HTML FIRST</span>
                 <p>This preview is built for fast paper-shape checking. PDF compilation will become an async export artifact later.</p>
+                <div class="export-actions" aria-label="Export files">
+                    <span>EXPORT FILES</span>
+                    <a class="button button-secondary" href="{% url 'export-project' project.id 'tex' %}">TEX</a>
+                    <a class="button button-secondary" href="{% url 'export-project' project.id 'markdown' %}">MARKDOWN</a>
+                </div>
             </aside>
         </div>
     </section>

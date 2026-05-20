@@ -412,6 +412,25 @@
     line-height: 1.55;
 }
 
+.export-actions {
+    display: grid;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.export-actions > span {
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+}
+
+.export-actions .button {
+    width: 100%;
+    justify-content: center;
+}
+
 .formula-items-panel .panel-heading {
     justify-content: flex-start;
 }

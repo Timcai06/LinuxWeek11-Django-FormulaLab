@@ -239,6 +239,79 @@ class FormulaMissionViewTests(TestCase):
         self.assertEqual(response.context["review_items"][0]["id"], str(item.id))
         self.assertEqual(response.context["review_items"][0]["latex"], item.latex_current)
 
+    def test_project_workspace_renders_export_download_links(self):
+        project = PaperProject.objects.create(name="Export UI")
+        batch = BatchMission.objects.create(project=project, title="Export batch")
+        FormulaItem.objects.create(project=project, batch=batch, latex_current=r"\alpha+\beta")
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "EXPORT FILES")
+        self.assertContains(response, f'href="/projects/{project.id}/export/tex/"')
+        self.assertContains(response, f'href="/projects/{project.id}/export/markdown/"')
+
+    def test_project_tex_export_downloads_equation_file(self):
+        project = PaperProject.objects.create(name="Export paper")
+        batch = BatchMission.objects.create(project=project, title="Chapter 2")
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\alpha+\beta",
+            status=FormulaItem.Status.CONFIRMED,
+            sort_order=1,
+        )
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\gamma+\delta",
+            status=FormulaItem.Status.REJECTED,
+            sort_order=2,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/export/tex/")
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/plain; charset=utf-8")
+        self.assertIn('attachment; filename="FP-', response["Content-Disposition"])
+        self.assertIn(".tex", response["Content-Disposition"])
+        self.assertIn("% Formula Lab LaTeX export", content)
+        self.assertIn("% Project: Export paper", content)
+        self.assertIn("% Formula: ", content)
+        self.assertIn(r"\begin{equation}", content)
+        self.assertIn(r"\alpha+\beta", content)
+        self.assertIn(r"\end{equation}", content)
+        self.assertNotIn(r"\gamma+\delta", content)
+
+    def test_project_markdown_export_downloads_math_blocks(self):
+        project = PaperProject.objects.create(name="Markdown paper")
+        batch = BatchMission.objects.create(project=project, title="Markdown batch")
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\sum_i x_i",
+            status=FormulaItem.Status.AUTO_READY,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/export/markdown/")
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('attachment; filename="FP-', response["Content-Disposition"])
+        self.assertIn(".md", response["Content-Disposition"])
+        self.assertIn("# Markdown paper", content)
+        self.assertIn("## Markdown batch", content)
+        self.assertIn("$$", content)
+        self.assertIn(r"\sum_i x_i", content)
+
+    def test_project_export_rejects_unknown_format(self):
+        project = PaperProject.objects.create(name="Invalid export")
+
+        response = self.client.get(f"/projects/{project.id}/export/pdf/")
+
+        self.assertEqual(response.status_code, 404)
+
     def test_review_formula_item_updates_latex_and_marks_confirmed(self):
         project = PaperProject.objects.create(name="Review post")
         batch = BatchMission.objects.create(project=project, title="Proof formulas")

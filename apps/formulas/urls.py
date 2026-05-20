@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.landing, name="landing"),
     path("projects/", views.projects, name="projects"),
     path("projects/<uuid:project_id>/", views.project_workspace, name="project-workspace"),
+    path("projects/<uuid:project_id>/export/<str:format_name>/", views.export_project, name="export-project"),
     path("workbench/", views.workbench, name="workbench"),
     path("jobs/", views.create_job, name="create-job"),
     path("formula-items/<uuid:item_id>/review/", views.review_formula_item, name="review-formula-item"),

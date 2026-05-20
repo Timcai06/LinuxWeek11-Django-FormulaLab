@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -11,6 +11,12 @@ from django.views.decorators.http import require_POST
 
 from apps.formulas.forms import FormulaUploadForm
 from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
+from apps.formulas.services.export_artifacts import (
+    collect_export_formulas,
+    export_filename,
+    render_latex_export,
+    render_markdown_export,
+)
 from apps.formulas.services.health import build_health_snapshot
 from apps.formulas.services.latex_formats import build_latex_formats, correct_latex_result
 from apps.formulas.tasks import run_formula_job, warmup_model_task
@@ -136,6 +142,23 @@ def project_workspace(request, project_id):
             "overview": overview,
         },
     )
+
+
+def export_project(request, project_id, format_name):
+    project = get_object_or_404(PaperProject, id=project_id)
+    formulas = collect_export_formulas(project)
+    if format_name == "tex":
+        body = render_latex_export(project, formulas)
+        filename = export_filename(project, "tex")
+    elif format_name == "markdown":
+        body = render_markdown_export(project, formulas)
+        filename = export_filename(project, "md")
+    else:
+        raise Http404("Unsupported export format")
+
+    response = HttpResponse(body, content_type="text/plain; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 
 @require_POST
