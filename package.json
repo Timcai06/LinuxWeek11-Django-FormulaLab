@@ -2,9 +2,16 @@
   "name": "formula-lab",
   "private": true,
   "scripts": {
+    "build:layout": "esbuild frontend/formulas/layout_intelligence.js --bundle --format=iife --global-name=FormulaLayoutBundle --outfile=apps/formulas/static/formulas/js/generated/layout-intelligence.js",
+    "build": "npm run build:layout",
+    "check:frontend": "npm run build:layout && node --check frontend/formulas/layout_intelligence.js",
     "e2e": "playwright test"
   },
+  "dependencies": {
+    "@chenglou/pretext": "^0.0.7"
+  },
   "devDependencies": {
-    "@playwright/test": "^1.45.0"
+    "@playwright/test": "^1.45.0",
+    "esbuild": "^0.25.0"
   }
 }

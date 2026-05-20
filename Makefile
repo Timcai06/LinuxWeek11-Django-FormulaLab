@@ -4,7 +4,7 @@ PORT ?= 8000
 DOCKER_BUILDKIT ?= 1
 OCR_ENGINE ?= paddle
 
-.PHONY: up down logs web-logs worker-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis docker-build local local-pix2tex paddle-web paddle-worker paddle-redis
+.PHONY: up down logs web-logs worker-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis docker-build local local-pix2tex paddle-web paddle-worker paddle-redis frontend-build frontend-check
 
 up:
 	docker compose up --build
@@ -79,6 +79,12 @@ verify:
 
 warmup:
 	./scripts/warmup.sh
+
+frontend-build:
+	npm run build
+
+frontend-check:
+	npm run check:frontend
 
 e2e:
 	npm run e2e

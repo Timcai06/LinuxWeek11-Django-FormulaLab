@@ -25,6 +25,8 @@ make local
 
 镜像构建使用 `uv pip install --system` 安装 Python 依赖，并通过 BuildKit cache 缓存 `/root/.cache/uv`。为了缓解大 wheel 下载超时，Dockerfile 设置了 `UV_HTTP_TIMEOUT=300`，并配置 PyPI 镜像源。
 
+前端布局智能使用 Node 构建层生成静态 bundle。Docker 构建时先在 Node stage 运行 `npm run build`，再把生成的 `layout-intelligence.js` 复制进最终 Python 镜像。最终运行时仍然只有 Django、Celery、PostgreSQL 和 Redis，不启动 Node 服务。
+
 ## 服务设计
 
 ```text
@@ -123,6 +125,24 @@ FORMULA_LAB_PADDLE_MODEL_NAME=PP-FormulaNet_plus-S
 ## 前端与静态资源
 
 第一版使用 Tailwind CDN 辅助布局，同时保留本地 CSS 作为设计语言落地层。
+
+Pretext 布局智能源码位于：
+
+```text
+frontend/formulas/layout_intelligence.js
+```
+
+本机修改前端布局智能后运行：
+
+```bash
+make frontend-build
+```
+
+生成的浏览器静态资源位于：
+
+```text
+apps/formulas/static/formulas/js/generated/layout-intelligence.js
+```
 
 视觉资产放在：
 

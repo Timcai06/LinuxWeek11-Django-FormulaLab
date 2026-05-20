@@ -33,7 +33,7 @@
                     <a href="{% url 'mission-progress' job.id %}">{{ job.mission_code }}</a>
                     <span>{{ job.status|upper }}</span>
                 </div>
-                <p>{{ job.stage_label }} / {{ job.stage_message }}</p>
+                <p class="timeline-summary" data-layout-summary>{{ job.stage_label }} / {{ job.stage_message }}</p>
                 <details>
                     <summary>TIMINGS</summary>
                     <dl class="metadata-grid">
@@ -76,4 +76,8 @@
         <p class="history-count">Showing {{ paginator.count }} of {{ paginator.count }} missions</p>
     {% endif %}
 </section>
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'formulas/js/history.js' %}"></script>
 {% endblock %}

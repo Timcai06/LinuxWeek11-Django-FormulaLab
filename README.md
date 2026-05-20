@@ -68,6 +68,12 @@ FORMULA_LAB_OCR_ENGINE=paddle
 make local-pix2tex
 ```
 
+Report and history pages use a Node-built layout intelligence bundle based on `@chenglou/pretext`. If files under `frontend/` change, rebuild the browser asset before running or committing:
+
+```bash
+make frontend-build
+```
+
 ## 🧪 Testing & CI | 测试与验证
 
 Run backend unit tests locally:
@@ -84,5 +90,4 @@ make e2e
 ## 📚 Documentation 
 
 - [文档索引 (Document Index)](docs/00-文档索引.md)
-- [实施计划 (Execution Plan)](docs/superpowers/plans/2026-05-19-formula-lab-mission-control.md)
 - [UI 设计语言 (Design System)](DESIGN.md)

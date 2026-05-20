@@ -36,10 +36,14 @@ test.describe("Formula Lab real-model flow", () => {
         await expect(page.locator("[data-latex-output]")).not.toHaveValue("");
       }
 
-      await page.getByRole("button", { name: "COPY CURRENT" }).click();
+      await expect(page.locator("[data-paper-fit-preview]")).toBeVisible();
+      await expect(page.locator("[data-paper-fit-width]")).not.toHaveText("--");
+      await expect(page.locator("[data-paper-fit-lines]")).not.toHaveText("--");
+
+      await page.getByRole("button", { name: "COPY" }).click();
       await expect(page.getByRole("button", { name: "COPIED" })).toBeVisible();
 
-      await page.locator(".console-actions").getByRole("link", { name: "MISSION LOG" }).click();
+      await page.locator(".console-actions").getByRole("link", { name: "LOG" }).click();
       await expect(page.getByRole("heading", { name: "RECOGNITION TIMELINE" })).toBeVisible();
 
       await page.getByRole("link", { name: "SYSTEM" }).click();

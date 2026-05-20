@@ -13,5 +13,6 @@ test-results/
 playwright-report/
 media/
 .model-cache/
+.superpowers/
 *.sqlite3
 .DS_Store

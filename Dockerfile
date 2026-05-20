@@ -1,3 +1,14 @@
+FROM node:22-slim AS frontend
+
+WORKDIR /app
+
+COPY package.json package-lock.json /app/
+RUN npm ci
+
+COPY frontend /app/frontend
+COPY apps/formulas/static/formulas/js /app/apps/formulas/static/formulas/js
+RUN npm run build
+
 FROM python:3.10-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.11 /uv /uvx /bin/
@@ -28,5 +39,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system -r /app/requirements.txt -r /app/requirements-paddle.txt
 
 COPY . /app
+COPY --from=frontend /app/apps/formulas/static/formulas/js/generated/layout-intelligence.js /app/apps/formulas/static/formulas/js/generated/layout-intelligence.js
 
 RUN chmod +x /app/scripts/entrypoint-web.sh /app/scripts/entrypoint-worker.sh /app/scripts/verify.sh

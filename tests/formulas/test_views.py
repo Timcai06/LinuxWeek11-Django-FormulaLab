@@ -38,6 +38,7 @@ class FormulaMissionViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "formulas/landing.html")
+        self.assertContains(response, "formulas/js/generated/layout-intelligence.js")
         self.assertContains(response, "FORMULA LAB")
         self.assertContains(response, "MISSION CONTROL FOR LATEX RECOGNITION")
         self.assertContains(response, "ENTER WORKBENCH")
@@ -152,6 +153,20 @@ class FormulaMissionViewTests(TestCase):
         self.assertContains(response, "FL-20260519-0001")
         self.assertNotContains(response, "FL-20260519-0021")
 
+    def test_history_exposes_layout_measured_summary(self):
+        FormulaJob.objects.create(
+            mission_code="FL-20260519-0301",
+            original_image="formula_uploads/source.png",
+            stage_label="LATEX POSTPROCESS",
+            stage_message="Long generated LaTeX summary that should be measured before the list settles.",
+        )
+
+        response = self.client.get("/history/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-layout-summary")
+        self.assertContains(response, "formulas/js/history.js")
+
     def test_report_renders_latex_format_context(self):
         job = FormulaJob.objects.create(
             original_image="formula_uploads/source.png",
@@ -173,6 +188,9 @@ class FormulaMissionViewTests(TestCase):
         self.assertContains(response, 'data-katex-preview')
         self.assertContains(response, "katex-surface")
         self.assertContains(response, "RENDERED OUTPUT")
+        self.assertContains(response, "data-paper-fit-preview")
+        self.assertContains(response, "data-paper-fit-width")
+        self.assertContains(response, "data-paper-fit-lines")
         self.assertContains(response, 'defer src="/static/formulas/js/result.js"')
 
     def test_create_job_accepts_valid_upload_creates_job_and_dispatches_worker(self):

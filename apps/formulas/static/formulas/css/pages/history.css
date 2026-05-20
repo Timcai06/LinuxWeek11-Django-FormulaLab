@@ -210,6 +210,29 @@
     font-size: 0.8rem;
 }
 
+.timeline-summary {
+    position: relative;
+    padding-right: 82px;
+    line-height: 20px;
+    font-family: var(--font-industrial);
+    overflow-wrap: anywhere;
+    word-break: normal;
+    transition: min-height 160ms ease;
+}
+
+.timeline-summary[data-layout-lines]::after {
+    content: attr(data-layout-lines) " lines";
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: rgba(255, 255, 255, 0.34);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .timeline-actions {
     display: flex;
     gap: 10px;
