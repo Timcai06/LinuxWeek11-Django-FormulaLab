@@ -6,6 +6,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.formulas.models import FormulaItem, PaperProject
+from apps.formulas.presenters.projects import project_workspace_context
+from apps.formulas.selectors.projects import get_project_workspace
 from apps.formulas.services.export_artifacts import (
     collect_export_formulas,
     export_filename,
@@ -68,7 +70,7 @@ def projects(request):
 
 
 def project_workspace(request, project_id):
-    project = get_object_or_404(PaperProject, id=project_id)
+    project = get_project_workspace(project_id)
     batches = project.batches.all()[:6]
     active_item_status = request.GET.get("status", "").strip().lower()
     valid_item_statuses = {choice.value for choice in FormulaItem.Status}
@@ -114,19 +116,19 @@ def project_workspace(request, project_id):
     return render(
         request,
         "formulas/project_workspace.html",
-        {
-            "project": project,
-            "batches": batches,
-            "formula_items": formula_items,
-            "paper_preview_items": paper_preview_items,
-            "review_items": review_items,
-            "overview": overview,
-            "active_item_status": active_item_status,
-            "status_filter_links": status_filter_links,
-            "item_page_obj": item_page_obj,
-            "next_item_querystring": next_item_querystring,
-            "previous_item_querystring": previous_item_querystring,
-        },
+        project_workspace_context(
+            project,
+            batches=batches,
+            formula_items=formula_items,
+            paper_preview_items=paper_preview_items,
+            review_items=review_items,
+            overview=overview,
+            active_item_status=active_item_status,
+            status_filter_links=status_filter_links,
+            item_page_obj=item_page_obj,
+            next_item_querystring=next_item_querystring,
+            previous_item_querystring=previous_item_querystring,
+        ),
     )
 
 

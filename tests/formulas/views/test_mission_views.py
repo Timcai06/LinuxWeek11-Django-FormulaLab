@@ -94,6 +94,8 @@ class FormulaMissionViewTests(FormulaViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "formulas/result.html")
+        self.assertEqual(response.context["job"], job)
+        self.assertEqual(response.context["job"].mission_code, job.mission_code)
         self.assertEqual(response.context["formats"]["raw"], r"\frac{a}{b}")
         self.assertEqual(response.context["formats"]["block"], r"$$\frac{a}{b}$$")
         self.assertContains(response, "COPY")
@@ -108,6 +110,21 @@ class FormulaMissionViewTests(FormulaViewTestCase):
         self.assertContains(response, "data-paper-fit-width")
         self.assertContains(response, "data-paper-fit-lines")
         self.assertContains(response, 'defer src="/static/formulas/js/result.js"')
+
+    def test_mission_report_presenter_exposes_job_and_formats_from_result(self):
+        from apps.formulas.presenters.missions import mission_report_context
+
+        job = FormulaJob.objects.create(
+            original_image="formula_uploads/source.png",
+            status=FormulaJob.Status.SUCCEEDED,
+            latex_result=" $$ x + y $$ ",
+        )
+
+        context = mission_report_context(job)
+
+        self.assertEqual(context["job"], job)
+        self.assertEqual(context["job"].mission_code, job.mission_code)
+        self.assertEqual(context["formats"]["raw"], "x + y")
 
     def test_mission_status_api_returns_expected_shape_and_result_url_for_success(self):
         job = FormulaJob.objects.create(

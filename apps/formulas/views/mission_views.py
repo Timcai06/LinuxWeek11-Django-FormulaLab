@@ -8,7 +8,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.formulas.models import FormulaJob
-from apps.formulas.services.latex_formats import build_latex_formats, correct_latex_result
+from apps.formulas.presenters.missions import mission_report_context
+from apps.formulas.selectors.missions import get_mission_for_report
 from apps.formulas.tasks import run_formula_job
 
 from .shared import mark_dispatch_failed
@@ -23,15 +24,8 @@ def mission_progress(request, job_id):
 
 
 def mission_report(request, job_id):
-    job = get_object_or_404(FormulaJob, id=job_id)
-    return render(
-        request,
-        "formulas/result.html",
-        {
-            "job": job,
-            "formats": build_latex_formats(correct_latex_result(job.latex_result, job.original_image.path)),
-        },
-    )
+    job = get_mission_for_report(job_id)
+    return render(request, "formulas/result.html", mission_report_context(job))
 
 
 @require_POST

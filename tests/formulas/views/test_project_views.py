@@ -81,9 +81,35 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "READY TO EXPORT")
         self.assertContains(response, r"\alpha+\beta")
         self.assertContains(response, r"E=mc^2")
+        self.assertEqual(response.context["project"], project)
+        self.assertEqual(
+            [item.latex_current for item in response.context["formula_items"]],
+            [r"\alpha+\beta", r"E=mc^2"],
+        )
+        self.assertEqual(
+            [item["latex"] for item in response.context["paper_preview_items"]],
+            [r"\alpha+\beta", r"E=mc^2"],
+        )
         self.assertEqual(response.context["overview"]["total_formulas"], 2)
         self.assertEqual(response.context["overview"]["needs_review"], 1)
         self.assertEqual(response.context["overview"]["ready_to_export"], 1)
+
+    def test_project_workspace_presenter_preserves_extra_context(self):
+        from apps.formulas.presenters.projects import project_workspace_context
+
+        project = PaperProject.objects.create(name="Presenter paper")
+        formula_items = ["formula-item"]
+        paper_preview_items = [{"latex": r"x+y"}]
+
+        context = project_workspace_context(
+            project,
+            formula_items=formula_items,
+            paper_preview_items=paper_preview_items,
+        )
+
+        self.assertEqual(context["project"], project)
+        self.assertEqual(context["formula_items"], formula_items)
+        self.assertEqual(context["paper_preview_items"], paper_preview_items)
 
     def test_project_workspace_builds_paper_preview_items_from_formula_sources(self):
         project = PaperProject.objects.create(name="Preview paper", writing_goal="Draft theorem section")
