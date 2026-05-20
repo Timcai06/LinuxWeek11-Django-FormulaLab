@@ -164,7 +164,7 @@ class FormulaMissionViewTests(FormulaViewTestCase):
             batch=batch,
         )
 
-        with patch("apps.formulas.views.run_formula_job.delay") as delay:
+        with patch("apps.formulas.views.mission_views.run_formula_job.delay") as delay:
             response = self.client.post(f"/missions/{failed.id}/retry/")
 
         self.assertEqual(response.status_code, 302)
@@ -179,7 +179,7 @@ class FormulaMissionViewTests(FormulaViewTestCase):
     def test_retry_non_failed_job_is_rejected(self):
         queued = FormulaJob.objects.create(original_image="formula_uploads/source.png")
 
-        with patch("apps.formulas.views.run_formula_job.delay") as delay:
+        with patch("apps.formulas.views.mission_views.run_formula_job.delay") as delay:
             response = self.client.post(f"/missions/{queued.id}/retry/")
 
         self.assertEqual(response.status_code, 409)
@@ -196,8 +196,8 @@ class FormulaMissionViewTests(FormulaViewTestCase):
         )
 
         with (
-            patch("apps.formulas.views.run_formula_job.delay", side_effect=RuntimeError("broker down")),
-            patch("apps.formulas.views.logger.exception") as log_exception,
+            patch("apps.formulas.views.mission_views.run_formula_job.delay", side_effect=RuntimeError("broker down")),
+            patch("apps.formulas.views.mission_views.logger.exception") as log_exception,
         ):
             response = self.client.post(f"/missions/{failed.id}/retry/")
 

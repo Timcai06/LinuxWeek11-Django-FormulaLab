@@ -1,4 +1,4 @@
-from importlib import import_module
+import logging
 from urllib.parse import urlencode
 
 from django.core.paginator import Paginator
@@ -9,14 +9,12 @@ from django.views.decorators.http import require_POST
 
 from apps.formulas.models import FormulaJob
 from apps.formulas.services.latex_formats import build_latex_formats, correct_latex_result
+from apps.formulas.tasks import run_formula_job
 
-from .workbench import _mark_dispatch_failed
+from .shared import mark_dispatch_failed
 
 HISTORY_PAGE_SIZE = 20
-
-
-def _views_facade():
-    return import_module("apps.formulas.views")
+logger = logging.getLogger(__name__)
 
 
 def mission_progress(request, job_id):
@@ -49,10 +47,10 @@ def retry_mission(request, job_id):
         batch=old_job.batch,
     )
     try:
-        _views_facade().run_formula_job.delay(str(new_job.id))
+        run_formula_job.delay(str(new_job.id))
     except Exception:
-        _views_facade().logger.exception("Unable to queue retry formula job %s from %s", new_job.id, old_job.id)
-        _mark_dispatch_failed(new_job, "RETRY_DISPATCH")
+        logger.exception("Unable to queue retry formula job %s from %s", new_job.id, old_job.id)
+        mark_dispatch_failed(new_job, "RETRY_DISPATCH")
         return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
 
     return redirect("mission-progress", job_id=new_job.id)

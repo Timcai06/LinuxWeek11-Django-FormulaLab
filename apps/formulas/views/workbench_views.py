@@ -1,18 +1,17 @@
-from importlib import import_module
+import logging
 
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.formulas.forms import FormulaUploadForm
 from apps.formulas.models import BatchMission, FormulaJob, PaperProject
+from apps.formulas.tasks import run_formula_job
 
-from .system import _safe_health_snapshot
+from .shared import mark_dispatch_failed
+from .system_views import _safe_health_snapshot
 
-
-def _views_facade():
-    return import_module("apps.formulas.views")
+logger = logging.getLogger(__name__)
 
 
 def landing(request):
@@ -46,39 +45,14 @@ def create_job(request):
     batch = _create_upload_batch(project, image.name) if project else None
     job = FormulaJob.objects.create(original_image=image, project=project, batch=batch)
     try:
-        _views_facade().run_formula_job.delay(str(job.id))
+        run_formula_job.delay(str(job.id))
     except Exception:
-        _views_facade().logger.exception("Unable to queue formula job %s", job.id)
-        _mark_dispatch_failed(job, "DISPATCH")
+        logger.exception("Unable to queue formula job %s", job.id)
+        mark_dispatch_failed(job, "DISPATCH")
         _mark_batch_failed(batch)
         return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
 
     return redirect("mission-progress", job_id=job.id)
-
-
-def _mark_dispatch_failed(job: FormulaJob, failure_stage: str) -> None:
-    job.status = FormulaJob.Status.FAILED
-    job.failure_stage = failure_stage
-    job.error_message = "mission broker unavailable"
-    job.stage_code = failure_stage
-    job.stage_label = "DISPATCH FAILED"
-    job.stage_message = "任务无法进入异步识别队列"
-    job.progress = 100
-    job.finished_at = timezone.now()
-    job.duration_ms = job.calculate_duration_ms()
-    job.save(
-        update_fields=[
-            "status",
-            "failure_stage",
-            "error_message",
-            "stage_code",
-            "stage_label",
-            "stage_message",
-            "progress",
-            "finished_at",
-            "duration_ms",
-        ]
-    )
 
 
 def _resolve_upload_project(form: FormulaUploadForm) -> PaperProject | None:

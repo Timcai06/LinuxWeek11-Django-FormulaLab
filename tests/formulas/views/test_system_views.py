@@ -24,7 +24,7 @@ class FormulaSystemViewTests(FormulaViewTestCase):
             "last_job": {"status": "running", "stage_label": "INFERENCE"},
         }
 
-        with patch("apps.formulas.views.build_health_snapshot", return_value=payload):
+        with patch("apps.formulas.views.system_views.build_health_snapshot", return_value=payload):
             response = self.client.get("/system/")
 
         self.assertEqual(response.status_code, 200)
