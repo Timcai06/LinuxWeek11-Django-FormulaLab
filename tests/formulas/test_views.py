@@ -147,6 +147,69 @@ class FormulaMissionViewTests(TestCase):
         self.assertEqual(response.context["overview"]["needs_review"], 1)
         self.assertEqual(response.context["overview"]["ready_to_export"], 1)
 
+    def test_project_workspace_builds_paper_preview_items_from_formula_sources(self):
+        project = PaperProject.objects.create(name="Preview paper", writing_goal="Draft theorem section")
+        batch = BatchMission.objects.create(project=project, title="Section 4")
+        job = FormulaJob.objects.create(
+            original_image="formula_uploads/source.png",
+            status=FormulaJob.Status.SUCCEEDED,
+            latex_result=r"\int_0^1 x^2\,dx",
+        )
+        direct_item = FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\nabla \cdot \mathbf{E} = \rho / \epsilon_0",
+            status=FormulaItem.Status.CONFIRMED,
+            quality_score=95,
+            sort_order=1,
+        )
+        fallback_item = FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            recognition_job=job,
+            status=FormulaItem.Status.AUTO_READY,
+            quality_score=88,
+            sort_order=2,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["paper_preview_items"],
+            [
+                {
+                    "code": direct_item.formula_code,
+                    "batch_title": "Section 4",
+                    "latex": r"\nabla \cdot \mathbf{E} = \rho / \epsilon_0",
+                    "status": FormulaItem.Status.CONFIRMED,
+                    "quality_score": 95,
+                },
+                {
+                    "code": fallback_item.formula_code,
+                    "batch_title": "Section 4",
+                    "latex": r"\int_0^1 x^2\,dx",
+                    "status": FormulaItem.Status.AUTO_READY,
+                    "quality_score": 88,
+                },
+            ],
+        )
+
+    def test_project_workspace_renders_latex_and_paper_preview_hooks(self):
+        project = PaperProject.objects.create(name="Preview UI")
+        batch = BatchMission.objects.create(project=project, title="Main theorem")
+        FormulaItem.objects.create(project=project, batch=batch, latex_current=r"E=mc^2")
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "PAPER PREVIEW")
+        self.assertContains(response, "LATEX PREVIEW")
+        self.assertContains(response, "paper-preview-data")
+        self.assertContains(response, "data-project-katex-preview")
+        self.assertContains(response, "data-paper-preview-slot")
+        self.assertContains(response, 'defer src="/static/formulas/js/project_workspace.js"')
+
     def test_system_renders_summary_first_and_compact_service_list(self):
         payload = {
             "web": {"ok": True},

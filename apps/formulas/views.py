@@ -100,7 +100,21 @@ def projects(request):
 def project_workspace(request, project_id):
     project = get_object_or_404(PaperProject, id=project_id)
     batches = project.batches.all()[:6]
-    formula_items = project.formula_items.select_related("batch", "recognition_job")[:20]
+    formula_items = list(project.formula_items.select_related("batch", "recognition_job")[:20])
+    paper_preview_items = []
+    for item in formula_items:
+        latex = _formula_item_latex(item)
+        if not latex:
+            continue
+        paper_preview_items.append(
+            {
+                "code": item.formula_code,
+                "batch_title": item.batch.title,
+                "latex": latex,
+                "status": item.status,
+                "quality_score": item.quality_score,
+            }
+        )
     overview = {
         "total_formulas": project.formula_items.count(),
         "needs_review": project.formula_items.filter(status=FormulaItem.Status.NEEDS_REVIEW).count(),
@@ -115,6 +129,7 @@ def project_workspace(request, project_id):
             "project": project,
             "batches": batches,
             "formula_items": formula_items,
+            "paper_preview_items": paper_preview_items,
             "overview": overview,
         },
     )
@@ -267,6 +282,14 @@ def _mark_dispatch_failed(job: FormulaJob, failure_stage: str) -> None:
             "duration_ms",
         ]
     )
+
+
+def _formula_item_latex(item: FormulaItem) -> str:
+    if item.latex_current:
+        return item.latex_current
+    if item.recognition_job and item.recognition_job.latex_result:
+        return item.recognition_job.latex_result
+    return ""
 
 
 def health_api(request):

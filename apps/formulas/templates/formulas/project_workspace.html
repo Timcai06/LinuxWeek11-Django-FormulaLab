@@ -3,10 +3,11 @@
 
 {% block title %}{{ project.name }} - Formula Lab{% endblock %}
 {% block page_css %}
-<link rel="stylesheet" href="{% static 'formulas/css/pages/projects.css' %}">
+<link rel="stylesheet" href="{% static 'formulas/css/pages/projects.css' %}?v=preview-workbench">
 {% endblock %}
 
 {% block content %}
+{{ paper_preview_items|json_script:"paper-preview-data" }}
 <section class="workspace-shell">
     <div class="workspace-header">
         <div class="section-header">
@@ -112,6 +113,43 @@
         </section>
     </div>
 
+    <section class="paper-preview-panel" aria-label="Paper preview">
+        <div class="panel-heading">
+            <p>PAPER PREVIEW</p>
+            <h2>Draft Formula Page</h2>
+        </div>
+        <div class="paper-preview-layout">
+            <article class="paper-sheet">
+                <header>
+                    <span>{{ project.project_code }}</span>
+                    <strong>{{ project.name }}</strong>
+                </header>
+                <div class="paper-body">
+                    {% for preview_item in paper_preview_items %}
+                        <section class="paper-formula-block">
+                            <div class="paper-formula-meta">
+                                <span>{{ preview_item.code }}</span>
+                                <span>{{ preview_item.batch_title|default:"Untitled batch" }}</span>
+                                <span>Q {{ preview_item.quality_score|default:0 }}</span>
+                            </div>
+                            <div class="paper-rendered-formula" data-paper-preview-slot data-preview-code="{{ preview_item.code }}">
+                                {{ preview_item.latex }}
+                            </div>
+                        </section>
+                    {% empty %}
+                        <div class="paper-preview-empty">
+                            <span>NO FORMULAS READY FOR PAPER PREVIEW</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+            <aside class="paper-preview-notes">
+                <span class="empty-kicker">HTML FIRST</span>
+                <p>This preview is built for fast paper-shape checking. PDF compilation will become an async export artifact later.</p>
+            </aside>
+        </div>
+    </section>
+
     <section class="formula-items-panel">
         <div class="panel-heading">
             <p>ITEMS</p>
@@ -125,7 +163,16 @@
                         <span>{{ item.status|upper }}</span>
                         <span>Q {{ item.quality_score|default:0 }}</span>
                     </div>
-                    <pre>{% if item.latex_current %}{{ item.latex_current }}{% elif item.recognition_job.latex_result %}{{ item.recognition_job.latex_result }}{% else %}No LaTeX captured{% endif %}</pre>
+                    <div class="formula-source-preview">
+                        <div class="formula-source-block">
+                            <span>LATEX SOURCE</span>
+                            <pre data-latex-source-text>{% if item.latex_current %}{{ item.latex_current }}{% elif item.recognition_job.latex_result %}{{ item.recognition_job.latex_result }}{% else %}No LaTeX captured{% endif %}</pre>
+                        </div>
+                        <div class="formula-render-block">
+                            <span>LATEX PREVIEW</span>
+                            <div class="formula-render-surface" data-project-katex-preview></div>
+                        </div>
+                    </div>
                 </article>
             {% empty %}
                 <div class="project-empty-state compact">
@@ -137,4 +184,8 @@
         </div>
     </section>
 </section>
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'formulas/js/project_workspace.js' %}"></script>
 {% endblock %}

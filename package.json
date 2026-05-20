@@ -4,7 +4,7 @@
   "scripts": {
     "build:layout": "esbuild frontend/formulas/layout_intelligence.js --bundle --format=iife --global-name=FormulaLayoutBundle --outfile=apps/formulas/static/formulas/js/generated/layout-intelligence.js",
     "build": "npm run build:layout",
-    "check:frontend": "npm run build:layout && node --check frontend/formulas/layout_intelligence.js",
+    "check:frontend": "npm run build:layout && node --check frontend/formulas/layout_intelligence.js && node --check apps/formulas/static/formulas/js/project_workspace.js",
     "e2e": "playwright test"
   },
   "dependencies": {
