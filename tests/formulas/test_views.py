@@ -215,6 +215,57 @@ class FormulaMissionViewTests(TestCase):
         self.assertContains(response, "data-paper-preview-slot")
         self.assertContains(response, 'defer src="/static/formulas/js/project_workspace.js"')
 
+    def test_project_workspace_paginates_formula_items_without_truncating_project(self):
+        project = PaperProject.objects.create(name="Large paper")
+        batch = BatchMission.objects.create(project=project, title="Full chapter")
+        for index in range(25):
+            FormulaItem.objects.create(
+                project=project,
+                batch=batch,
+                latex_current=rf"x_{{{index}}}",
+                status=FormulaItem.Status.AUTO_READY,
+                sort_order=index,
+            )
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["overview"]["total_formulas"], 25)
+        self.assertEqual(len(response.context["formula_items"]), 12)
+        self.assertEqual(response.context["item_page_obj"].number, 1)
+        self.assertEqual(response.context["item_page_obj"].paginator.num_pages, 3)
+        self.assertContains(response, "PAGE 1 OF 3")
+        self.assertContains(response, "?page=2")
+
+    def test_project_workspace_filters_formula_items_by_status(self):
+        project = PaperProject.objects.create(name="Filtered paper")
+        batch = BatchMission.objects.create(project=project, title="Mixed formulas")
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\alpha",
+            status=FormulaItem.Status.NEEDS_REVIEW,
+            sort_order=1,
+        )
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\beta",
+            status=FormulaItem.Status.CONFIRMED,
+            sort_order=2,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/?status=needs_review")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["active_item_status"], FormulaItem.Status.NEEDS_REVIEW)
+        self.assertEqual(response.context["overview"]["total_formulas"], 2)
+        self.assertEqual(len(response.context["formula_items"]), 1)
+        self.assertContains(response, r"\alpha")
+        self.assertNotContains(response, r"\beta")
+        self.assertContains(response, "NEEDS REVIEW")
+        self.assertContains(response, "?status=confirmed")
+
     def test_project_workspace_renders_review_drawer_hooks(self):
         project = PaperProject.objects.create(name="Review UI")
         batch = BatchMission.objects.create(project=project, title="Lemma screenshots")

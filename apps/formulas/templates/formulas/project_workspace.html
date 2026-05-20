@@ -161,6 +161,22 @@
             <p>ITEMS</p>
             <h2>Formula Items</h2>
         </div>
+        <div class="formula-list-toolbar" aria-label="Formula item filters and pagination">
+            <nav class="item-status-filters" aria-label="Formula status filters">
+                {% for filter_link in status_filter_links %}
+                    <a class="{% if filter_link.active %}is-active{% endif %}" href="{{ filter_link.url }}">{{ filter_link.label }}</a>
+                {% endfor %}
+            </nav>
+            <div class="item-pagination">
+                {% if previous_item_querystring %}
+                    <a href="?{{ previous_item_querystring }}">PREV</a>
+                {% endif %}
+                <span>PAGE {{ item_page_obj.number }} OF {{ item_page_obj.paginator.num_pages }}</span>
+                {% if next_item_querystring %}
+                    <a href="?{{ next_item_querystring }}">NEXT</a>
+                {% endif %}
+            </div>
+        </div>
         <div class="formula-item-list">
             {% for item in formula_items %}
                 <article class="formula-item-row status-{{ item.status }}">

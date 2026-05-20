@@ -439,6 +439,51 @@
     text-align: left;
 }
 
+.formula-list-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.item-status-filters,
+.item-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-status-filters a,
+.item-pagination a,
+.item-pagination span {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--muted);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+}
+
+.item-status-filters a.is-active,
+.item-status-filters a:hover,
+.item-pagination a:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--on-night);
+}
+
+.item-pagination span {
+    color: var(--dim);
+}
+
 .formula-item-list {
     display: grid;
     gap: 10px;
@@ -686,6 +731,11 @@
 
     .panel-heading {
         align-items: start;
+        flex-direction: column;
+    }
+
+    .formula-list-toolbar {
+        align-items: stretch;
         flex-direction: column;
     }
 

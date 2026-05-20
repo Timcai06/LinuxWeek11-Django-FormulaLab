@@ -96,15 +96,17 @@ Redis 不保存业务数据，只作为消息队列。
 
 ## volume 设计
 
-建议配置：
+当前 Compose 配置使用两类持久化方式：
 
 ```text
-postgres_data   保存数据库
-media_data      保存上传图片
-model_cache     保存公式识别模型缓存
+postgres_data                 Docker 命名 volume，保存 PostgreSQL 数据
+./media:/app/media            bind mount，保存上传图片和预处理图片
+./.model-cache:/app/.model-cache  bind mount，保存 PaddleOCR / pix2tex 模型缓存
 ```
 
 模型缓存很重要，因为 PaddleOCR 和 pix2tex 都可能需要下载模型权重。如果每次重建容器都重新下载，会明显影响开发体验和验收稳定性。
+
+这种设计偏向课程验收和本地调试：宿主机可以直接看到上传文件和模型缓存。未来如果要做更接近生产环境的 Compose，可以把 `media` 和 `model_cache` 改成命名 volume，并拆出 `compose.prod.yml`。
 
 ## 环境变量
 
@@ -124,7 +126,7 @@ FORMULA_LAB_PADDLE_MODEL_NAME=PP-FormulaNet_plus-S
 
 ## 前端与静态资源
 
-第一版使用 Tailwind CDN 辅助布局，同时保留本地 CSS 作为设计语言落地层。
+第一版使用 Tailwind CDN 辅助布局，同时保留本地 CSS 作为设计语言落地层。KaTeX 当前也通过 CDN 加载；如果 Linux 验收环境无法访问公网，应把 KaTeX 纳入本地静态资源或 npm 构建产物。
 
 Pretext 布局智能源码位于：
 
