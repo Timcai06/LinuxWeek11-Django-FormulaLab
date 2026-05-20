@@ -1,8 +1,13 @@
+import os
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from django.test import SimpleTestCase
 
+from scripts import check_repository_governance
 from scripts.check_repository_governance import (
     REQUIRED_GITIGNORE_ENTRIES,
     GovernanceConfig,
@@ -31,6 +36,55 @@ class RepositoryGovernanceTests(SimpleTestCase):
             missing_entries = check_gitignore_contains_runtime_paths(gitignore_path)
 
         self.assertEqual(missing_entries, [".pip-cache/", ".model-cache/", "*.sqlite3"])
+
+    def test_semantically_equivalent_gitignore_patterns_are_accepted(self):
+        with TemporaryDirectory() as temp_dir:
+            gitignore_path = Path(temp_dir) / ".gitignore"
+            gitignore_path.write_text(
+                "\n".join(
+                    [
+                        "/.conda/",
+                        "/.pip-cache/",
+                        "/.model-cache/",
+                        "/node_modules/",
+                        "/media/",
+                        "**/*.sqlite3",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            missing_entries = check_gitignore_contains_runtime_paths(gitignore_path)
+
+        self.assertEqual(missing_entries, [])
+
+    def test_main_resolves_gitignore_from_repository_root_when_run_from_subdirectory(self):
+        current_dir = Path.cwd()
+        try:
+            os.chdir("apps/formulas")
+
+            with redirect_stdout(StringIO()):
+                exit_code = check_repository_governance.main()
+        finally:
+            os.chdir(current_dir)
+
+        self.assertEqual(exit_code, 0)
+
+    def test_main_does_not_count_lines_for_exempt_tracked_paths(self):
+        exempt_paths = [
+            Path("apps/formulas/static/formulas/js/generated/layout-intelligence.js"),
+            Path("apps/formulas/static/formulas/vendor/katex/katex.min.js"),
+            Path("docs/superpowers/plans/archive/old-plan.md"),
+        ]
+
+        with (
+            patch("scripts.check_repository_governance._repo_root", return_value=Path.cwd()),
+            patch("scripts.check_repository_governance._tracked_files", return_value=exempt_paths),
+            patch("scripts.check_repository_governance._line_count", side_effect=AssertionError("line count called")),
+        ):
+            exit_code = check_repository_governance.main()
+
+        self.assertEqual(exit_code, 0)
 
     def test_generated_layout_intelligence_bundle_is_allowed_when_large(self):
         finding = classify_tracked_file(

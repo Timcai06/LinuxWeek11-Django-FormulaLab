@@ -35,21 +35,39 @@ def check_gitignore_contains_runtime_paths(gitignore_path: Path) -> list[str]:
     if not gitignore_path.exists():
         return REQUIRED_GITIGNORE_ENTRIES.copy()
 
-    entries = {
+    entries = [
         line.strip()
         for line in gitignore_path.read_text(encoding="utf-8").splitlines()
         if line.strip() and not line.lstrip().startswith("#")
-    }
-    return [entry for entry in REQUIRED_GITIGNORE_ENTRIES if entry not in entries]
+    ]
+    return [
+        required_entry
+        for required_entry in REQUIRED_GITIGNORE_ENTRIES
+        if not any(_gitignore_entry_matches(required_entry, entry) for entry in entries)
+    ]
+
+
+def _gitignore_entry_matches(required_entry: str, actual_entry: str) -> bool:
+    normalized_actual = actual_entry.lstrip("/")
+    if required_entry == "*.sqlite3":
+        return normalized_actual in {"*.sqlite3", "**/*.sqlite3"}
+    return normalized_actual == required_entry
+
+
+def _is_exempt_path(path: Path) -> bool:
+    path_text = path.as_posix()
+    return (
+        "/generated/" in path_text
+        or "/vendor/" in path_text
+        or path_text.startswith("docs/superpowers/plans/archive/")
+    )
 
 
 def classify_tracked_file(path: Path, line_count: int, byte_size: int, config: GovernanceConfig) -> GovernanceFinding | None:
     del byte_size
     path_text = path.as_posix()
 
-    if "/generated/" in path_text or "/vendor/" in path_text:
-        return None
-    if path_text.startswith("docs/superpowers/plans/archive/"):
+    if _is_exempt_path(path):
         return None
 
     if path_text.startswith("apps/") and path.suffix == ".py" and line_count > config.python_business_lines:
@@ -103,9 +121,19 @@ def classify_tracked_file(path: Path, line_count: int, byte_size: int, config: G
     return None
 
 
-def _tracked_files() -> list[Path]:
+def _repo_root() -> Path:
     result = subprocess.run(
-        ["git", "ls-files"],
+        ["git", "rev-parse", "--show-toplevel"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return Path(result.stdout.strip())
+
+
+def _tracked_files(repo_root: Path) -> list[Path]:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-files"],
         check=True,
         capture_output=True,
         text=True,
@@ -119,17 +147,21 @@ def _line_count(path: Path) -> int:
 
 
 def main() -> int:
-    missing_entries = check_gitignore_contains_runtime_paths(Path(".gitignore"))
+    repo_root = _repo_root()
+    missing_entries = check_gitignore_contains_runtime_paths(repo_root / ".gitignore")
     findings = [
         GovernanceFinding(Path(".gitignore"), f"missing required runtime ignore entry: {entry}")
         for entry in missing_entries
     ]
 
     config = GovernanceConfig()
-    for path in _tracked_files():
-        if not path.is_file():
+    for path in _tracked_files(repo_root):
+        if _is_exempt_path(path):
             continue
-        finding = classify_tracked_file(path, _line_count(path), path.stat().st_size, config)
+        absolute_path = repo_root / path
+        if not absolute_path.is_file():
+            continue
+        finding = classify_tracked_file(path, _line_count(absolute_path), absolute_path.stat().st_size, config)
         if finding is not None:
             findings.append(finding)
 
