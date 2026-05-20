@@ -56,6 +56,18 @@
         }
     }
 
+    function reviewData() {
+        const dataNode = document.getElementById("review-drawer-data");
+        if (!dataNode) {
+            return [];
+        }
+        try {
+            return JSON.parse(dataNode.textContent);
+        } catch (error) {
+            return [];
+        }
+    }
+
     function renderPaperPreview() {
         const byCode = new Map(previewData().map((item) => [item.code, item]));
         document.querySelectorAll("[data-paper-preview-slot]").forEach((slot) => {
@@ -64,8 +76,63 @@
         });
     }
 
+    function setupReviewDrawer() {
+        const drawer = document.querySelector("[data-review-drawer]");
+        const form = document.querySelector("[data-review-form]");
+        const codeNode = document.querySelector("[data-review-code]");
+        const batchNode = document.querySelector("[data-review-batch]");
+        const statusNode = document.querySelector("[data-review-status]");
+        const qualityNode = document.querySelector("[data-review-quality]");
+        const textarea = document.querySelector("[data-review-latex]");
+        const preview = document.querySelector("[data-review-preview]");
+        const closeButton = document.querySelector("[data-review-close]");
+        const byId = new Map(reviewData().map((item) => [item.id, item]));
+
+        if (!drawer || !form || !textarea || !preview) {
+            return;
+        }
+
+        function openDrawer(item) {
+            if (!item) {
+                return;
+            }
+            form.action = item.review_url;
+            if (codeNode) {
+                codeNode.textContent = item.code;
+            }
+            if (batchNode) {
+                batchNode.textContent = item.batch_title || "Untitled batch";
+            }
+            if (statusNode) {
+                statusNode.textContent = String(item.status || "unknown").toUpperCase();
+            }
+            if (qualityNode) {
+                qualityNode.textContent = `Q ${item.quality_score || 0}`;
+            }
+            textarea.value = item.latex || "";
+            drawer.setAttribute("aria-hidden", "false");
+            drawer.classList.add("is-open");
+            renderLatex(textarea.value, preview, true);
+            textarea.focus();
+        }
+
+        document.querySelectorAll("[data-review-trigger]").forEach((button) => {
+            button.addEventListener("click", () => openDrawer(byId.get(button.dataset.reviewItemId)));
+        });
+
+        textarea.addEventListener("input", () => renderLatex(textarea.value, preview, true));
+
+        if (closeButton) {
+            closeButton.addEventListener("click", () => {
+                drawer.classList.remove("is-open");
+                drawer.setAttribute("aria-hidden", "true");
+            });
+        }
+    }
+
     renderWhenReady(() => {
         renderFormulaItems();
         renderPaperPreview();
+        setupReviewDrawer();
     }, 0);
 })();

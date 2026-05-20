@@ -102,6 +102,7 @@ def project_workspace(request, project_id):
     project = get_object_or_404(PaperProject, id=project_id)
     batches = project.batches.all()[:6]
     formula_items = list(project.formula_items.select_related("batch", "recognition_job")[:20])
+    review_items = [_review_item_payload(item) for item in formula_items]
     paper_preview_items = []
     for item in formula_items:
         latex = _formula_item_latex(item)
@@ -131,6 +132,7 @@ def project_workspace(request, project_id):
             "batches": batches,
             "formula_items": formula_items,
             "paper_preview_items": paper_preview_items,
+            "review_items": review_items,
             "overview": overview,
         },
     )
@@ -194,6 +196,17 @@ def retry_mission(request, job_id):
         return JsonResponse({"status": "unavailable", "error": "mission broker unavailable"}, status=503)
 
     return redirect("mission-progress", job_id=new_job.id)
+
+
+@require_POST
+def review_formula_item(request, item_id):
+    item = get_object_or_404(FormulaItem.objects.select_related("project"), id=item_id)
+    latex_current = request.POST.get("latex_current", "").strip()
+    if latex_current:
+        item.latex_current = latex_current
+    item.status = FormulaItem.Status.CONFIRMED
+    item.save(update_fields=["latex_current", "status", "updated_at"])
+    return redirect("project-workspace", project_id=item.project_id)
 
 
 def history(request):
@@ -320,6 +333,18 @@ def _formula_item_latex(item: FormulaItem) -> str:
     if item.recognition_job and item.recognition_job.latex_result:
         return item.recognition_job.latex_result
     return ""
+
+
+def _review_item_payload(item: FormulaItem) -> dict:
+    return {
+        "id": str(item.id),
+        "code": item.formula_code,
+        "batch_title": item.batch.title,
+        "latex": _formula_item_latex(item),
+        "status": item.status,
+        "quality_score": item.quality_score,
+        "review_url": reverse("review-formula-item", kwargs={"item_id": item.id}),
+    }
 
 
 def health_api(request):

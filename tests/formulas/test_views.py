@@ -215,6 +215,51 @@ class FormulaMissionViewTests(TestCase):
         self.assertContains(response, "data-paper-preview-slot")
         self.assertContains(response, 'defer src="/static/formulas/js/project_workspace.js"')
 
+    def test_project_workspace_renders_review_drawer_hooks(self):
+        project = PaperProject.objects.create(name="Review UI")
+        batch = BatchMission.objects.create(project=project, title="Lemma screenshots")
+        item = FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\gamma = \frac{1}{\sqrt{1-v^2/c^2}}",
+            status=FormulaItem.Status.NEEDS_REVIEW,
+            quality_score=54,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "review-drawer-data")
+        self.assertContains(response, "REVIEW DRAWER")
+        self.assertContains(response, "data-review-drawer")
+        self.assertContains(response, "data-review-trigger")
+        self.assertContains(response, f'data-review-item-id="{item.id}"')
+        self.assertContains(response, f'action="/formula-items/{item.id}/review/"')
+        self.assertContains(response, "CONFIRM FORMULA")
+        self.assertEqual(response.context["review_items"][0]["id"], str(item.id))
+        self.assertEqual(response.context["review_items"][0]["latex"], item.latex_current)
+
+    def test_review_formula_item_updates_latex_and_marks_confirmed(self):
+        project = PaperProject.objects.create(name="Review post")
+        batch = BatchMission.objects.create(project=project, title="Proof formulas")
+        item = FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"E=mc^2",
+            status=FormulaItem.Status.NEEDS_REVIEW,
+        )
+
+        response = self.client.post(
+            f"/formula-items/{item.id}/review/",
+            {"latex_current": r"E^2 = p^2c^2 + m^2c^4"},
+        )
+
+        item.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"/projects/{project.id}/")
+        self.assertEqual(item.latex_current, r"E^2 = p^2c^2 + m^2c^4")
+        self.assertEqual(item.status, FormulaItem.Status.CONFIRMED)
+
     def test_system_renders_summary_first_and_compact_service_list(self):
         payload = {
             "web": {"ok": True},
