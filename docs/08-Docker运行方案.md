@@ -126,7 +126,17 @@ FORMULA_LAB_PADDLE_MODEL_NAME=PP-FormulaNet_plus-S
 
 ## 前端与静态资源
 
-第一版使用 Tailwind CDN 辅助布局，同时保留本地 CSS 作为设计语言落地层。KaTeX 当前也通过 CDN 加载；如果 Linux 验收环境无法访问公网，应把 KaTeX 纳入本地静态资源或 npm 构建产物。
+第一版使用 Tailwind CDN 辅助布局，同时保留本地 CSS 作为设计语言落地层。KaTeX 已经纳入本地静态资源，核心公式渲染不再依赖 CDN。构建时会执行：
+
+```bash
+npm run vendor:katex
+```
+
+该命令把 `node_modules/katex/dist` 中的 `katex.min.css`、`katex.min.js` 和字体文件复制到：
+
+```text
+apps/formulas/static/formulas/vendor/katex/
+```
 
 Pretext 布局智能源码位于：
 

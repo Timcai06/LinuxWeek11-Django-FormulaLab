@@ -45,6 +45,14 @@ class FormulaMissionViewTests(TestCase):
         self.assertContains(response, "MISSION CONTROL FOR LATEX RECOGNITION")
         self.assertContains(response, "ENTER WORKBENCH")
 
+    def test_base_template_uses_local_katex_assets(self):
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "/static/formulas/vendor/katex/katex.min.css")
+        self.assertContains(response, "/static/formulas/vendor/katex/katex.min.js")
+        self.assertNotContains(response, "cdn.jsdelivr.net/npm/katex")
+
     def test_workbench_renders_upload_form_and_telemetry_context(self):
         project = PaperProject.objects.create(name="Active paper", writing_goal="Collect formulas")
         FormulaJob.objects.create(original_image="formula_uploads/source.png")

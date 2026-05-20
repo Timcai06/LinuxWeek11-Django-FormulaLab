@@ -72,7 +72,7 @@ FORMULA_LAB_OCR_ENGINE=paddle
 make local-pix2tex
 ```
 
-Report and history pages use a Node-built layout intelligence bundle based on `@chenglou/pretext`. If files under `frontend/` change, rebuild the browser asset before running or committing:
+Report and history pages use a Node-built layout intelligence bundle based on `@chenglou/pretext`. KaTeX is vendored into local Django static files so formula rendering does not depend on CDN access. If files under `frontend/` or package-managed static vendors change, rebuild the browser assets before running or committing:
 
 ```bash
 make frontend-build

@@ -6,7 +6,9 @@ COPY package.json package-lock.json /app/
 RUN npm ci
 
 COPY frontend /app/frontend
+COPY scripts/copy_katex_assets.mjs /app/scripts/copy_katex_assets.mjs
 COPY apps/formulas/static/formulas/js /app/apps/formulas/static/formulas/js
+COPY apps/formulas/static/formulas/vendor /app/apps/formulas/static/formulas/vendor
 RUN npm run build
 
 FROM python:3.10-slim
