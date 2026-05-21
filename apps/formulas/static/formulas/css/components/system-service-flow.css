@@ -37,10 +37,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.15);
-    font-size: 1.1rem;
+    color: rgba(92, 255, 176, 0.6);
     user-select: none;
     animation: flowPulse 2s ease-in-out infinite;
+}
+
+.flow-connector svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    filter: drop-shadow(0 0 8px rgba(92, 255, 176, 0.4));
 }
 
 @keyframes flowPulse {

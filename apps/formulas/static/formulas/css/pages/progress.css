@@ -24,13 +24,47 @@
     overflow-y: auto;
 }
 
-.image-console img {
+.image-preview-wrapper {
+    position: relative;
     width: 100%;
     flex: 1;
     min-height: 0;
-    object-fit: contain;
-    background: var(--canvas-light);
     border-radius: 8px;
+    overflow: hidden;
+    background: var(--canvas-light);
+}
+
+.image-preview-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: transparent;
+    border-radius: 0;
+}
+
+@keyframes ocrScan {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+.ocr-scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, rgba(92, 255, 176, 0.2));
+    border-bottom: 2px solid var(--status-ready);
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    display: none;
+}
+
+.ocr-scanline.is-active {
+    display: block;
+    animation: ocrScan 3s linear infinite;
 }
 
 .progress-readout {
@@ -84,6 +118,38 @@
     width: 20px;
     background: rgba(255, 255, 255, 0.6);
     filter: blur(3px);
+}
+
+.terminal-log-feed {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--status-ready);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(92, 255, 176, 0.1);
+    border-radius: 6px;
+    padding: 8px 12px;
+    height: 60px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.terminal-log-feed:empty {
+    display: none;
+}
+
+.terminal-log-feed span {
+    opacity: 0.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.terminal-log-feed span:last-child {
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(92, 255, 176, 0.5);
 }
 
 .stage-message {

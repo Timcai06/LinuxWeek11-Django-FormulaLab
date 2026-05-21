@@ -86,6 +86,7 @@
         const textarea = document.querySelector("[data-review-latex]");
         const preview = document.querySelector("[data-review-preview]");
         const closeButton = document.querySelector("[data-review-close]");
+        const shell = document.querySelector(".workspace-shell");
         const byId = new Map(reviewData().map((item) => [item.id, item]));
 
         if (!drawer || !form || !textarea || !preview) {
@@ -112,6 +113,9 @@
             textarea.value = item.latex || "";
             drawer.setAttribute("aria-hidden", "false");
             drawer.classList.add("is-open");
+            if (shell) {
+                shell.classList.add("shell-blurred");
+            }
             renderLatex(textarea.value, preview, true);
             textarea.focus();
         }
@@ -125,6 +129,9 @@
         if (closeButton) {
             closeButton.addEventListener("click", () => {
                 drawer.classList.remove("is-open");
+                if (shell) {
+                    shell.classList.remove("shell-blurred");
+                }
                 drawer.setAttribute("aria-hidden", "true");
             });
         }

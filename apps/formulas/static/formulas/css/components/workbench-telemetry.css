@@ -76,9 +76,16 @@
 
 /* Colorize specific metrics based on operational status */
 .queue-grid div:nth-child(1) dd { color: var(--on-night-muted); }
+.queue-grid div:nth-child(1):hover { box-shadow: inset 0 0 20px rgba(240, 240, 250, 0.1), 0 6px 20px rgba(0, 0, 0, 0.4); border-color: rgba(240, 240, 250, 0.3); }
+
 .queue-grid div:nth-child(2) dd { color: var(--status-warming); }
+.queue-grid div:nth-child(2):hover { box-shadow: inset 0 0 20px rgba(255, 184, 77, 0.15), 0 6px 20px rgba(0, 0, 0, 0.4); border-color: rgba(255, 184, 77, 0.4); }
+
 .queue-grid div:nth-child(3) dd { color: var(--status-ready); }
+.queue-grid div:nth-child(3):hover { box-shadow: inset 0 0 20px rgba(92, 255, 176, 0.15), 0 6px 20px rgba(0, 0, 0, 0.4); border-color: rgba(92, 255, 176, 0.4); }
+
 .queue-grid div:nth-child(4) dd { color: var(--status-error); }
+.queue-grid div:nth-child(4):hover { box-shadow: inset 0 0 20px rgba(255, 77, 115, 0.15), 0 6px 20px rgba(0, 0, 0, 0.4); border-color: rgba(255, 77, 115, 0.4); }
 
 .recent-list {
     display: grid;

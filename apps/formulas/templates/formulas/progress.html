@@ -17,7 +17,10 @@
             </div>
             <h1>RECOGNITION PROGRESS</h1>
         </div>
-        <img src="{{ job.original_image.url }}" alt="Original formula upload">
+        <div class="image-preview-wrapper" data-scan-wrapper>
+            <div class="ocr-scanline" data-scanline aria-hidden="true"></div>
+            <img src="{{ job.original_image.url }}" alt="Original formula upload">
+        </div>
         <dl class="metadata-grid">
             <div><dt>STAGE</dt><dd data-stage>{{ job.stage_label }}</dd></div>
             <div><dt>MISSION CODE</dt><dd>{{ job.mission_code }}</dd></div>
@@ -34,6 +37,7 @@
             <span data-progress-state>{{ job.status|upper }}</span>
         </div>
         <div class="progress-bar"><span data-progress-bar data-initial-progress="{{ job.progress }}"></span></div>
+        <div class="terminal-log-feed" data-log-feed aria-hidden="true"></div>
         <p class="stage-message" data-message {% if job.stage_code == 'RESULT_READY' or job.status == 'succeeded' %}style="display: none;"{% endif %}>{{ job.stage_message }}</p>
         <ol class="stage-list">
             <li data-stage-item="UPLOAD_LOCKED">UPLOAD LOCKED</li>

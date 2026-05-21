@@ -98,6 +98,8 @@
     width: 130px;
     height: 130px;
     margin: 12px auto;
+    filter: drop-shadow(0 0 16px rgba(92, 255, 176, 0.3));
+    transition: filter 0.6s ease;
 }
 
 .health-dial {

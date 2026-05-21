@@ -5,7 +5,8 @@
     padding: 4px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 32px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
     position: relative;
 }
 
@@ -13,7 +14,7 @@
     min-height: 42px;
     border: 0;
     border-radius: 32px;
-    background: transparent !important; /* Ensure buttons never block the slider text */
+    background: transparent !important;
     color: var(--muted);
     font-weight: 800;
     cursor: pointer;
@@ -22,16 +23,20 @@
     letter-spacing: 0.05em;
     transition: color 0.3s cubic-bezier(0.25, 1, 0.2, 1);
     position: relative;
-    z-index: 2; /* Always float above the sliding background */
+    z-index: 2;
+    opacity: 0.6;
 }
 
 .console-tabs button:hover {
     color: var(--on-night);
+    opacity: 1;
 }
 
 .console-tabs button[aria-selected="true"] {
     color: var(--canvas-night);
     font-weight: 900;
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 }
 
 .tab-slider {
@@ -40,12 +45,14 @@
     bottom: 4px;
     left: 4px;
     width: calc((100% - 16px) / 3);
-    background: var(--status-ready);
+    background: rgba(92, 255, 176, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(92, 255, 176, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.8);
     border-radius: 32px;
     transition: transform 0.3s cubic-bezier(0.25, 1, 0.2, 1);
-    z-index: 1; /* Moves underneath the text */
+    z-index: 1;
     pointer-events: none;
-    box-shadow: 0 0 14px rgba(92, 255, 176, 0.45);
     transform: translateX(calc(var(--active-index, 1) * (100% + 4px)));
 }
 

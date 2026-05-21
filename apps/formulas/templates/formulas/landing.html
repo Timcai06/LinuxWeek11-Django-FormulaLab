@@ -10,6 +10,7 @@
 {% block content %}
 <section class="landing-hero">
     <div class="hero-scanline" aria-hidden="true"></div>
+    <div class="hero-laser-scan" aria-hidden="true"></div>
 
     <!-- Grok-inspired Math Cosmos -->
     <div class="math-cosmos" aria-hidden="true"></div>
@@ -242,9 +243,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 particle.remove();
                 return;
             }
-            opacity -= 0.025;
+            opacity -= 0.02;
             x += velocityX;
             y += velocityY;
+            // damping
+            velocityX *= 0.94;
+            velocityY *= 0.94;
             particle.style.opacity = opacity;
             particle.style.transform = `translate(${x - startX}px, ${y - startY}px)`;
             requestAnimationFrame(animate);

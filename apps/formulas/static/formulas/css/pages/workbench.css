@@ -213,13 +213,20 @@
     padding: 10px;
 }
 
+@keyframes reticleSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .drop-reticle {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     position: relative;
     background: transparent;
-    border: none;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: reticleSpin 20s linear infinite;
 }
 
 @keyframes pulseDot {
@@ -231,19 +238,9 @@
 .drop-reticle::before {
     content: '';
     position: absolute;
-    inset: 0;
-    background: 
-        linear-gradient(to right, var(--status-ready) 2px, transparent 2px) 0 0,
-        linear-gradient(to bottom, var(--status-ready) 2px, transparent 2px) 0 0,
-        linear-gradient(to left, var(--status-ready) 2px, transparent 2px) 100% 0,
-        linear-gradient(to bottom, var(--status-ready) 2px, transparent 2px) 100% 0,
-        linear-gradient(to right, var(--status-ready) 2px, transparent 2px) 0 100%,
-        linear-gradient(to top, var(--status-ready) 2px, transparent 2px) 0 100%,
-        linear-gradient(to left, var(--status-ready) 2px, transparent 2px) 100% 100%,
-        linear-gradient(to top, var(--status-ready) 2px, transparent 2px) 100% 100%;
-    background-repeat: no-repeat;
-    background-size: 20px 20px;
-    opacity: 0.35;
+    inset: -15px;
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
     transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -310,7 +307,21 @@
 
 .drop-zone.is-dragging {
     border-color: var(--status-ready);
-    background: rgba(92, 255, 176, 0.04);
+    background: rgba(92, 255, 176, 0.05);
+}
+
+.drop-zone.is-dragging .drop-reticle {
+    width: 100px;
+    height: 100px;
+    border-color: var(--status-ready);
+    box-shadow: 0 0 30px rgba(92, 255, 176, 0.3), inset 0 0 20px rgba(92, 255, 176, 0.2);
+    animation: none;
+}
+
+.drop-zone.is-dragging .drop-reticle::before {
+    inset: -5px;
+    border-color: var(--status-ready);
+    transform: rotate(45deg);
 }
 
 .drop-zone.is-dragging .hud-corners::before { top: 8px; left: 8px; border-color: var(--status-ready); }
