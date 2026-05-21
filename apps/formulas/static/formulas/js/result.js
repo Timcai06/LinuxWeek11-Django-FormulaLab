@@ -150,14 +150,113 @@
         updatePaperFit(output.value);
     });
 
+    // Theme Switcher for KaTeX Preview Pane
+    const themeToggleBtn = document.querySelector("[data-theme-toggle]");
+    const previewContainer = document.querySelector("[data-katex-preview-container]");
+
+    if (themeToggleBtn && previewContainer) {
+        const toggleText = themeToggleBtn.querySelector(".toggle-text");
+
+        const setTheme = (theme) => {
+            if (theme === "dark") {
+                previewContainer.classList.remove("katex-preview-paper");
+                previewContainer.classList.add("katex-preview-dark");
+                if (toggleText) {
+                    toggleText.textContent = "CONSOLE MODE";
+                }
+                localStorage.setItem("katex-preview-theme", "dark");
+            } else {
+                previewContainer.classList.remove("katex-preview-dark");
+                previewContainer.classList.add("katex-preview-paper");
+                if (toggleText) {
+                    toggleText.textContent = "PAPER MODE";
+                }
+                localStorage.setItem("katex-preview-theme", "paper");
+            }
+        };
+
+        setTheme("paper");
+
+        themeToggleBtn.addEventListener("click", () => {
+            const isDark = previewContainer.classList.contains("katex-preview-dark");
+            setTheme(isDark ? "paper" : "dark");
+        });
+    }
+
+    // Clipboard copy visual glow feedback
     if (copyButton) {
         copyButton.addEventListener("click", async () => {
-            await navigator.clipboard.writeText(output.value);
-            copyButton.textContent = "COPIED";
-            window.setTimeout(() => {
-                copyButton.textContent = "COPY";
-            }, 1100);
+            try {
+                await navigator.clipboard.writeText(output.value);
+                copyButton.classList.add("copied-glow");
+                const textSpan = copyButton.querySelector("span");
+                if (textSpan) {
+                    textSpan.textContent = "COPIED";
+                }
+                window.setTimeout(() => {
+                    copyButton.classList.remove("copied-glow");
+                    if (textSpan) {
+                        textSpan.textContent = "COPY";
+                    }
+                }, 1000);
+            } catch (err) {
+                console.error("Failed to copy text: ", err);
+            }
         });
+    }
+
+    // Image Viewport Mode Toggle (Raw vs Binarized)
+    const viewport = document.querySelector(".scope-viewport");
+    const viewportImg = document.querySelector(".scope-image");
+    const viewportTitle = document.querySelector("[data-viewport-title]");
+    const imageToggleButtons = Array.from(document.querySelectorAll("[data-image-toggle]"));
+
+    if (viewport && viewportImg) {
+        imageToggleButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const mode = btn.dataset.imageToggle;
+                imageToggleButtons.forEach((b) => b.classList.remove("active"));
+                btn.classList.add("active");
+
+                if (mode === "preprocessed") {
+                    const prepUrl = viewport.dataset.preprocessedUrl;
+                    if (prepUrl) {
+                        viewportImg.src = prepUrl;
+                    }
+                    if (viewportTitle) {
+                        viewportTitle.textContent = "BINARIZED IMAGE";
+                    }
+                } else {
+                    const origUrl = viewport.dataset.originalUrl;
+                    if (origUrl) {
+                        viewportImg.src = origUrl;
+                    }
+                    if (viewportTitle) {
+                        viewportTitle.textContent = "ORIGINAL IMAGE";
+                    }
+                }
+            });
+        });
+
+        // Dynamic Resolution Calculator
+        const resolutionLabel = document.querySelector("[data-scope-resolution]");
+
+        function updateImageResolution() {
+            if (resolutionLabel) {
+                const width = viewportImg.naturalWidth;
+                const height = viewportImg.naturalHeight;
+                if (width && height) {
+                    resolutionLabel.textContent = `${width} × ${height} PX`;
+                } else {
+                    resolutionLabel.textContent = "0 × 0 PX";
+                }
+            }
+        }
+
+        if (viewportImg.complete) {
+            updateImageResolution();
+        }
+        viewportImg.addEventListener("load", updateImageResolution);
     }
 
     selectFormat("block");

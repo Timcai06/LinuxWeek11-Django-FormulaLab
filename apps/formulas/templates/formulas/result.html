@@ -4,27 +4,81 @@
 {% block title %}Mission Report - Formula Lab{% endblock %}
 {% block page_css %}
 <link rel="stylesheet" href="{% static 'formulas/css/pages/result.css' %}">
+<link rel="stylesheet" href="{% static 'formulas/css/pages/result-inspector.css' %}">
+<link rel="stylesheet" href="{% static 'formulas/css/pages/result-pipeline.css' %}">
 {% endblock %}
 
 {% block content %}
 {{ formats|json_script:"latex-formats" }}
 <section class="result-grid">
-    <div class="source-panel review-inspector">
+    <div class="source-panel">
+        <div class="result-breadcrumbs">
+            {% if job.project %}
+            <a href="{% url 'project-workspace' job.project.id %}" class="breadcrumb-link">
+                <svg class="breadcrumb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>{{ job.project.name|upper }}</span>
+            </a>
+            {% else %}
+            <a href="{% url 'workbench' %}" class="breadcrumb-link">
+                <svg class="breadcrumb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>WORKBENCH</span>
+            </a>
+            {% endif %}
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">{{ job.mission_code }}</span>
+        </div>
+
         <div class="section-header">
             <div class="mission-tag">
                 <span class="pulse-dot status-{{ job.status|lower }}"></span>
                 <span class="mission-label">MISSION REPORT</span>
                 <strong class="mission-code">{{ job.mission_code }}</strong>
             </div>
-            <h1>REVIEW INSPECTOR</h1>
-        </div>
-        <div class="source-thumb">
-            <div class="review-module-header">
-                <span class="telemetry-label">SOURCE THUMBNAIL</span>
-                <span>EVIDENCE</span>
+            <div class="image-header-row">
+                <h1 data-viewport-title>ORIGINAL IMAGE</h1>
+                {% if job.preprocessed_image %}
+                <div class="image-toggle-deck">
+                    <button type="button" class="btn-image-toggle active" data-image-toggle="original">RAW</button>
+                    <button type="button" class="btn-image-toggle" data-image-toggle="preprocessed">BINARIZED</button>
+                </div>
+                {% endif %}
             </div>
-            <img src="{{ job.original_image.url }}" alt="Source formula thumbnail">
         </div>
+
+        <div class="scope-viewport" data-original-url="{{ job.original_image.url }}" data-preprocessed-url="{% if job.preprocessed_image %}{{ job.preprocessed_image.url }}{% endif %}">
+            <span class="scope-bracket scope-bracket-tl"></span>
+            <span class="scope-bracket scope-bracket-tr"></span>
+            <span class="scope-bracket scope-bracket-bl"></span>
+            <span class="scope-bracket scope-bracket-br"></span>
+            <div class="scope-crosshair-h"></div>
+            <div class="scope-crosshair-v"></div>
+            <div class="scope-scanline"></div>
+            <img src="{{ job.original_image.url }}" alt="Original formula upload" class="scope-image">
+            <div class="scope-telemetry-overlay">
+                <span class="scope-status-label">SYS_{{ job.status|upper }}</span>
+                <span class="scope-resolution" data-scope-resolution>0 × 0 PX</span>
+            </div>
+        </div>
+
+        <div class="telemetry-grid">
+            <div class="telemetry-card">
+                <span class="telemetry-label">MISSION CODE</span>
+                <span class="telemetry-value font-mono">{{ job.mission_code }}</span>
+            </div>
+            <div class="telemetry-card">
+                <span class="telemetry-label">STATUS</span>
+                <span class="telemetry-value status-val status-{{ job.status|lower }}">{{ job.status|upper }}</span>
+            </div>
+            <div class="telemetry-card">
+                <span class="telemetry-label">DURATION</span>
+                <span class="telemetry-value font-mono">{% if job.duration_ms %}{{ job.duration_ms }} ms{% else %}N/A{% endif %}</span>
+            </div>
+            <div class="telemetry-card">
+                <span class="telemetry-label">ENGINE</span>
+                <span class="telemetry-value font-mono">{{ job.engine_name }}</span>
+            </div>
+        </div>
+
         <div class="paper-fit-panel paper-fit-panel-compact" data-paper-fit-preview>
             <div class="paper-fit-header">
                 <span class="telemetry-label">PAPER FIT PREVIEW</span>
@@ -49,13 +103,53 @@
             </div>
             <p data-paper-fit-message>Waiting for layout telemetry.</p>
         </div>
-        <dl class="metadata-grid">
-            <div><dt>MISSION CODE</dt><dd>{{ job.mission_code }}</dd></div>
-            <div><dt>STATUS</dt><dd class="status-val status-{{ job.status|lower }}">{{ job.status|upper }}</dd></div>
-            <div><dt>DURATION</dt><dd>{% if job.duration_ms %}{{ job.duration_ms }} ms{% else %}N/A{% endif %}</dd></div>
-            <div><dt>ENGINE</dt><dd>{{ job.engine_name }}</dd></div>
-        </dl>
+
+        <div class="telemetry-pipeline">
+            <span class="telemetry-label">PIPELINE DIAGNOSTICS</span>
+            <div class="pipeline-flow-vertical">
+                <div class="pipeline-item completed">
+                    <div class="pipeline-indicator">
+                        <span class="step-dot"></span>
+                        <div class="pipeline-line"></div>
+                    </div>
+                    <div class="pipeline-info">
+                        <span class="step-title">UPLOAD</span>
+                        <span class="step-status">LOCKED</span>
+                    </div>
+                </div>
+                <div class="pipeline-item completed">
+                    <div class="pipeline-indicator">
+                        <span class="step-dot"></span>
+                        <div class="pipeline-line"></div>
+                    </div>
+                    <div class="pipeline-info">
+                        <span class="step-title">PREPROCESS</span>
+                        <span class="step-status">LOCKED</span>
+                    </div>
+                </div>
+                <div class="pipeline-item {% if job.status == 'succeeded' %}completed{% elif job.status == 'failed' %}failed{% else %}active{% endif %}">
+                    <div class="pipeline-indicator">
+                        <span class="step-dot"></span>
+                        <div class="pipeline-line"></div>
+                    </div>
+                    <div class="pipeline-info">
+                        <span class="step-title">OCR ENGINE</span>
+                        <span class="step-status">{% if job.status == 'succeeded' %}FINISHED{% elif job.status == 'failed' %}FAILED{% else %}PROCESSING{% endif %}</span>
+                    </div>
+                </div>
+                <div class="pipeline-item {% if job.status == 'succeeded' %}completed{% endif %}">
+                    <div class="pipeline-indicator">
+                        <span class="step-dot"></span>
+                    </div>
+                    <div class="pipeline-info">
+                        <span class="step-title">RENDER</span>
+                        <span class="step-status">{% if job.status == 'succeeded' %}ACTIVE{% else %}PENDING{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
     <div class="latex-console">
         <div class="result-readout">
             <div>
@@ -64,10 +158,18 @@
             </div>
             <span>{{ job.status|upper }}</span>
         </div>
-        <div class="katex-preview katex-preview-paper">
+        <div class="katex-preview katex-preview-paper" data-katex-preview-container>
             <div class="katex-preview-header">
                 <span class="telemetry-label">KATEX PREVIEW</span>
-                <span>RENDERED OUTPUT</span>
+                <div class="preview-actions">
+                    <button class="btn-theme-toggle" type="button" data-theme-toggle aria-label="Toggle preview theme">
+                        <span class="toggle-track">
+                            <span class="toggle-thumb"></span>
+                        </span>
+                        <span class="toggle-text">PAPER MODE</span>
+                    </button>
+                    <span class="telemetry-sublabel">RENDERED OUTPUT</span>
+                </div>
             </div>
             <div class="katex-surface" data-katex-preview></div>
         </div>
@@ -82,8 +184,10 @@
                         <button type="button" data-format-tab="block" aria-selected="true">BLOCK</button>
                         <button type="button" data-format-tab="inline">INLINE</button>
                     </div>
-                    <button class="button button-primary" type="button" data-copy-current>COPY</button>
-                    <a class="button button-secondary" href="{% url 'history' %}">LOG</a>
+                    <button class="button button-primary" type="button" data-copy-current>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>COPY</span>
+                    </button>
                 </div>
             </div>
             <textarea class="latex-output latex-output-compact" data-latex-output spellcheck="false">{{ formats.block }}</textarea>

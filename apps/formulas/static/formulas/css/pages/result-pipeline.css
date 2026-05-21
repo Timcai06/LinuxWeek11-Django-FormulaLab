@@ -1,0 +1,180 @@
+.telemetry-pipeline {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.pipeline-flow-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-left: 4px;
+}
+
+.pipeline-item {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding-bottom: 20px;
+}
+
+.pipeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.pipeline-indicator {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 10px;
+}
+
+.step-dot {
+    z-index: 2;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+.pipeline-line {
+    position: absolute;
+    z-index: 1;
+    top: 13px;
+    bottom: -15px;
+    left: 50%;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(-50%);
+    transition: background-color 0.3s ease;
+}
+
+.pipeline-item.completed .step-dot {
+    border-color: var(--status-ready);
+    background: var(--status-ready);
+    box-shadow: 0 0 6px var(--status-ready);
+}
+
+.pipeline-item.completed .pipeline-line {
+    background: var(--status-ready);
+}
+
+.pipeline-item.active .step-dot {
+    border-color: #e6a23c;
+    background: #e6a23c;
+    box-shadow: 0 0 8px #e6a23c;
+    animation: pulseActive 1.5s infinite ease-in-out;
+}
+
+.pipeline-item.failed .step-dot {
+    border-color: #ff5c5c;
+    background: #ff5c5c;
+    box-shadow: 0 0 6px #ff5c5c;
+}
+
+.pipeline-info {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 100%;
+    font-family: var(--font-mono);
+}
+
+.step-title {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.65rem;
+    font-weight: 700;
+    transition: color 0.3s ease;
+}
+
+.pipeline-item.completed .step-title {
+    color: var(--on-night);
+}
+
+.pipeline-item.active .step-title {
+    color: #e6a23c;
+}
+
+.pipeline-item.failed .step-title {
+    color: #ff5c5c;
+}
+
+.step-status {
+    color: var(--muted);
+    font-size: 0.58rem;
+    font-weight: 700;
+}
+
+.pipeline-item.completed .step-status {
+    color: var(--status-ready);
+}
+
+.pipeline-item.active .step-status {
+    color: #e6a23c;
+}
+
+.pipeline-item.failed .step-status {
+    color: #ff5c5c;
+}
+
+@keyframes pulseActive {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.2);
+    }
+}
+
+.latex-output-compact,
+.source-panel,
+.latex-console {
+    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+    --scrollbar-track: rgba(0, 0, 0, 0.2);
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+}
+
+.latex-output-compact:hover,
+.source-panel:hover,
+.latex-console:hover {
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+}
+
+@supports not (scrollbar-color: auto) {
+    .latex-output-compact::-webkit-scrollbar,
+    .source-panel::-webkit-scrollbar,
+    .latex-console::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .latex-output-compact::-webkit-scrollbar-track,
+    .source-panel::-webkit-scrollbar-track,
+    .latex-console::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+    }
+
+    .latex-output-compact::-webkit-scrollbar-thumb,
+    .source-panel::-webkit-scrollbar-thumb,
+    .latex-console::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 3px;
+    }
+
+    .latex-output-compact::-webkit-scrollbar-thumb:hover,
+    .source-panel::-webkit-scrollbar-thumb:hover,
+    .latex-console::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
