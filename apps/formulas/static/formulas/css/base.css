@@ -289,7 +289,12 @@ textarea {
     line-height: 1;
     letter-spacing: 1.1px;
     text-align: center;
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition:
+        background 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .button-primary {
@@ -310,6 +315,7 @@ textarea {
     background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9), transparent);
     transform: skewX(-20deg);
     transition: left 0.5s ease;
+    pointer-events: none;
 }
 
 .button-primary:hover::before {
@@ -335,11 +341,11 @@ textarea {
     color: #000000;
     box-shadow: 0 0 24px rgba(255, 255, 255, 0.4);
     border-color: transparent;
-    transform: translateY(-2px);
+    filter: brightness(1.04);
 }
 
 .button:active {
-    transform: scale(0.98);
+    filter: brightness(0.94);
 }
 
 .button:disabled {
