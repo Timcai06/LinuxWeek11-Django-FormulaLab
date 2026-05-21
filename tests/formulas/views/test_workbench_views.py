@@ -44,6 +44,8 @@ class FormulaWorkbenchViewTests(FormulaViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "formulas/workbench.html")
+        self.assertContains(response, "/static/formulas/css/pages/workbench.css")
+        self.assertContains(response, "/static/formulas/css/components/workbench-telemetry.css")
         self.assertContains(response, 'action="/jobs/"')
         self.assertContains(response, 'enctype="multipart/form-data"')
         self.assertContains(response, 'name="project"')

@@ -32,6 +32,8 @@ class FormulaSystemViewTests(FormulaViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "formulas/system.html")
+        self.assertContains(response, "/static/formulas/css/pages/system.css")
+        self.assertContains(response, "/static/formulas/css/components/system-service-flow.css")
         self.assertContains(response, "dashboard-grid")
         self.assertContains(response, "service-flow")
         self.assertContains(response, 'data-service="MODEL"')

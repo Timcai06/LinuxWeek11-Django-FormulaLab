@@ -75,6 +75,8 @@ class FormulaProjectViewTests(FormulaViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "formulas/project_workspace.html")
+        self.assertContains(response, "/static/formulas/css/pages/projects.css")
+        self.assertContains(response, "/static/formulas/css/components/project-workspace.css")
         self.assertContains(response, "PROJECT WORKSPACE")
         self.assertContains(response, "Thesis chapter three")
         self.assertContains(response, "NEEDS REVIEW")
