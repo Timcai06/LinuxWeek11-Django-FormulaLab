@@ -52,31 +52,12 @@
             </div>
             <div class="katex-surface" data-katex-preview></div>
         </div>
-        <div class="paper-fit-panel" data-paper-fit-preview>
-            <div class="paper-fit-header">
-                <span class="telemetry-label">PAPER FIT PREVIEW</span>
-                <strong data-paper-fit-risk>STANDBY</strong>
-            </div>
-            <div class="paper-fit-metrics" aria-label="Paper fit metrics">
-                <div>
-                    <span>WIDTH</span>
-                    <strong data-paper-fit-width>--</strong>
-                </div>
-                <div>
-                    <span>LINES</span>
-                    <strong data-paper-fit-lines>--</strong>
-                </div>
-                <div>
-                    <span>TIGHT</span>
-                    <strong data-paper-fit-tight>--</strong>
-                </div>
-            </div>
-            <p data-paper-fit-message>Waiting for layout telemetry.</p>
-        </div>
     </div>
 </section>
 {% endblock %}
 
 {% block page_js %}
+<script defer src="{% static 'formulas/js/shared/katex_preview.js' %}"></script>
+<script defer src="{% static 'formulas/js/shared/format_tabs.js' %}"></script>
 <script defer src="{% static 'formulas/js/result.js' %}"></script>
 {% endblock %}

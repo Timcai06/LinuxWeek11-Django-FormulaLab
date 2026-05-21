@@ -1,0 +1,85 @@
+.katex-preview {
+    flex: 1.35;
+    min-height: 160px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    overflow: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.katex-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 18px rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.katex-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.katex-preview-header > span:last-child {
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.katex-surface {
+    min-height: 132px;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px) 0 0 / 16px 16px,
+        linear-gradient(45deg, rgba(255, 255, 255, 0.005) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.005) 75%) 0 0 / 32px 32px,
+        rgba(0, 0, 0, 0.35);
+    color: var(--on-night);
+    border-radius: 6px;
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    overflow: auto;
+    position: relative;
+}
+
+.katex-surface::before,
+.katex-surface::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+}
+
+.katex-surface::before {
+    top: 10px;
+    left: 10px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.katex-surface::after {
+    bottom: 10px;
+    right: 10px;
+    border-left: none;
+    border-top: none;
+}
+
+.katex-surface .katex,
+.katex-surface .katex-display {
+    color: var(--on-night);
+}
+
+.katex-surface .katex-display {
+    margin: 0;
+}

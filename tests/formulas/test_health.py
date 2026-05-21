@@ -143,7 +143,7 @@ class HealthApiTests(SimpleTestCase):
             "last_job": None,
         }
 
-        with patch("apps.formulas.views.build_health_snapshot", return_value=payload):
+        with patch("apps.formulas.views.system_views.build_health_snapshot", return_value=payload):
             response = Client().get("/api/system/health/")
 
         self.assertEqual(response.status_code, 200)
@@ -162,7 +162,7 @@ class HealthApiTests(SimpleTestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_warmup_api_queues_task(self):
-        with patch("apps.formulas.views.warmup_model_task.delay") as delay:
+        with patch("apps.formulas.views.system_views.warmup_model_task.delay") as delay:
             response = Client().post("/api/system/warmup/")
 
         self.assertEqual(response.status_code, 200)
@@ -171,8 +171,8 @@ class HealthApiTests(SimpleTestCase):
 
     def test_warmup_api_reports_broker_failure(self):
         with (
-            patch("apps.formulas.views.warmup_model_task.delay", side_effect=RuntimeError("broker down")),
-            patch("apps.formulas.views.logger.exception") as log_exception,
+            patch("apps.formulas.views.system_views.warmup_model_task.delay", side_effect=RuntimeError("broker down")),
+            patch("apps.formulas.views.system_views.logger.exception") as log_exception,
         ):
             response = Client().post("/api/system/warmup/")
 
