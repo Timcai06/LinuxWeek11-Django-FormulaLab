@@ -109,10 +109,20 @@ class FormulaMissionViewTests(FormulaViewTestCase):
         self.assertContains(response, 'data-katex-preview')
         self.assertContains(response, "katex-surface")
         self.assertContains(response, "RENDERED OUTPUT")
-        self.assertContains(response, "data-paper-fit-preview")
-        self.assertContains(response, "data-paper-fit-width")
-        self.assertContains(response, "data-paper-fit-lines")
+        self.assertNotContains(response, "data-paper-fit-preview")
+        self.assertNotContains(response, "PAPER FIT PREVIEW")
+        self.assertContains(response, 'defer src="/static/formulas/js/shared/katex_preview.js"')
+        self.assertContains(response, 'defer src="/static/formulas/js/shared/format_tabs.js"')
         self.assertContains(response, 'defer src="/static/formulas/js/result.js"')
+        response_html = response.content.decode()
+        self.assertLess(
+            response_html.index("/static/formulas/js/shared/katex_preview.js"),
+            response_html.index("/static/formulas/js/result.js"),
+        )
+        self.assertLess(
+            response_html.index("/static/formulas/js/shared/format_tabs.js"),
+            response_html.index("/static/formulas/js/result.js"),
+        )
 
     def test_mission_report_presenter_exposes_job_and_formats_from_result(self):
         from apps.formulas.presenters.missions import mission_report_context
