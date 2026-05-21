@@ -85,8 +85,8 @@
 }
 
 .katex-preview-paper {
-    flex: 1.5;
-    min-height: 320px;
+    flex: 1.1;
+    min-height: 200px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -105,8 +105,8 @@
 
 .katex-preview-paper .katex-surface {
     flex: 1;
-    min-height: 260px;
-    padding: 32px;
+    min-height: 140px;
+    padding: 20px;
     border-color: rgba(0, 0, 0, 0.15);
     background-color: #fcfcf9;
     background-image:
@@ -114,7 +114,7 @@
         linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
     background-size: 20px 20px;
     color: #18181b;
-    font-size: clamp(1.2rem, 2.5vw, 2.1rem);
+    font-size: clamp(1.2rem, 2.2vw, 1.8rem);
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
@@ -139,4 +139,157 @@
 .katex-preview-paper .katex-surface .katex-display,
 .katex-preview-paper .katex-surface .katex * {
     color: #18181b !important;
+}
+
+.katex-preview-dark {
+    flex: 1.1;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.katex-preview-dark:hover {
+    transform: none;
+    border-color: rgba(92, 255, 176, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(92, 255, 176, 0.03);
+}
+
+.katex-preview-dark .katex-preview-header {
+    flex-shrink: 0;
+}
+
+.katex-preview-dark .katex-surface {
+    flex: 1;
+    min-height: 140px;
+    padding: 20px;
+    border-color: rgba(92, 255, 176, 0.15);
+    background-color: #0b0f19;
+    background-image:
+        radial-gradient(circle, rgba(92, 255, 176, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(92, 255, 176, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(92, 255, 176, 0.015) 1px, transparent 1px);
+    background-size: 20px 20px;
+    font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+    box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(92, 255, 176, 0.05);
+}
+
+.katex-preview-dark .katex-surface::before,
+.katex-preview-dark .katex-surface::after {
+    width: 12px;
+    height: 12px;
+    border-color: rgba(92, 255, 176, 0.4);
+}
+
+.katex-preview-dark .katex-surface::before {
+    top: 12px;
+    left: 12px;
+}
+
+.katex-preview-dark .katex-surface::after {
+    right: 12px;
+    bottom: 12px;
+}
+
+.katex-preview-dark .katex-surface .katex,
+.katex-preview-dark .katex-surface .katex-display,
+.katex-preview-dark .katex-surface .katex * {
+    color: #5cffb0 !important;
+    text-shadow: 0 0 8px rgba(92, 255, 176, 0.4);
+}
+
+.katex-preview-paper .katex-surface .katex,
+.katex-preview-dark .katex-surface .katex {
+    font-size: 1.15em !important;
+    line-height: 1.2 !important;
+}
+
+/* Theme Toggle Button Styles */
+.btn-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 140px;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    outline: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.btn-theme-toggle:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-theme-toggle .toggle-track {
+    display: inline-block;
+    width: 28px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 7px;
+    position: relative;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-theme-toggle .toggle-thumb {
+    display: block;
+    width: 10px;
+    height: 10px;
+    background: #ffffff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
+}
+
+.btn-theme-toggle .toggle-text {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    transition: color 0.2s ease;
+    display: inline-block;
+    width: 96px;
+    text-align: left;
+}
+
+/* Active / Dark state */
+.katex-preview-dark .btn-theme-toggle .toggle-track {
+    background: var(--status-ready);
+    box-shadow: 0 0 6px rgba(92, 255, 176, 0.4);
+}
+
+.katex-preview-dark .btn-theme-toggle .toggle-thumb {
+    transform: translateX(14px);
+    background-color: var(--canvas-night);
+}
+
+.katex-preview-dark .btn-theme-toggle .toggle-text {
+    color: var(--status-ready);
+}
+
+.preview-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.telemetry-sublabel {
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
 }
