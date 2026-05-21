@@ -9,16 +9,46 @@
 {% block content %}
 {{ formats|json_script:"latex-formats" }}
 <section class="result-grid">
-    <div class="source-panel">
+    <div class="source-panel review-inspector">
         <div class="section-header">
             <div class="mission-tag">
                 <span class="pulse-dot status-{{ job.status|lower }}"></span>
                 <span class="mission-label">MISSION REPORT</span>
                 <strong class="mission-code">{{ job.mission_code }}</strong>
             </div>
-            <h1>ORIGINAL IMAGE</h1>
+            <h1>REVIEW INSPECTOR</h1>
         </div>
-        <img src="{{ job.original_image.url }}" alt="Original formula upload">
+        <div class="source-thumb">
+            <div class="review-module-header">
+                <span class="telemetry-label">SOURCE THUMBNAIL</span>
+                <span>EVIDENCE</span>
+            </div>
+            <img src="{{ job.original_image.url }}" alt="Source formula thumbnail">
+        </div>
+        <div class="paper-fit-panel paper-fit-panel-compact" data-paper-fit-preview>
+            <div class="paper-fit-header">
+                <span class="telemetry-label">PAPER FIT PREVIEW</span>
+                <strong data-paper-fit-risk>STANDBY</strong>
+            </div>
+            <div class="visual-ruler" aria-hidden="true">
+                <div class="ruler-cursor" data-ruler-cursor></div>
+            </div>
+            <div class="paper-fit-metrics" aria-label="Paper fit metrics">
+                <div>
+                    <span>WIDTH</span>
+                    <strong data-paper-fit-width>--</strong>
+                </div>
+                <div>
+                    <span>LINES</span>
+                    <strong data-paper-fit-lines>--</strong>
+                </div>
+                <div>
+                    <span>TIGHT</span>
+                    <strong data-paper-fit-tight>--</strong>
+                </div>
+            </div>
+            <p data-paper-fit-message>Waiting for layout telemetry.</p>
+        </div>
         <dl class="metadata-grid">
             <div><dt>MISSION CODE</dt><dd>{{ job.mission_code }}</dd></div>
             <div><dt>STATUS</dt><dd class="status-val status-{{ job.status|lower }}">{{ job.status|upper }}</dd></div>
