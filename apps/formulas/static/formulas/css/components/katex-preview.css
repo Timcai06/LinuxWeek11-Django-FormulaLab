@@ -85,8 +85,8 @@
 }
 
 .katex-preview-paper {
-    flex: 1;
-    min-height: 220px;
+    flex: 1.5;
+    min-height: 320px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -105,7 +105,7 @@
 
 .katex-preview-paper .katex-surface {
     flex: 1;
-    min-height: 160px;
+    min-height: 260px;
     padding: 32px;
     border-color: rgba(0, 0, 0, 0.15);
     background-color: #fcfcf9;

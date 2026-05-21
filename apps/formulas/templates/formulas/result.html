@@ -42,50 +42,21 @@
             <div class="katex-surface" data-katex-preview></div>
         </div>
 
-        <div class="console-control-deck">
-            <div class="deck-section source-section">
-                <div class="section-header-compact">
-                    <span class="telemetry-label">LATEX SOURCE</span>
+        <div class="console-control-deck console-control-deck-compact">
+            <div class="section-header-compact">
+                <span class="telemetry-label">LATEX SOURCE</span>
+                <div class="console-actions-row">
                     <div class="console-tabs console-tabs-compact" role="tablist" aria-label="LaTeX formats">
                         <span class="tab-slider" aria-hidden="true"></span>
                         <button type="button" data-format-tab="raw">RAW</button>
                         <button type="button" data-format-tab="block" aria-selected="true">BLOCK</button>
                         <button type="button" data-format-tab="inline">INLINE</button>
                     </div>
-                </div>
-                <textarea class="latex-output latex-output-compact" data-latex-output spellcheck="false">{{ formats.block }}</textarea>
-            </div>
-
-            <div class="deck-section feedback-section">
-                <div class="paper-fit-panel paper-fit-panel-compact" data-paper-fit-preview>
-                    <div class="paper-fit-header">
-                        <span class="telemetry-label">PAPER FIT PREVIEW</span>
-                        <strong data-paper-fit-risk>STANDBY</strong>
-                    </div>
-                    <div class="visual-ruler" aria-hidden="true">
-                        <div class="ruler-cursor" data-ruler-cursor></div>
-                    </div>
-                    <div class="paper-fit-metrics" aria-label="Paper fit metrics">
-                        <div>
-                            <span>WIDTH</span>
-                            <strong data-paper-fit-width>--</strong>
-                        </div>
-                        <div>
-                            <span>LINES</span>
-                            <strong data-paper-fit-lines>--</strong>
-                        </div>
-                        <div>
-                            <span>TIGHT</span>
-                            <strong data-paper-fit-tight>--</strong>
-                        </div>
-                    </div>
-                    <p data-paper-fit-message>Waiting for layout telemetry.</p>
-                </div>
-                <div class="console-actions compact-actions">
                     <button class="button button-primary" type="button" data-copy-current>COPY</button>
                     <a class="button button-secondary" href="{% url 'history' %}">LOG</a>
                 </div>
             </div>
+            <textarea class="latex-output latex-output-compact" data-latex-output spellcheck="false">{{ formats.block }}</textarea>
         </div>
     </div>
 </section>
