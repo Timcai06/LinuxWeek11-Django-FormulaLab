@@ -1,0 +1,131 @@
+.formula-item-row {
+    grid-template-columns: minmax(160px, 0.18fr) minmax(0, 0.38fr) minmax(0, 0.34fr) auto;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.formula-item-meta {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+}
+
+.formula-code {
+    width: fit-content;
+}
+
+.formula-status-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.status-chip,
+.quality-chip {
+    min-height: 26px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 9px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--muted);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+}
+
+.status-chip.status-confirmed,
+.status-chip.status-auto_ready,
+.status-chip.status-edited,
+.quality-chip.high-q {
+    border-color: rgba(92, 255, 176, 0.22);
+    color: var(--status-ready);
+}
+
+.status-chip.status-needs_review,
+.quality-chip.mid-q {
+    border-color: rgba(255, 184, 77, 0.24);
+    color: var(--status-warming);
+}
+
+.status-chip.status-rejected,
+.quality-chip.low-q {
+    border-color: rgba(255, 77, 115, 0.24);
+    color: var(--status-error);
+}
+
+.cell-label {
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+}
+
+.code-wrapper,
+.formula-render-surface-wrapper {
+    min-width: 0;
+    min-height: 86px;
+    display: grid;
+}
+
+.formula-source-block,
+.formula-render-block {
+    min-width: 0;
+}
+
+.formula-source-block pre {
+    max-height: 132px;
+    overflow: auto;
+}
+
+.formula-render-surface-wrapper .formula-render-surface {
+    min-height: 86px;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.026) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px),
+        rgba(0, 0, 0, 0.42);
+    background-size: 18px 18px;
+}
+
+.formula-item-actions {
+    display: flex;
+    align-items: stretch;
+}
+
+.formula-item-actions .review-trigger {
+    min-height: 100%;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 0.12em;
+}
+
+@media (max-width: 1120px) {
+    .formula-item-row {
+        grid-template-columns: minmax(160px, 0.24fr) minmax(0, 0.76fr);
+    }
+
+    .formula-render-block,
+    .formula-item-actions {
+        grid-column: 2;
+    }
+
+    .formula-item-actions .review-trigger {
+        width: 100%;
+        min-height: 32px;
+        writing-mode: horizontal-tb;
+    }
+}
+
+@media (max-width: 760px) {
+    .formula-item-row {
+        grid-template-columns: 1fr;
+    }
+
+    .formula-render-block,
+    .formula-item-actions {
+        grid-column: auto;
+    }
+}

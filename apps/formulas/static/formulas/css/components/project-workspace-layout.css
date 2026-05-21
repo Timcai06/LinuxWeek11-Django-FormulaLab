@@ -1,0 +1,153 @@
+.metric-card {
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+}
+
+.metric-card::after {
+    content: "";
+    position: absolute;
+    inset: auto 12px 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.metric-card:hover::after {
+    opacity: 1;
+}
+
+.metric-needs-review strong {
+    color: var(--status-warming);
+}
+
+.metric-ready strong,
+.metric-exported strong {
+    color: var(--status-ready);
+}
+
+.workspace-body-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+    gap: 24px;
+    align-items: start;
+}
+
+.workspace-main-col,
+.workspace-sidebar-col {
+    min-width: 0;
+    display: grid;
+    gap: 14px;
+}
+
+.workspace-sidebar-col {
+    position: sticky;
+    top: calc(var(--nav-height) + 34px);
+}
+
+.workspace-tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.34);
+    border-radius: 8px;
+}
+
+.workspace-tab-trigger {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--dim);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.workspace-tab-trigger:hover,
+.workspace-tab-trigger.active {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--on-night);
+}
+
+.tab-indicator {
+    width: 7px;
+    height: 7px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+}
+
+.workspace-tab-trigger.active .tab-indicator {
+    background: var(--status-ready);
+    border-color: var(--status-ready);
+    box-shadow: 0 0 12px rgba(92, 255, 176, 0.45);
+}
+
+.workspace-tab-content {
+    display: none;
+}
+
+.workspace-tab-content.active {
+    display: block;
+}
+
+.workspace-tab-content .paper-preview-panel,
+.workspace-tab-content .formula-items-panel {
+    margin-top: 0;
+}
+
+.workspace-sidebar-col .workspace-panel {
+    min-height: 0;
+}
+
+.intelligence-content {
+    display: grid;
+    gap: 12px;
+}
+
+.status-orbit {
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(92, 255, 176, 0.26);
+    border-radius: 50%;
+    box-shadow: inset 0 0 16px rgba(92, 255, 176, 0.12), 0 0 16px rgba(92, 255, 176, 0.08);
+}
+
+@media (max-width: 1120px) {
+    .workspace-body-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-sidebar-col {
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .workspace-sidebar-col {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-tab-trigger {
+        width: 100%;
+        justify-content: center;
+    }
+}

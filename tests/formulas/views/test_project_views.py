@@ -259,6 +259,28 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertEqual(response.context["review_items"][0]["id"], str(item.id))
         self.assertEqual(response.context["review_items"][0]["latex"], item.latex_current)
 
+    def test_project_workspace_renders_inspection_tabs_and_drawer_backdrop(self):
+        project = PaperProject.objects.create(name="Tabbed review")
+        batch = BatchMission.objects.create(project=project, title="Audit screenshots")
+        FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\sum_i x_i",
+            status=FormulaItem.Status.NEEDS_REVIEW,
+            quality_score=71,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "workspace-body-layout")
+        self.assertContains(response, "workspace-tab-trigger")
+        self.assertContains(response, "FORMULA INSPECTION QUEUE")
+        self.assertContains(response, "PAPER ADAPTABILITY CHECK")
+        self.assertContains(response, "data-drawer-backdrop")
+        self.assertContains(response, "formula-status-pills")
+        self.assertContains(response, "code-wrapper")
+
     def test_project_workspace_renders_export_download_links(self):
         project = PaperProject.objects.create(name="Export UI")
         batch = BatchMission.objects.create(project=project, title="Export batch")

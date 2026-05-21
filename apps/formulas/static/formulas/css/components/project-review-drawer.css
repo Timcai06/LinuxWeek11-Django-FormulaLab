@@ -1,0 +1,78 @@
+.drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(0, 0, 0, 0.48);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.24s ease, visibility 0.24s ease;
+}
+
+.drawer-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.review-drawer {
+    right: 0;
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+    transform: none;
+    transition: width 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), padding 0.32s ease, visibility 0.32s;
+}
+
+.review-drawer.is-open {
+    width: min(520px, 100vw);
+    padding: 18px;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+}
+
+.review-drawer form {
+    opacity: 0;
+    transform: translateX(18px);
+    transition: opacity 0.22s ease 0.08s, transform 0.22s ease 0.08s;
+}
+
+.review-drawer.is-open form {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.review-drawer-header {
+    align-items: center;
+}
+
+.review-drawer-meta span {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.review-editor textarea,
+.review-render-surface {
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+        rgba(0, 0, 0, 0.5);
+    background-size: 18px 18px;
+}
+
+.review-render-surface {
+    min-height: 150px;
+}
+
+.review-drawer form button[type="submit"] {
+    width: 100%;
+}
+
+@media (max-width: 760px) {
+    .review-drawer.is-open {
+        width: 100vw;
+    }
+}

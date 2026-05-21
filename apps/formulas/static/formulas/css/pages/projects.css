@@ -8,6 +8,7 @@
 .workspace-shell > .workspace-header,
 .workspace-shell > .workspace-overview,
 .workspace-shell > .workspace-grid,
+.workspace-shell > .workspace-body-layout,
 .workspace-shell > .paper-preview-panel,
 .workspace-shell > .formula-items-panel {
     transition: filter 0.4s ease, transform 0.4s ease;
@@ -16,6 +17,7 @@
 .workspace-shell.shell-blurred > .workspace-header,
 .workspace-shell.shell-blurred > .workspace-overview,
 .workspace-shell.shell-blurred > .workspace-grid,
+.workspace-shell.shell-blurred > .workspace-body-layout,
 .workspace-shell.shell-blurred > .paper-preview-panel,
 .workspace-shell.shell-blurred > .formula-items-panel {
     filter: blur(8px) brightness(0.6);

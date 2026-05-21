@@ -76,8 +76,32 @@
         });
     }
 
+    function setupTabs() {
+        const triggers = Array.from(document.querySelectorAll(".workspace-tab-trigger"));
+        const contents = Array.from(document.querySelectorAll(".workspace-tab-content"));
+        if (!triggers.length || !contents.length) {
+            return;
+        }
+
+        function selectTab(name) {
+            triggers.forEach((trigger) => {
+                const active = trigger.dataset.tab === name;
+                trigger.classList.toggle("active", active);
+                trigger.setAttribute("aria-selected", active ? "true" : "false");
+            });
+            contents.forEach((content) => {
+                content.classList.toggle("active", content.dataset.tabContent === name);
+            });
+        }
+
+        triggers.forEach((trigger) => {
+            trigger.addEventListener("click", () => selectTab(trigger.dataset.tab));
+        });
+    }
+
     function setupReviewDrawer() {
         const drawer = document.querySelector("[data-review-drawer]");
+        const backdrop = document.querySelector("[data-drawer-backdrop]");
         const form = document.querySelector("[data-review-form]");
         const codeNode = document.querySelector("[data-review-code]");
         const batchNode = document.querySelector("[data-review-batch]");
@@ -113,6 +137,9 @@
             textarea.value = item.latex || "";
             drawer.setAttribute("aria-hidden", "false");
             drawer.classList.add("is-open");
+            if (backdrop) {
+                backdrop.classList.add("is-open");
+            }
             if (shell) {
                 shell.classList.add("shell-blurred");
             }
@@ -126,18 +153,28 @@
 
         textarea.addEventListener("input", () => renderLatex(textarea.value, preview, true));
 
+        function closeDrawer() {
+            drawer.classList.remove("is-open");
+            if (backdrop) {
+                backdrop.classList.remove("is-open");
+            }
+            if (shell) {
+                shell.classList.remove("shell-blurred");
+            }
+            drawer.setAttribute("aria-hidden", "true");
+        }
+
         if (closeButton) {
-            closeButton.addEventListener("click", () => {
-                drawer.classList.remove("is-open");
-                if (shell) {
-                    shell.classList.remove("shell-blurred");
-                }
-                drawer.setAttribute("aria-hidden", "true");
-            });
+            closeButton.addEventListener("click", closeDrawer);
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener("click", closeDrawer);
         }
     }
 
     renderWhenReady(() => {
+        setupTabs();
         renderFormulaItems();
         renderPaperPreview();
         setupReviewDrawer();
