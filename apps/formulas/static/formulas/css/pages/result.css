@@ -2,9 +2,9 @@
     height: calc(100vh - var(--nav-height));
     min-height: 600px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
-    gap: clamp(18px, 3vw, 34px);
-    padding: clamp(18px, 4vw, 54px);
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    gap: clamp(14px, 2vw, 24px);
+    padding: clamp(16px, 3vw, 28px);
     overflow: hidden;
 }
 
@@ -24,31 +24,48 @@
     overflow-y: auto;
 }
 
+.source-panel {
+    gap: 16px;
+    padding: clamp(16px, 2.4vw, 22px);
+}
+
+.source-panel .section-header h1 {
+    color: var(--on-night);
+    font-size: clamp(1rem, 1.7vw, 1.3rem);
+    line-height: 1.05;
+}
+
 .source-panel img {
     width: 100%;
-    flex: 1;
-    min-height: 0;
+    max-height: 180px;
     object-fit: contain;
-    background: var(--canvas-light);
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
+}
+
+.latex-console {
+    gap: 16px;
+    overflow: hidden;
 }
 
 .result-readout {
     display: flex;
-    align-items: end;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 18px;
-    padding-bottom: 16px;
+    padding-bottom: 12px;
     border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
 }
 
 .result-readout strong {
     display: block;
     overflow-wrap: anywhere;
     color: var(--on-night);
-    font-size: clamp(1.4rem, 3vw, 2.5rem);
+    font-size: clamp(1.2rem, 2vw, 1.7rem);
     font-weight: 950;
-    line-height: 0.95;
+    line-height: 1;
 }
 
 .result-readout > span {
@@ -57,6 +74,32 @@
     font-size: 0.74rem;
     font-weight: 800;
     letter-spacing: 0.08em;
+}
+
+.console-control-deck {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+    gap: clamp(12px, 2vw, 20px);
+    align-items: start;
+    flex-shrink: 0;
+}
+
+.deck-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.feedback-section {
+    gap: 10px;
+}
+
+.section-header-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
 }
 
 .paper-fit-panel {
@@ -68,6 +111,11 @@
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(0, 0, 0, 0.35));
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
     border-radius: 6px;
+}
+
+.paper-fit-panel-compact {
+    gap: 8px;
+    padding: 12px;
 }
 
 .paper-fit-panel[data-fit-risk="ready"] {
@@ -84,6 +132,13 @@
     margin: 8px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 10px);
+}
+
+.paper-fit-panel-compact .visual-ruler {
+    height: 10px;
+    margin: 4px 0;
+    border-bottom-color: rgba(255, 255, 255, 0.15);
+    background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0, rgba(255, 255, 255, 0.08) 1px, transparent 1px, transparent 10px);
 }
 
 .ruler-cursor {
@@ -118,6 +173,11 @@
     white-space: nowrap;
 }
 
+.paper-fit-panel-compact .paper-fit-header strong {
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+}
+
 .paper-fit-panel[data-fit-risk="ready"] .paper-fit-header strong {
     color: var(--status-ready);
 }
@@ -132,12 +192,22 @@
     gap: 8px;
 }
 
+.paper-fit-panel-compact .paper-fit-metrics {
+    gap: 6px;
+}
+
 .paper-fit-metrics div {
     min-width: 0;
     padding: 10px 12px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(0, 0, 0, 0.35);
     border-radius: 4px;
+}
+
+.paper-fit-panel-compact .paper-fit-metrics div {
+    padding: 6px 8px;
+    border-color: rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.25);
 }
 
 .paper-fit-metrics span {
@@ -147,6 +217,11 @@
     font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 0.08em;
+}
+
+.paper-fit-panel-compact .paper-fit-metrics span {
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
 }
 
 .paper-fit-metrics strong {
@@ -159,6 +234,12 @@
     line-height: 1.15;
 }
 
+.paper-fit-panel-compact .paper-fit-metrics strong {
+    margin-top: 3px;
+    font-size: 0.78rem;
+    line-height: 1.1;
+}
+
 .paper-fit-panel p {
     margin: 0;
     color: var(--muted);
@@ -166,8 +247,33 @@
     line-height: 1.45;
 }
 
-@media (max-width: 900px) {
+.paper-fit-panel-compact p {
+    font-size: 0.72rem;
+    line-height: 1.35;
+}
+
+@media (max-width: 960px) {
     .result-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: auto;
+        overflow-y: auto;
+        padding: 16px;
+    }
+
+    .source-panel {
+        max-height: 320px;
+    }
+
+    .source-panel img {
+        max-height: 160px;
+    }
+
+    .latex-console {
+        overflow: visible;
+    }
+
+    .console-control-deck {
         grid-template-columns: 1fr;
     }
 }

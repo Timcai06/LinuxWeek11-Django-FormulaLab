@@ -83,3 +83,60 @@
 .katex-surface .katex-display {
     margin: 0;
 }
+
+.katex-preview-paper {
+    flex: 1;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.katex-preview-paper:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.katex-preview-paper .katex-preview-header {
+    flex-shrink: 0;
+}
+
+.katex-preview-paper .katex-surface {
+    flex: 1;
+    min-height: 160px;
+    padding: 32px;
+    border-color: rgba(0, 0, 0, 0.15);
+    background-color: #fcfcf9;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: #18181b;
+    font-size: clamp(1.2rem, 2.5vw, 2.1rem);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.katex-preview-paper .katex-surface::before,
+.katex-preview-paper .katex-surface::after {
+    width: 12px;
+    height: 12px;
+    border-color: rgba(24, 24, 27, 0.25);
+}
+
+.katex-preview-paper .katex-surface::before {
+    top: 12px;
+    left: 12px;
+}
+
+.katex-preview-paper .katex-surface::after {
+    right: 12px;
+    bottom: 12px;
+}
+
+.katex-preview-paper .katex-surface .katex,
+.katex-preview-paper .katex-surface .katex-display,
+.katex-preview-paper .katex-surface .katex * {
+    color: #18181b !important;
+}
