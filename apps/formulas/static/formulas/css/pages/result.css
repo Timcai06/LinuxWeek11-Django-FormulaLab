@@ -4,7 +4,7 @@
     display: grid;
     grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
     gap: clamp(14px, 2vw, 24px);
-    padding: clamp(16px, 3vw, 28px);
+    padding: clamp(14px, 2.4vh, 22px) clamp(16px, 3vw, 28px);
     overflow: hidden;
 }
 
@@ -25,8 +25,12 @@
 }
 
 .source-panel {
-    gap: 16px;
-    padding: clamp(16px, 2.4vw, 22px);
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+    align-content: stretch;
+    gap: clamp(8px, 1.1vh, 12px);
+    overflow: hidden;
+    padding: clamp(14px, 1.8vw, 20px);
 }
 
 @media (max-width: 960px) {
@@ -40,6 +44,7 @@
 
     .source-panel {
         max-height: none;
+        overflow: visible;
     }
 
     .latex-console {
