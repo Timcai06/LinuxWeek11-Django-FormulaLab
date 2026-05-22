@@ -11,6 +11,7 @@ from apps.formulas.services.export_artifacts import (
     render_latex_export,
     render_markdown_export,
 )
+from apps.formulas.services.project_items import confirm_formula_item_review
 
 
 def projects(request):
@@ -50,9 +51,5 @@ def export_project(request, project_id, format_name):
 @require_POST
 def review_formula_item(request, item_id):
     item = get_object_or_404(FormulaItem.objects.select_related("project"), id=item_id)
-    latex_current = request.POST.get("latex_current", "").strip()
-    if latex_current:
-        item.latex_current = latex_current
-    item.status = FormulaItem.Status.CONFIRMED
-    item.save(update_fields=["latex_current", "status", "updated_at"])
+    confirm_formula_item_review(item, request.POST.get("latex_current", ""))
     return redirect("project-workspace", project_id=item.project_id)
