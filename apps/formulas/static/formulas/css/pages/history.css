@@ -105,6 +105,7 @@
 .timeline-entry {
     display: grid;
     gap: 14px;
+    width: min(100%, var(--timeline-entry-width, 100%));
     padding: 18px 22px;
     border: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.02);
@@ -212,7 +213,7 @@
 
 .timeline-summary {
     position: relative;
-    padding-right: 82px;
+    padding-right: 76px;
     line-height: 20px;
     font-family: var(--font-industrial);
     overflow-wrap: anywhere;
@@ -231,6 +232,38 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.timeline-summary.is-truncated {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.summary-overflow-chip {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 7px;
+    padding: 1px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--on-night);
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    vertical-align: 1px;
+}
+
+.timeline-entry details {
+    overflow: hidden;
+}
+
+.timeline-entry details.is-animating {
+    transition: height 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.timeline-entry details summary {
+    user-select: none;
 }
 
 .timeline-actions {

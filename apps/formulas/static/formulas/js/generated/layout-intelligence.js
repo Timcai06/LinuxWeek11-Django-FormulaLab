@@ -3659,11 +3659,50 @@ var FormulaLayoutBundle = (() => {
     });
     return widths;
   }
+  function fitTextToLines(text, config = {}) {
+    const normalized = normalizeText(text);
+    const width = toPositiveNumber(config.width, 420);
+    const lineHeight = toPositiveNumber(config.lineHeight, 20);
+    const maxLines = Math.max(1, Math.floor(toPositiveNumber(config.maxLines, 2)));
+    const font = config.font || "13px JetBrains Mono, ui-monospace, monospace";
+    const suffix = config.suffix || "...";
+    if (!hasText(normalized)) {
+      return { text: "", lineCount: 0, truncated: false };
+    }
+    const measureCandidate = (candidate) => measureLineStats(prepareWithSegments(candidate, font, { whiteSpace: "pre-wrap" }), width, lineHeight);
+    const fullStats = measureCandidate(normalized);
+    if (fullStats.lineCount <= maxLines) {
+      return { text: normalized, lineCount: fullStats.lineCount, truncated: false };
+    }
+    let low = 0;
+    let high = normalized.length;
+    let best = suffix;
+    let bestStats = measureCandidate(best);
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const candidate = `${normalized.slice(0, mid).trimEnd()}${suffix}`;
+      const stats = measureCandidate(candidate);
+      if (stats.lineCount <= maxLines) {
+        best = candidate;
+        bestStats = stats;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return {
+      text: best,
+      lineCount: bestStats.lineCount,
+      originalLineCount: fullStats.lineCount,
+      truncated: true
+    };
+  }
   var formulaLayoutTarget = globalThis.window || globalThis;
   formulaLayoutTarget.FormulaLayout = {
     measureTextBlock,
     measureLatexSummary,
     findTightWidth,
-    collectLineWidths
+    collectLineWidths,
+    fitTextToLines
   };
 })();
