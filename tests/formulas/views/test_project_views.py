@@ -182,7 +182,7 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "paper-preview-data")
         self.assertContains(response, "data-project-katex-preview")
         self.assertContains(response, "data-paper-preview-slot")
-        self.assertContains(response, 'defer src="/static/formulas/js/project_workspace.js"')
+        self.assertContains(response, "/static/formulas/js/project_workspace.js")
 
     def test_project_workspace_paginates_formula_items_without_truncating_project(self):
         project = PaperProject.objects.create(name="Large paper")
@@ -280,6 +280,31 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "data-drawer-backdrop")
         self.assertContains(response, "formula-status-pills")
         self.assertContains(response, "code-wrapper")
+
+    def test_project_workspace_renders_compact_queue_with_formula_inspector(self):
+        project = PaperProject.objects.create(name="Inspector workflow")
+        batch = BatchMission.objects.create(project=project, title="Equation batch")
+        item = FormulaItem.objects.create(
+            project=project,
+            batch=batch,
+            latex_current=r"\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2}",
+            status=FormulaItem.Status.NEEDS_REVIEW,
+            quality_score=67,
+        )
+
+        response = self.client.get(f"/projects/{project.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "workspace-review-grid")
+        self.assertContains(response, "formula-inspector-panel")
+        self.assertContains(response, "data-workspace-item")
+        self.assertContains(response, f'data-inspector-item-id="{item.id}"')
+        self.assertContains(response, "data-inspector-latex")
+        self.assertContains(response, "data-inspector-preview")
+        self.assertContains(response, "data-inspector-fit-width")
+        self.assertContains(response, "data-inspector-fit-lines")
+        self.assertContains(response, "PAPER FIT")
+        self.assertContains(response, "OPEN IN REVIEW")
 
     def test_project_workspace_renders_export_download_links(self):
         project = PaperProject.objects.create(name="Export UI")

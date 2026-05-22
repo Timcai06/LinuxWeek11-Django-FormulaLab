@@ -3,10 +3,10 @@
 
 {% block title %}{{ project.name }} - Formula Lab{% endblock %}
 {% block page_css %}
-<link rel="stylesheet" href="{% static 'formulas/css/pages/projects.css' %}?v=preview-workbench">
-<link rel="stylesheet" href="{% static 'formulas/css/components/project-workspace.css' %}?v=preview-workbench">
+<link rel="stylesheet" href="{% static 'formulas/css/pages/projects.css' %}?v=workflow-inspector">
+<link rel="stylesheet" href="{% static 'formulas/css/components/project-workspace.css' %}?v=workflow-inspector">
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-workspace-layout.css' %}">
-<link rel="stylesheet" href="{% static 'formulas/css/components/project-formula-queue.css' %}">
+<link rel="stylesheet" href="{% static 'formulas/css/components/project-formula-queue.css' %}?v=workflow-inspector">
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-review-drawer.css' %}">
 {% endblock %}
 
@@ -83,39 +83,77 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="formula-item-list">
-                        {% for item in formula_items %}
-                            <article class="formula-item-row status-{{ item.status }}">
-                                <div class="formula-item-meta">
-                                    <span class="formula-code">{{ item.formula_code }}</span>
-                                    <div class="formula-status-pills">
-                                        <span class="status-chip status-{{ item.status }}">{{ item.status|upper }}</span>
-                                        <span class="quality-chip {% if item.quality_score >= 80 %}high-q{% elif item.quality_score >= 50 %}mid-q{% else %}low-q{% endif %}">Q {{ item.quality_score|default:0 }}</span>
+                    <div class="workspace-review-grid">
+                        <div class="formula-item-list" aria-label="Formula inspection queue">
+                            {% for item in formula_items %}
+                                <article class="formula-item-row formula-item-card status-{{ item.status }}{% if forloop.first %} is-selected{% endif %}" data-workspace-item data-inspector-item-id="{{ item.id }}">
+                                    <button class="formula-item-select" type="button" data-inspector-select data-review-item-id="{{ item.id }}">
+                                        <span class="formula-code">{{ item.formula_code }}</span>
+                                        <span class="formula-status-pills">
+                                            <span class="status-chip status-{{ item.status }}">{{ item.status|upper }}</span>
+                                            <span class="quality-chip {% if item.quality_score >= 80 %}high-q{% elif item.quality_score >= 50 %}mid-q{% else %}low-q{% endif %}">Q {{ item.quality_score|default:0 }}</span>
+                                        </span>
+                                    </button>
+                                    <div class="formula-source-block formula-source-compact">
+                                        <span class="cell-label">LATEST SOURCE</span>
+                                        <div class="code-wrapper">
+                                            <pre data-latex-source-text>{% if item.latex_current %}{{ item.latex_current }}{% elif item.recognition_job.latex_result %}{{ item.recognition_job.latex_result }}{% else %}No LaTeX captured{% endif %}</pre>
+                                        </div>
                                     </div>
+                                </article>
+                            {% empty %}
+                                <div class="project-empty-state compact">
+                                    <span class="empty-kicker">NO FORMULA ITEMS</span>
+                                    <h2>This workspace is ready for its first batch.</h2>
+                                    <a class="button button-secondary" href="{% url 'workbench' %}">OPEN WORKBENCH</a>
                                 </div>
-                                <div class="formula-source-block">
-                                    <span class="cell-label">LATEX SOURCE</span>
-                                    <div class="code-wrapper">
-                                        <pre data-latex-source-text>{% if item.latex_current %}{{ item.latex_current }}{% elif item.recognition_job.latex_result %}{{ item.recognition_job.latex_result }}{% else %}No LaTeX captured{% endif %}</pre>
-                                    </div>
+                            {% endfor %}
+                        </div>
+
+                        <aside class="formula-inspector-panel" data-workspace-inspector aria-label="Selected formula inspector">
+                            <div class="inspector-header">
+                                <div>
+                                    <span class="cell-label">SELECTED FORMULA</span>
+                                    <h3 data-inspector-code>{% if review_items %}{{ review_items.0.code }}{% else %}No Formula{% endif %}</h3>
                                 </div>
-                                <div class="formula-render-block">
-                                    <span class="cell-label">LATEX PREVIEW</span>
-                                    <div class="formula-render-surface-wrapper">
-                                        <div class="formula-render-surface" data-project-katex-preview></div>
-                                    </div>
-                                </div>
-                                <div class="formula-item-actions">
-                                    <button class="review-trigger" type="button" data-review-trigger data-review-item-id="{{ item.id }}">REVIEW</button>
-                                </div>
-                            </article>
-                        {% empty %}
-                            <div class="project-empty-state compact">
-                                <span class="empty-kicker">NO FORMULA ITEMS</span>
-                                <h2>This workspace is ready for its first batch.</h2>
-                                <a class="button button-secondary" href="{% url 'workbench' %}">OPEN WORKBENCH</a>
+                                <button class="review-trigger" type="button" data-review-trigger data-inspector-review {% if review_items %}data-review-item-id="{{ review_items.0.id }}"{% else %}disabled{% endif %}>OPEN IN REVIEW</button>
                             </div>
-                        {% endfor %}
+                            <div class="inspector-meta">
+                                <span data-inspector-batch>{% if review_items %}{{ review_items.0.batch_title|default:"Untitled batch" }}{% else %}Batch pending{% endif %}</span>
+                                <span data-inspector-status>{% if review_items %}{{ review_items.0.status|upper }}{% else %}STATUS PENDING{% endif %}</span>
+                                <span data-inspector-quality>{% if review_items %}Q {{ review_items.0.quality_score|default:0 }}{% else %}Q --{% endif %}</span>
+                            </div>
+                            <div class="inspector-source-block">
+                                <span class="cell-label">LATEX SOURCE</span>
+                                <pre data-inspector-latex>{% if review_items %}{{ review_items.0.latex }}{% else %}Select a formula to inspect its LaTeX source.{% endif %}</pre>
+                            </div>
+                            <div class="formula-render-block inspector-render-block">
+                                <span class="cell-label">LATEX PREVIEW</span>
+                                <div class="formula-render-surface-wrapper">
+                                    <div class="formula-render-surface" data-inspector-preview data-project-katex-preview></div>
+                                </div>
+                            </div>
+                            <div class="inspector-fit-panel">
+                                <div>
+                                    <span class="cell-label">PAPER FIT</span>
+                                    <strong data-inspector-fit-status>STANDBY</strong>
+                                </div>
+                                <dl>
+                                    <div>
+                                        <dt>WIDTH</dt>
+                                        <dd data-inspector-fit-width>--</dd>
+                                    </div>
+                                    <div>
+                                        <dt>LINES</dt>
+                                        <dd data-inspector-fit-lines>--</dd>
+                                    </div>
+                                    <div>
+                                        <dt>TIGHT</dt>
+                                        <dd data-inspector-fit-tight>--</dd>
+                                    </div>
+                                </dl>
+                            </div>
+                        </aside>
                     </div>
                 </section>
             </div>
@@ -271,5 +309,5 @@
 {% endblock %}
 
 {% block page_js %}
-<script defer src="{% static 'formulas/js/project_workspace.js' %}"></script>
+<script defer src="{% static 'formulas/js/project_workspace.js' %}?v=workflow-inspector"></script>
 {% endblock %}
