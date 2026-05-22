@@ -159,8 +159,8 @@
     gap: 12px;
     padding: 28px;
     overflow: hidden;
-    border: 2px dashed rgba(255, 255, 255, 0.65);
-    background: #020203;
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.15);
     text-align: center;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -173,7 +173,7 @@
     opacity: 0;
 }
 
-/* 4 Corner HUD Reticles - Stable layout, color change only on hover */
+/* 4 Corner HUD Reticles */
 .hud-corners {
     position: absolute;
     inset: 0;
@@ -186,8 +186,8 @@
     position: absolute;
     width: 14px;
     height: 14px;
-    border: 3.5px solid rgba(255, 255, 255, 0.7);
-    transition: border-color 0.25s ease;
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .hud-corners::before {
@@ -210,8 +210,8 @@
     position: absolute;
     width: 14px;
     height: 14px;
-    border: 3.5px solid rgba(255, 255, 255, 0.7);
-    transition: border-color 0.25s ease;
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
     pointer-events: none;
 }
 
@@ -239,40 +239,46 @@
     padding: 10px;
 }
 
-.drop-reticle {
-    width: 54px;
-    height: 54px;
-    position: relative;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s ease;
+@keyframes reticleSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-/* Precise Upload Arrow icon */
+.drop-reticle {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: reticleSpin 20s linear infinite;
+}
+
+@keyframes pulseDot {
+    0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.85); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    100% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.85); }
+}
+
 .drop-reticle::before {
-    content: "";
-    width: 12px;
-    height: 12px;
-    border-top: 3px solid rgba(255, 255, 255, 0.9);
-    border-left: 3px solid rgba(255, 255, 255, 0.9);
-    transform: rotate(45deg);
+    content: '';
     position: absolute;
-    top: 14px;
-    transition: border-color 0.25s ease;
+    inset: -15px;
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .drop-reticle::after {
-    content: "";
-    width: 3px;
-    height: 16px;
-    background: rgba(255, 255, 255, 0.9);
+    content: '';
     position: absolute;
-    top: 18px;
-    transition: background-color 0.25s ease;
+    top: 50%; left: 50%;
+    width: 6px; height: 6px;
+    background: var(--status-ready);
+    border-radius: 50%;
+    box-shadow: 0 0 12px 3px rgba(92, 255, 176, 0.5);
+    animation: pulseDot 2s infinite;
 }
 
 .preview-stage img {
@@ -280,7 +286,7 @@
     height: 100%;
     max-height: 100%;
     object-fit: contain;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     background: radial-gradient(circle, rgba(255,255,255,0.02) 1px, transparent 1px) 0 0 / 16px 16px, rgba(0, 0, 0, 0.4);
     border-radius: 8px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
@@ -288,79 +294,66 @@
 }
 
 .drop-status {
-    color: var(--status-ready);
-    opacity: 1;
+    color: var(--muted);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.1em;
 }
 
 .drop-zone strong {
-    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
-    font-weight: 850;
-    color: #ffffff;
-    opacity: 1;
-    letter-spacing: 0.05em;
-    margin-top: 4px;
+    font-size: clamp(1.4rem, 4vw, 3rem);
+    font-weight: 950;
 }
 
 .drop-help {
     max-width: 520px;
-    color: rgba(255, 255, 255, 0.95);
-    font-size: 0.8rem;
-    line-height: 1.5;
+    color: var(--muted);
 }
 
 .drop-zone:hover {
-    border-color: var(--status-ready);
-    background: rgba(255, 255, 255, 0.01);
+    border-color: rgba(92, 255, 176, 0.3);
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 0 32px rgba(92, 255, 176, 0.02) inset;
 }
 
-.drop-zone:hover .hud-corners::before,
-.drop-zone:hover .hud-corners::after,
-.drop-zone:hover::before,
-.drop-zone:hover::after {
-    border-color: var(--status-ready);
-}
+.drop-zone:hover .hud-corners::before { top: 10px; left: 10px; border-color: var(--status-ready); }
+.drop-zone:hover .hud-corners::after { bottom: 10px; right: 10px; border-color: var(--status-ready); }
+.drop-zone:hover::before { top: 10px; right: 10px; border-color: var(--status-ready); }
+.drop-zone:hover::after { bottom: 10px; left: 10px; border-color: var(--status-ready); }
 
 .drop-zone:hover .drop-reticle {
-    border-color: var(--status-ready);
-    background: rgba(92, 255, 176, 0.08);
+    transform: scale(1.05) rotate(2deg);
 }
 
 .drop-zone:hover .drop-reticle::before {
-    border-color: var(--status-ready);
-}
-
-.drop-zone:hover .drop-reticle::after {
-    background: var(--status-ready);
+    opacity: 0.75;
+    background-size: 26px 26px;
 }
 
 .drop-zone.is-dragging {
     border-color: var(--status-ready);
-    background: rgba(92, 255, 176, 0.06);
+    background: rgba(92, 255, 176, 0.05);
 }
 
 .drop-zone.is-dragging .drop-reticle {
+    width: 100px;
+    height: 100px;
     border-color: var(--status-ready);
-    background: rgba(92, 255, 176, 0.12);
+    box-shadow: 0 0 30px rgba(92, 255, 176, 0.3), inset 0 0 20px rgba(92, 255, 176, 0.2);
+    animation: none;
 }
 
 .drop-zone.is-dragging .drop-reticle::before {
+    inset: -5px;
     border-color: var(--status-ready);
+    transform: rotate(45deg);
 }
 
-.drop-zone.is-dragging .drop-reticle::after {
-    background: var(--status-ready);
-}
-
-.drop-zone.is-dragging .hud-corners::before,
-.drop-zone.is-dragging .hud-corners::after,
-.drop-zone.is-dragging::before,
-.drop-zone.is-dragging::after {
-    border-color: var(--status-ready);
-}
+.drop-zone.is-dragging .hud-corners::before { top: 8px; left: 8px; border-color: var(--status-ready); }
+.drop-zone.is-dragging .hud-corners::after { bottom: 8px; right: 8px; border-color: var(--status-ready); }
+.drop-zone.is-dragging::before { top: 8px; right: 8px; border-color: var(--status-ready); }
+.drop-zone.is-dragging::after { bottom: 8px; left: 8px; border-color: var(--status-ready); }
 
 .drop-zone.has-file {
     padding: 0;
