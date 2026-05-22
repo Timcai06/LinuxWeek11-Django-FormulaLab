@@ -1,0 +1,185 @@
+.inspector-header .review-trigger {
+    background: rgba(92, 255, 176, 0.08);
+    color: var(--status-ready);
+    border: 2px solid var(--status-ready);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.72rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.inspector-header .review-trigger:hover:not(:disabled) {
+    background: var(--status-ready);
+    color: #000000;
+    box-shadow: 0 0 16px rgba(92, 255, 176, 0.35);
+}
+
+.inspector-header .review-trigger:disabled {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    border-color: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+
+.formula-inspector-panel {
+    position: sticky;
+    top: calc(var(--nav-height) + 22px);
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    padding: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.38);
+    border-radius: 8px;
+    background: #0c0c12;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.inspector-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inspector-header h3 {
+    margin: 5px 0 0;
+    color: var(--on-night);
+    font-family: var(--font-industrial);
+    font-size: clamp(1.05rem, 1.8vw, 1.45rem);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.inspector-meta,
+.inspector-fit-panel dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.inspector-meta span,
+.inspector-fit-panel dl div {
+    min-width: 0;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.24);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    overflow-wrap: anywhere;
+}
+
+.inspector-meta span {
+    padding: 8px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 0.6rem;
+}
+
+.inspector-fit-panel dl div {
+    padding: 5px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.58rem;
+}
+
+.inspector-source-block {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.inspector-source-block pre {
+    max-height: 170px;
+    min-height: 96px;
+    margin: 0;
+    overflow: auto;
+    padding: 13px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.46);
+    color: var(--on-night);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.inspector-render-block .formula-render-surface {
+    min-height: 150px;
+}
+
+.inspector-fit-panel {
+    display: grid;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    background: rgba(13, 13, 20, 0.4);
+}
+
+.inspector-fit-panel > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.inspector-fit-panel strong {
+    color: rgba(255, 255, 255, 0.7);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.inspector-fit-panel.is-ready {
+    border-left-color: var(--status-ready);
+}
+
+.inspector-fit-panel.is-warning {
+    border-left-color: var(--status-warming);
+}
+
+.inspector-fit-panel.is-ready strong {
+    color: var(--status-ready);
+}
+
+.inspector-fit-panel.is-warning strong {
+    color: var(--status-warming);
+}
+
+.inspector-fit-panel dl,
+.inspector-fit-panel dt,
+.inspector-fit-panel dd {
+    margin: 0;
+}
+
+.inspector-fit-panel dt {
+    color: rgba(255, 255, 255, 0.45);
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.52rem;
+    letter-spacing: 0.06em;
+}
+
+.inspector-fit-panel dd {
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-mono);
+    font-weight: 900;
+    font-size: 0.72rem;
+}
+
+@media (max-width: 760px) {
+    .inspector-meta,
+    .inspector-fit-panel dl {
+        grid-template-columns: 1fr;
+    }
+}
