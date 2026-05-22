@@ -10,6 +10,7 @@ from PIL import Image
 
 from apps.formulas.models import FormulaJob
 from apps.formulas.services.paddle_formula_engine import _extract_formula
+from apps.formulas.services.recognition_types import RecognitionResult
 from apps.formulas.services.recognizer import prepare_formula_image, recognize_formula
 
 
@@ -127,11 +128,14 @@ class RecognizerTests(TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         Image.new("RGB", (24, 12), (255, 255, 255)).save(source)
         job = FormulaJob.objects.create(original_image="formula_uploads/source.png")
-        engine = Mock()
-        engine.name = "pix2tex"
-        engine.recognize.return_value = "$$  x   +   y  $$"
+        client = Mock()
+        client.recognize.return_value = RecognitionResult(
+            latex="$$  x   +   y  $$",
+            engine="pix2tex",
+            model="pix2tex",
+        )
 
-        with patch("apps.formulas.services.recognizer.get_formula_engine", return_value=engine):
+        with patch("apps.formulas.services.recognizer.get_recognition_client", return_value=client):
             result = recognize_formula(job)
 
         job.refresh_from_db()
@@ -140,7 +144,7 @@ class RecognizerTests(TestCase):
         self.assertTrue(job.preprocessed_image.name.startswith("formula_preprocessed/"))
         preprocessed_path = self.media_root / job.preprocessed_image.name
         self.assertTrue(preprocessed_path.exists())
-        engine.recognize.assert_called_once_with(str(preprocessed_path))
+        client.recognize.assert_called_once_with(str(preprocessed_path))
 
     def test_prepare_formula_image_only_preprocesses_and_updates_job(self):
         source = self.media_root / "formula_uploads" / "source.png"

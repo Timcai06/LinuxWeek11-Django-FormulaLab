@@ -7,6 +7,7 @@ from PIL import Image
 
 from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
 from apps.formulas.services.model_state import MODEL_MESSAGE_KEY, MODEL_STATUS_KEY
+from apps.formulas.services.recognition_types import RecognitionResult
 from apps.formulas.tasks import run_formula_job, warmup_model_task
 
 
@@ -20,10 +21,11 @@ class FakeRedis:
         self.calls.append((key, value, kwargs))
 
 
-def make_engine(name="pix2tex"):
-    engine = Mock()
-    engine.name = name
-    return engine
+def make_client(name="local", engine="pix2tex"):
+    client = Mock()
+    client.name = name
+    client.engine_name = engine
+    return client
 
 
 @override_settings(FORMULA_LAB_MAX_IMAGE_SIDE=1600)
@@ -55,15 +57,15 @@ class FormulaTaskTests(TestCase):
 
     def test_warmup_model_task_sets_warming_then_ready(self):
         redis_client = FakeRedis()
-        engine = make_engine()
+        client = make_client(engine="pix2tex")
 
         with (
             patch("apps.formulas.tasks.get_redis_client", return_value=redis_client),
-            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
         ):
             result = warmup_model_task.run()
 
-        engine.warmup.assert_called_once_with()
+        client.warmup.assert_called_once_with()
         status_writes = [call for call in redis_client.calls if call[0] == MODEL_STATUS_KEY]
         self.assertEqual([call[1] for call in status_writes], ["warming", "ready"])
         self.assertEqual(redis_client.values[MODEL_MESSAGE_KEY], "pix2tex model ready")
@@ -71,17 +73,17 @@ class FormulaTaskTests(TestCase):
 
     def test_warmup_model_task_still_succeeds_when_telemetry_write_fails(self):
         redis_client = FakeRedis()
-        engine = make_engine()
+        client = make_client(engine="pix2tex")
 
         with (
             patch("apps.formulas.tasks.get_redis_client", return_value=redis_client),
             patch("apps.formulas.tasks.set_model_status", side_effect=RuntimeError("redis down")),
-            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
             patch("apps.formulas.tasks.logger.warning") as log_warning,
         ):
             result = warmup_model_task.run()
 
-        engine.warmup.assert_called_once_with()
+        client.warmup.assert_called_once_with()
         self.assertEqual(result["status"], "ready")
         self.assertEqual(log_warning.call_count, 2)
 
@@ -107,19 +109,23 @@ class FormulaTaskTests(TestCase):
             self.assertEqual(image_path, job.original_image.path)
             return "a + b"
 
-        engine = make_engine()
-        engine.recognize.side_effect = recognize_with_inference_stage
+        client = make_client(engine="pix2tex")
+        client.recognize.side_effect = lambda image_path: RecognitionResult(
+            latex=recognize_with_inference_stage(image_path),
+            engine="pix2tex",
+            model="pix2tex",
+        )
 
         with (
             patch.object(FormulaJob, "mark_stage", autospec=True, side_effect=record_stage),
-            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
             patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
             patch("apps.formulas.tasks.correct_latex_result", side_effect=normalize_with_postprocess_stage),
         ):
             run_formula_job.run(str(job.id))
 
         job.refresh_from_db()
-        engine.warmup.assert_called_once_with()
+        client.warmup.assert_called_once_with()
         self.assertEqual(
             stage_codes,
             ["QUEUED", "MODEL_WARMUP", "IMAGE_PREPROCESS", "INFERENCE", "LATEX_POSTPROCESS", "RESULT_READY"],
@@ -129,7 +135,7 @@ class FormulaTaskTests(TestCase):
         self.assertEqual(job.stage_code, "RESULT_READY")
         self.assertEqual(job.latex_result, "a + b")
         self.assertEqual(job.engine_name, "pix2tex")
-        engine.recognize.assert_called_once_with(str(preprocessed_path))
+        client.recognize.assert_called_once_with(str(preprocessed_path))
         self.assertIsNotNone(job.started_at)
         self.assertIsNotNone(job.finished_at)
         self.assertIsNotNone(job.duration_ms)
@@ -137,11 +143,15 @@ class FormulaTaskTests(TestCase):
     def test_run_formula_job_success_materializes_formula_item_for_attached_project(self):
         job, project, batch = self.create_attached_job()
         preprocessed_path = self.media_root / "formula_preprocessed" / "source.png"
-        engine = make_engine("paddle")
-        engine.recognize.return_value = "$$ \\alpha + \\beta $$"
+        client = make_client(engine="paddle")
+        client.recognize.return_value = RecognitionResult(
+            latex="$$ \\alpha + \\beta $$",
+            engine="paddle",
+            model="PP-FormulaNet_plus-S",
+        )
 
         with (
-            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
             patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
             patch("apps.formulas.tasks.correct_latex_result", return_value=r"\alpha + \beta"),
         ):
@@ -164,10 +174,10 @@ class FormulaTaskTests(TestCase):
         job.status = FormulaJob.Status.RUNNING
         job.save(update_fields=["status"])
 
-        engine = make_engine()
+        client = make_client()
 
         with (
-            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
             patch("apps.formulas.tasks.prepare_formula_image") as prepare_image,
         ):
             result = run_formula_job.run(str(job.id))
@@ -175,18 +185,18 @@ class FormulaTaskTests(TestCase):
         job.refresh_from_db()
         self.assertIsNone(result)
         self.assertEqual(job.status, FormulaJob.Status.RUNNING)
-        engine.warmup.assert_not_called()
+        client.warmup.assert_not_called()
         prepare_image.assert_not_called()
 
     def test_run_formula_job_inference_failure_records_inference_stage(self):
         job = self.create_job()
         long_detail = "boom " * 1200
         preprocessed_path = self.media_root / "formula_preprocessed" / "source.png"
-        engine = make_engine()
-        engine.recognize.side_effect = RuntimeError(long_detail)
+        client = make_client()
+        client.recognize.side_effect = RuntimeError(long_detail)
 
         with (
-            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
             patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
         ):
             result = run_formula_job.run(str(job.id))
@@ -204,11 +214,11 @@ class FormulaTaskTests(TestCase):
     def test_run_formula_job_postprocess_failure_records_latex_postprocess_stage(self):
         job = self.create_job()
         preprocessed_path = self.media_root / "formula_preprocessed" / "source.png"
-        engine = make_engine()
-        engine.recognize.return_value = "$$ bad latex $$"
+        client = make_client()
+        client.recognize.return_value = RecognitionResult(latex="$$ bad latex $$", engine="pix2tex", model="pix2tex")
 
         with (
-            patch("apps.formulas.tasks.get_formula_engine", return_value=engine),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
             patch("apps.formulas.tasks.prepare_formula_image", return_value=preprocessed_path),
             patch("apps.formulas.tasks.correct_latex_result", side_effect=RuntimeError("bad latex")),
         ):

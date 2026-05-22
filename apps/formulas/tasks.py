@@ -11,8 +11,8 @@ from django.utils import timezone
 from apps.formulas.models import BatchMission, FormulaItem, FormulaJob
 from apps.formulas.services.latex_formats import correct_latex_result
 from apps.formulas.services.model_state import WORKER_HEARTBEAT_KEY, set_model_status
-from apps.formulas.services.ocr_engines import get_formula_engine
 from apps.formulas.services.recognizer import prepare_formula_image
+from apps.formulas.services.recognition_clients import get_recognition_client
 from apps.formulas.services.telemetry import get_redis_client
 
 
@@ -84,15 +84,17 @@ def _safe_set_model_status(redis_client, status: str, message: str) -> None:
 @shared_task
 def warmup_model_task():
     redis_client = get_redis_client()
-    engine = get_formula_engine()
-    _safe_set_model_status(redis_client, "warming", f"loading {engine.name} model")
+    client = get_recognition_client()
+    engine_name = getattr(client, "engine_name", client.name)
+    _safe_set_model_status(redis_client, "warming", f"loading {engine_name} model")
     try:
-        engine.warmup()
+        warmup_result = client.warmup()
     except Exception as exc:
         _safe_set_model_status(redis_client, "error", _short_error_message(exc))
         raise
 
-    _safe_set_model_status(redis_client, "ready", f"{engine.name} model ready")
+    ready_engine = warmup_result.get("engine", engine_name) if isinstance(warmup_result, dict) else engine_name
+    _safe_set_model_status(redis_client, "ready", f"{ready_engine} model ready")
     return {"status": "ready"}
 
 
@@ -129,8 +131,8 @@ def run_formula_job(job_id: str) -> None:
             current_stage = stage
             _mark_stage(job, stage)
 
-        engine = get_formula_engine()
-        engine.warmup()
+        client = get_recognition_client()
+        client.warmup()
 
         current_stage = "IMAGE_PREPROCESS"
         _mark_stage(job, current_stage)
@@ -138,14 +140,14 @@ def run_formula_job(job_id: str) -> None:
 
         current_stage = "INFERENCE"
         _mark_stage(job, current_stage)
-        latex_output = engine.recognize(str(preprocessed_path))
+        recognition_result = client.recognize(str(preprocessed_path))
 
         current_stage = "LATEX_POSTPROCESS"
         _mark_stage(job, current_stage)
-        latex_result = correct_latex_result(latex_output, job.original_image.path)
+        latex_result = correct_latex_result(recognition_result.latex, job.original_image.path)
 
         job.latex_result = latex_result
-        job.engine_name = engine.name
+        job.engine_name = recognition_result.engine
         job.save(update_fields=["latex_result", "engine_name"])
 
         current_stage = "RESULT_READY"

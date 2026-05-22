@@ -20,12 +20,13 @@ make local
 
 - Django Web 服务。
 - Celery Worker 服务。
+- FastAPI model-api 服务。
 - PostgreSQL 数据库。
 - Redis 消息队列。
 
 镜像构建使用 `uv pip install --system` 安装 Python 依赖，并通过 BuildKit cache 缓存 `/root/.cache/uv`。为了缓解大 wheel 下载超时，Dockerfile 设置了 `UV_HTTP_TIMEOUT=300`，并配置 PyPI 镜像源。
 
-前端布局智能使用 Node 构建层生成静态 bundle。Docker 构建时先在 Node stage 运行 `npm run build`，再把生成的 `layout-intelligence.js` 复制进最终 Python 镜像。最终运行时仍然只有 Django、Celery、PostgreSQL 和 Redis，不启动 Node 服务。
+前端布局智能使用 Node 构建层生成静态 bundle。Docker 构建时先在 Node stage 运行 `npm run build`，再把生成的 `layout-intelligence.js` 复制进最终 Python 镜像。最终运行时仍然只有 Python 服务、PostgreSQL 和 Redis，不启动 Node 服务。
 
 ## 服务设计
 
@@ -36,7 +37,12 @@ web
 
 worker
   Celery worker
-  调用公式识别模型
+  编排任务并调用 recognition client
+
+model-api
+  FastAPI 模型服务
+  加载 Paddle / pix2tex
+  提供模型健康检查和公式识别 HTTP API
 
 db
   PostgreSQL
@@ -75,6 +81,42 @@ http://localhost:8000/
 - 写入 PostgreSQL。
 
 worker 和 web 使用同一个镜像，但启动命令不同。
+
+Docker Compose 中 worker 默认使用 HTTP 识别后端：
+
+```text
+FORMULA_LAB_RECOGNITION_BACKEND=http
+FORMULA_LAB_MODEL_API_URL=http://model-api:9000
+```
+
+如果 `model-api` 暂时不可用，可以把 worker 切回：
+
+```text
+FORMULA_LAB_RECOGNITION_BACKEND=local
+```
+
+## model-api 服务
+
+`model-api` 服务负责：
+
+- 启动 FastAPI。
+- 暴露 `GET /health` 供 Compose healthcheck 使用。
+- 暴露 `POST /warmup` 供 worker 或运维预热模型。
+- 暴露 `POST /v1/formula/recognize` 供 worker 上传图片并获取 LaTeX。
+
+本机 HTTP 模式可以使用：
+
+```bash
+make local-http
+```
+
+模型 API 地址：
+
+```text
+http://127.0.0.1:9000/
+```
+
+`GET /health` 是 readiness 语义：模型未预热时会返回 `503` 和 `status=unknown/warming/error`，模型预热成功后才返回 `200` 和 `status=ready`。Docker Compose 的 healthcheck 使用 `POST /warmup`，因此 worker 会等 `model-api` 真正完成模型预热后再启动。
 
 ## db 服务
 
@@ -119,6 +161,9 @@ DATABASE_URL=postgres://formula_lab:formula_lab_password@db:5432/formula_lab
 REDIS_URL=redis://redis:6379/0
 MEDIA_ROOT=/app/media
 FORMULA_LAB_OCR_ENGINE=paddle
+FORMULA_LAB_RECOGNITION_BACKEND=local
+FORMULA_LAB_MODEL_API_URL=http://model-api:9000
+FORMULA_LAB_MODEL_API_TIMEOUT_SECONDS=120
 FORMULA_LAB_PADDLE_MODEL_NAME=PP-FormulaNet_plus-S
 ```
 

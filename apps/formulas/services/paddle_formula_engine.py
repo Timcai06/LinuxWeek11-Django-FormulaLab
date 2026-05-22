@@ -12,6 +12,10 @@ _MODEL_LOCK = Lock()
 class PaddleFormulaEngine:
     name = "paddle"
 
+    @property
+    def model_name(self) -> str:
+        return settings.FORMULA_LAB_PADDLE_MODEL_NAME
+
     def warmup(self) -> None:
         self._load_model()
 

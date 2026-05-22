@@ -4,7 +4,7 @@ PORT ?= 8000
 DOCKER_BUILDKIT ?= 1
 OCR_ENGINE ?= paddle
 
-.PHONY: up down logs web-logs worker-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis docker-build local local-pix2tex paddle-web paddle-worker paddle-redis frontend-build frontend-check governance-check
+.PHONY: up down logs web-logs worker-logs model-api-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis dev-model-api docker-build local local-http local-pix2tex paddle-web paddle-worker paddle-redis frontend-build frontend-check governance-check
 
 up:
 	docker compose up --build
@@ -23,6 +23,9 @@ web-logs:
 
 worker-logs:
 	docker compose logs -f worker
+
+model-api-logs:
+	docker compose logs -f model-api
 
 migrate:
 	docker compose exec web python manage.py migrate
@@ -45,10 +48,18 @@ dev-redis:
 dev-worker:
 	DJANGO_SETTINGS_MODULE=config.settings.dev $(PYTHON) -m celery -A config worker --loglevel=info --pool=solo
 
+dev-model-api:
+	DJANGO_SETTINGS_MODULE=config.settings.dev FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) $(PYTHON) -m uvicorn model_service.main:app --host $(HOST) --port 9000
+
 local:
 	@echo "Starting Redis, Django, and Celery with FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE)"
 	@echo "Open http://$(HOST):$(PORT)/ after Django is ready. Press Ctrl-C to stop."
 	FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) $(MAKE) -j3 dev-redis dev-worker dev
+
+local-http:
+	@echo "Starting Redis, Django, Celery, and FastAPI model API with FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE)"
+	@echo "Open http://$(HOST):$(PORT)/ after Django is ready. Model API runs at http://$(HOST):9000/."
+	FORMULA_LAB_RECOGNITION_BACKEND=http FORMULA_LAB_MODEL_API_URL=http://$(HOST):9000 FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) $(MAKE) -j4 dev-redis dev-model-api dev-worker dev
 
 local-pix2tex:
 	$(MAKE) OCR_ENGINE=pix2tex local

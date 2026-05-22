@@ -4,17 +4,17 @@ from django.conf import settings
 
 from apps.formulas.models import FormulaJob
 from apps.formulas.services.latex_formats import correct_latex_result
-from apps.formulas.services.ocr_engines import get_formula_engine
 from apps.formulas.services.preprocessing import preprocess_image_file
+from apps.formulas.services.recognition_clients import get_recognition_client
 
 
 def recognize_formula(job: FormulaJob) -> str:
     preprocessed_path = prepare_formula_image(job)
-    engine = get_formula_engine()
-    latex_output = engine.recognize(str(preprocessed_path))
-    job.engine_name = engine.name
+    client = get_recognition_client()
+    result = client.recognize(str(preprocessed_path))
+    job.engine_name = result.engine
     job.save(update_fields=["engine_name"])
-    return correct_latex_result(latex_output, job.original_image.path)
+    return correct_latex_result(result.latex, job.original_image.path)
 
 
 def prepare_formula_image(job: FormulaJob) -> Path:

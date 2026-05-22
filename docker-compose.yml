@@ -25,6 +25,9 @@ services:
       - path: .env.example
       - path: .env
         required: false
+    environment:
+      FORMULA_LAB_RECOGNITION_BACKEND: http
+      FORMULA_LAB_MODEL_API_URL: http://model-api:9000
     volumes:
       - .:/app
       - ./media:/app/media
@@ -34,6 +37,37 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      model-api:
+        condition: service_healthy
+
+  model-api:
+    build: .
+    command: python -m uvicorn model_service.main:app --host 0.0.0.0 --port 9000
+    env_file:
+      - path: .env.example
+      - path: .env
+        required: false
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      FORMULA_LAB_OCR_ENGINE: paddle
+    expose:
+      - "9000"
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/app
+      - ./.model-cache:/app/.model-cache
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -X POST http://localhost:9000/warmup >/dev/null"]
+      interval: 30s
+      timeout: 300s
+      retries: 10
+      start_period: 30s
 
   db:
     image: postgres:16
