@@ -200,5 +200,12 @@
 {% block page_js %}
 <script defer src="{% static 'formulas/js/shared/katex_preview.js' %}"></script>
 <script defer src="{% static 'formulas/js/shared/format_tabs.js' %}"></script>
-<script defer src="{% static 'formulas/js/result.js' %}"></script>
+<script defer src="{% static 'formulas/js/result/core.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/result/preview.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/result/paper_fit.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/result/format_controls.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/result/theme.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/result/copy.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/result/image_viewport.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/result/index.js' %}?v=module-split"></script>
 {% endblock %}

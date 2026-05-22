@@ -182,5 +182,10 @@
 {% endblock %}
 
 {% block page_js %}
-<script src="{% static 'formulas/js/system.js' %}"></script>
+<script src="{% static 'formulas/js/system/core.js' %}?v=module-split"></script>
+<script src="{% static 'formulas/js/system/service_entries.js' %}?v=module-split"></script>
+<script src="{% static 'formulas/js/system/health_render.js' %}?v=module-split"></script>
+<script src="{% static 'formulas/js/system/polling.js' %}?v=module-split"></script>
+<script src="{% static 'formulas/js/system/warmup.js' %}?v=module-split"></script>
+<script src="{% static 'formulas/js/system/index.js' %}?v=module-split"></script>
 {% endblock %}

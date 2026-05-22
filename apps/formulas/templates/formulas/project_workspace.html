@@ -284,5 +284,11 @@
 {% endblock %}
 
 {% block page_js %}
-<script defer src="{% static 'formulas/js/project_workspace.js' %}?v=workflow-inspector"></script>
+<script defer src="{% static 'formulas/js/project_workspace/core.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/project_workspace/tabs.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/project_workspace/preview.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/project_workspace/paper_fit.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/project_workspace/inspector.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/project_workspace/review_drawer.js' %}?v=module-split"></script>
+<script defer src="{% static 'formulas/js/project_workspace/index.js' %}?v=module-split"></script>
 {% endblock %}

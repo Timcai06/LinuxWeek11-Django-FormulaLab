@@ -182,7 +182,13 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "paper-preview-data")
         self.assertContains(response, "data-project-katex-preview")
         self.assertContains(response, "data-paper-preview-slot")
-        self.assertContains(response, "/static/formulas/js/project_workspace.js")
+        self.assertContains(response, "/static/formulas/js/project_workspace/core.js")
+        self.assertContains(response, "/static/formulas/js/project_workspace/tabs.js")
+        self.assertContains(response, "/static/formulas/js/project_workspace/paper_fit.js")
+        self.assertContains(response, "/static/formulas/js/project_workspace/inspector.js")
+        self.assertContains(response, "/static/formulas/js/project_workspace/review_drawer.js")
+        self.assertContains(response, "/static/formulas/js/project_workspace/index.js")
+        self.assertNotContains(response, "/static/formulas/js/project_workspace.js")
 
     def test_project_workspace_paginates_formula_items_without_truncating_project(self):
         project = PaperProject.objects.create(name="Large paper")
