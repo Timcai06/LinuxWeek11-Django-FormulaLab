@@ -20,10 +20,10 @@
 Formula Lab 的最终方向是：
 
 ```text
-SpaceX-inspired Formula Recognition Mission Control
+SpaceX-inspired Formula Recognition Mission Control + Paper Formula Workbench
 ```
 
-也就是一个公式识别任务控制台，而不是普通 SaaS 面板。
+也就是一个公式识别任务控制台和论文公式资产工作台，而不是普通 SaaS 面板。
 
 ## 为什么选择 SpaceX
 
@@ -60,10 +60,10 @@ SpaceX 原始设计语言偏航天品牌官网，强调全屏摄影、视频、�
 ```text
 顶部导航
   FORMULA LAB
+  PROJECTS
   WORKBENCH
-  HISTORY
-  SYSTEM STATUS
-  UPLOAD
+  MISSION LOG
+  SYSTEM
 
 主内容
   根据页面切换任务工作区
@@ -138,7 +138,7 @@ Rendered formula  -> Payload preview
 WORKBENCH
 MODEL WARMUP
 RESULT READY
-SYSTEM STATUS
+SYSTEM
 ```
 
 中文正文保持正常阅读节奏，不要强行加大字距。
@@ -152,7 +152,7 @@ SYSTEM STATUS
 推荐结构：
 
 ```text
-顶部：FORMULA LAB / WORKBENCH / HISTORY / SYSTEM STATUS
+顶部：FORMULA LAB / PROJECTS / WORKBENCH / MISSION LOG / SYSTEM
 主体左侧：上传指令区和图片预览
 主体右侧：模型状态、队列状态、最近任务
 底部：最近任务日志
@@ -196,6 +196,20 @@ RESULT READY
 
 公式预览必须用白底或高可读浅色区，不为了黑色风格牺牲阅读。
 
+Paper Fit Preview 是辅助仪表，不是主角。它可以使用暗色半透明 telemetry strip、细网格、ruler 和指标，但不能用大面积纯白卡片抢走 KaTeX Preview 和 LaTeX Source 的视觉优先级。
+
+### Project Workspace
+
+Project Workspace 的视觉目标是轻量工作台：
+
+```text
+左侧：公式队列，紧凑可扫读
+中间：Formula Inspector，展示当前公式源码、预览、Paper Fit 和 Review 入口
+右侧：Workflow Status，展示完成率、最近批次和后续智能能力占位
+```
+
+它不应像后台表格，也不应把所有信息堆成卡片墙。公式审校链路应一眼可见：选择公式 -> 看渲染 -> 看适配 -> 打开 Review -> 导出。
+
 ### 历史记录页
 
 历史记录页像 mission log：
@@ -235,6 +249,7 @@ Last Recognition Job
 - 上传区使用虚线边框和深色面板。
 - LaTeX 源码使用深色等宽代码面板。
 - 公式渲染使用白色预览面板。
+- Paper Fit 使用低权重 telemetry 面板，不使用抢眼大白卡。
 - 错误提示使用红色文字和边框，但不要大面积红色背景。
 
 ## 动效原则
@@ -254,6 +269,8 @@ Last Recognition Job
 - 火箭、星空、粒子、火焰等装饰动画。
 - 大面积背景视频。
 - 为了电影感延迟任务反馈。
+- 浮动 orb、bokeh 或与任务无关的装饰物。
+- Paper Fit、状态灯或 telemetry 元素抢走主要工作内容。
 
 ## 设计禁忌
 

@@ -1,14 +1,15 @@
 # Formula Lab Mission Control
 ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white) ![Celery](https://img.shields.io/badge/celery-%2337814A.svg?style=for-the-badge&logo=celery&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-A high-performance, asynchronous formula recognition workbench inspired by aerospace control centers. Upload mathematical formula images and convert them to interactive LaTeX code through a configurable OCR engine. The current local development baseline uses **PaddleOCR Formula Recognition** for higher accuracy, while `pix2tex` remains available as a comparison engine.
+An asynchronous formula recognition and review workbench inspired by aerospace control centers. Upload mathematical formula images, convert them to LaTeX through a configurable OCR engine, review formulas inside a paper project workspace, and export reusable `.tex` / `.md` snippets. The current local development baseline uses **PaddleOCR Formula Recognition** for higher accuracy, while `pix2tex` remains available as a comparison engine.
 
 ## 🌟 Key Features | 核心特性
 
-- **🌌 Aerospace Monochrome UI**: A meticulously crafted, hardware-accelerated black-and-white UI featuring glassmorphism and dynamic micro-animations.
+- **🌌 Aerospace Monochrome UI**: A black-and-white Mission Control interface with focused workbench pages and restrained telemetry surfaces.
 - **⚡ Asynchronous AI Pipeline**: Utilizes **Celery** and **Redis** to offload heavy OCR inference, ensuring the web interface remains responsive.
 - **🧠 Configurable Recognition Engine**: Supports PaddleOCR Formula Recognition as the local default and keeps `pix2tex` as a fallback/comparison path.
-- **🐳 Zero-Config Docker Engine**: Fully containerized environment using Docker Compose. Just build and launch. (Now optimized with global/Tsinghua PyPI mirrors for lightning-fast deployments).
+- **🧪 Paper Project Workspace**: Organizes recognized formulas into projects, batches, formula items, review drawers, Paper Fit Preview, and project-level exports.
+- **🐳 Docker Compose Runtime**: Containerized environment with Django, PostgreSQL, Redis, and Celery.
 - **📝 Real-time KaTeX Engine**: Instant preview of parsed formulas via KaTeX integration, with one-click copy to clipboard functionality.
 - **🛡️ Mission Resilience**: Comprehensive task tracking, automated retry mechanisms for failed inferences, and persistent mission logs backed by PostgreSQL.
 
@@ -21,7 +22,8 @@ A high-performance, asynchronous formula recognition workbench inspired by aeros
 2. 任务持久化至 **PostgreSQL** 并被推入 **Redis** 消息队列。
 3. 后台 **Celery Worker** 拦截任务，加载 PaddleOCR Formula Recognition 或 `pix2tex` 模型执行推理。
 4. 前端通过 **Mission Progress** (任务进度页) 追踪状态。
-5. 完成后在 **Result** (报告页) 展示格式化后的 LaTeX 源码与 KaTeX 实时渲染画面。
+5. 完成后在 **Result** (报告页) 展示格式化后的 LaTeX 源码、KaTeX 实时渲染和 Paper Fit Preview。
+6. 如果任务关联到项目，识别结果会进入 **Project Workspace**，成为可审校、可确认、可导出的 Formula Item。
 
 ## 🚀 Quick Start | 快速启动
 
@@ -40,6 +42,14 @@ make up
 👉 Open http://localhost:8000/ in your browser.
 
 Product-core pages begin at `http://localhost:8000/projects/`, while the existing single-image recognition flow remains available from Workbench.
+
+Current product surfaces:
+
+- `/workbench/`: upload and route a recognition mission into a paper project.
+- `/projects/`: list paper projects and their formula metrics.
+- `/projects/<uuid>/`: inspect formula items, review LaTeX, check paper fit, and export `.tex` / `.md`.
+- `/history/`: inspect mission history and retry failed missions.
+- `/system/`: inspect Redis, Celery, database, media, and model state.
 
 The Docker image installs both the base web stack and PaddleOCR Formula Recognition dependencies. The default Compose environment uses:
 

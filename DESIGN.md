@@ -143,8 +143,8 @@ Specs:
 - Text: `on-night`.
 - Bottom border: `1px solid hairline-on-dark`.
 - Left: `FORMULA LAB` wordmark.
-- Center/left-center: `WORKBENCH`, `HISTORY`, `SYSTEM STATUS`.
-- Right: compact model state and upload action.
+- Right navigation: `PROJECTS`, `WORKBENCH`, `MISSION LOG`, `SYSTEM`.
+- Do not put a persistent model status indicator in the primary nav; model state belongs in Workbench or System telemetry.
 
 The nav should feel like a spacecraft control header, but it must remain usable. The active item uses a white underline or brighter text, not color.
 
@@ -451,4 +451,3 @@ Chinese readability and tool clarity. Do not build a marketing hero, use rocket
 imagery, add colorful SaaS badges, or hide upload/result controls behind cinematic
 decoration.
 ```
-
