@@ -79,30 +79,6 @@
             </div>
         </div>
 
-        <div class="paper-fit-panel paper-fit-panel-compact" data-paper-fit-preview>
-            <div class="paper-fit-header">
-                <span class="telemetry-label">PAPER FIT PREVIEW</span>
-                <strong data-paper-fit-risk>STANDBY</strong>
-            </div>
-            <div class="visual-ruler" aria-hidden="true">
-                <div class="ruler-cursor" data-ruler-cursor></div>
-            </div>
-            <div class="paper-fit-metrics" aria-label="Paper fit metrics">
-                <div>
-                    <span>WIDTH</span>
-                    <strong data-paper-fit-width>--</strong>
-                </div>
-                <div>
-                    <span>LINES</span>
-                    <strong data-paper-fit-lines>--</strong>
-                </div>
-                <div>
-                    <span>TIGHT</span>
-                    <strong data-paper-fit-tight>--</strong>
-                </div>
-            </div>
-            <p data-paper-fit-message>Waiting for layout telemetry.</p>
-        </div>
 
         <div class="telemetry-pipeline">
             <span class="telemetry-label">PIPELINE DIAGNOSTICS</span>
@@ -174,6 +150,31 @@
             <div class="katex-surface" data-katex-preview></div>
         </div>
 
+        <div class="paper-fit-panel" data-paper-fit-preview>
+            <div class="paper-fit-header">
+                <span class="telemetry-label">PAPER FIT PREVIEW</span>
+                <strong data-paper-fit-risk>STANDBY</strong>
+            </div>
+            <div class="visual-ruler" aria-hidden="true">
+                <div class="ruler-cursor" data-ruler-cursor></div>
+            </div>
+            <div class="paper-fit-metrics" aria-label="Paper fit metrics">
+                <div>
+                    <span>WIDTH</span>
+                    <strong data-paper-fit-width>--</strong>
+                </div>
+                <div>
+                    <span>LINES</span>
+                    <strong data-paper-fit-lines>--</strong>
+                </div>
+                <div>
+                    <span>TIGHT</span>
+                    <strong data-paper-fit-tight>--</strong>
+                </div>
+            </div>
+            <p data-paper-fit-message>Waiting for layout telemetry.</p>
+        </div>
+
         <div class="console-control-deck console-control-deck-compact">
             <div class="section-header-compact">
                 <span class="telemetry-label">LATEX SOURCE</span>
@@ -184,9 +185,8 @@
                         <button type="button" data-format-tab="block" aria-selected="true">BLOCK</button>
                         <button type="button" data-format-tab="inline">INLINE</button>
                     </div>
-                    <button class="button button-primary" type="button" data-copy-current>
+                    <button class="button button-ghost btn-copy-icon" type="button" data-copy-current aria-label="Copy LaTeX">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        <span>COPY</span>
                     </button>
                 </div>
             </div>

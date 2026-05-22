@@ -82,11 +82,11 @@
 .project-empty-state,
 .workspace-overview > div,
 .formula-item-row {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 12px 40px rgba(0, 0, 0, 0.32);
+    border: 2px solid rgba(255, 255, 255, 0.48);
+    background: rgba(12, 12, 18, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
     border-radius: 8px;
 }
 
@@ -163,7 +163,7 @@
 .panel-heading p,
 .compact-item-list span,
 .batch-list span {
-    color: var(--dim);
+    color: rgba(255, 255, 255, 0.82);
     font-family: var(--font-mono);
     font-size: 0.62rem;
     font-weight: 900;
@@ -222,10 +222,16 @@
 }
 
 .workspace-overview strong {
-    color: var(--on-night);
+    color: #ffffff;
     font-family: var(--font-mono);
     font-size: clamp(1.8rem, 4vw, 3.2rem);
     line-height: 0.92;
+}
+
+.workspace-header .section-header h1 {
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+    font-weight: 950;
 }
 
 .workspace-grid {
@@ -273,8 +279,7 @@
     font-size: 1.18rem;
 }
 
-.compact-item-list,
-.batch-list {
+.compact-item-list {
     display: grid;
     gap: 8px;
     margin: 0;
@@ -282,8 +287,7 @@
     list-style: none;
 }
 
-.compact-item-list li,
-.batch-list li {
+.compact-item-list li {
     min-width: 0;
     display: grid;
     gap: 5px;
@@ -293,22 +297,13 @@
     border-radius: 6px;
 }
 
-.compact-item-list strong,
-.batch-list strong,
-.batch-list em {
+.compact-item-list strong {
     overflow-wrap: anywhere;
     color: var(--on-night);
     font-family: var(--font-mono);
     font-style: normal;
     font-size: 0.78rem;
     line-height: 1.35;
-}
-
-.batch-list em {
-    color: var(--status-warming);
-    font-size: 0.66rem;
-    font-weight: 900;
-    letter-spacing: 0.06em;
 }
 
 .list-empty {
@@ -318,4 +313,283 @@
 
 .formula-items-panel {
     margin-top: 18px;
+}
+
+/* Sidebar Flow sections & telemetry tag grids */
+.flow-section {
+    display: grid;
+    gap: 10px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.flow-section h3 {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.compact-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.status-chip-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--on-night);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.status-chip-item:hover {
+    border-color: rgba(92, 255, 176, 0.45);
+    background: rgba(92, 255, 176, 0.08);
+    color: var(--status-ready);
+}
+
+.chip-code {
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.chip-metric {
+    color: var(--dim);
+    font-size: 0.58rem;
+    border-left: 1.5px solid rgba(255, 255, 255, 0.18);
+    padding-left: 6px;
+}
+
+.status-chip-item:hover .chip-metric {
+    border-left-color: rgba(92, 255, 176, 0.25);
+    color: var(--status-ready);
+}
+
+/* Sidebar batch mission items */
+.batch-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.batch-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+}
+
+.batch-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+}
+
+.batch-code {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--muted);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.batch-list strong {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--on-night);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.batch-status {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.batch-status.is-running {
+    color: var(--status-warming);
+    border-color: rgba(255, 184, 77, 0.25);
+    background: rgba(255, 184, 77, 0.06);
+}
+
+.batch-status.is-succeeded,
+.batch-status.is-completed {
+    color: var(--status-ready);
+    border-color: rgba(92, 255, 176, 0.25);
+    background: rgba(92, 255, 176, 0.06);
+}
+
+.batch-status.is-failed {
+    color: var(--status-error);
+    border-color: rgba(255, 77, 115, 0.25);
+    background: rgba(255, 77, 115, 0.06);
+}
+
+.batch-status.is-queued {
+    color: var(--dim);
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Overview Metric Cards Visual Color Identifiers */
+.workspace-overview .metric-total {
+    border-left: 4px solid rgba(255, 255, 255, 0.85) !important;
+}
+.workspace-overview .metric-needs-review {
+    border-left: 4px solid var(--status-warming) !important;
+}
+.workspace-overview .metric-ready {
+    border-left: 4px solid var(--status-ready) !important;
+}
+.workspace-overview .metric-exported {
+    border-left: 4px solid #3b82f6 !important;
+}
+.workspace-overview .metric-batches {
+    border-left: 4px solid #a855f7 !important;
+}
+
+/* Sidebar Completion telemetry */
+.telemetry-completion-deck {
+    display: grid;
+    gap: 12px;
+}
+
+.completion-bar-outer {
+    position: relative;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.28);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.completion-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, #166534 0%, var(--status-ready) 100%);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+.completion-rate-text {
+    position: absolute;
+    right: 8px;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.65rem;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.completion-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.completion-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.16);
+    background: rgba(0, 0, 0, 0.24);
+    border-radius: 5px;
+}
+
+.metric-lbl {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 800;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+}
+
+.metric-val {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.metric-val.text-warming {
+    color: var(--status-warming) !important;
+}
+
+.metric-val.text-ready {
+    color: var(--status-ready) !important;
+}
+
+/* Sidebar export actions */
+.export-actions-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-sidebar-export {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.7rem;
+    border: 2px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-sidebar-export:hover {
+    border-color: var(--status-ready);
+    background: rgba(92, 255, 176, 0.08);
+    color: var(--status-ready);
+    box-shadow: 0 0 12px rgba(92, 255, 176, 0.2);
+}
+
+.btn-sidebar-export .btn-icon {
+    width: 14px;
+    height: 14px;
+    color: inherit;
 }

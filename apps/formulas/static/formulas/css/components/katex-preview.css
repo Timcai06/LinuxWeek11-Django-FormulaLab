@@ -261,7 +261,7 @@
     color: var(--muted);
     transition: color 0.2s ease;
     display: inline-block;
-    width: 96px;
+    width: 80px;
     text-align: left;
 }
 

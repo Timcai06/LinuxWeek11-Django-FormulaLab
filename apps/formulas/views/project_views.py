@@ -99,12 +99,20 @@ def project_workspace(request, project_id):
                 "quality_score": item.quality_score,
             }
         )
+    total_formulas = project.formula_items.count()
+    needs_review = project.formula_items.filter(status=FormulaItem.Status.NEEDS_REVIEW).count()
+    ready_to_export = project.formula_items.filter(status__in=EXPORT_READY_STATUSES).count()
+    exported = project.formula_items.filter(status=FormulaItem.Status.EXPORTED).count()
+    reviewed = ready_to_export + exported
+    completion_rate = int((reviewed / total_formulas) * 100) if total_formulas else 0
+
     overview = {
-        "total_formulas": project.formula_items.count(),
-        "needs_review": project.formula_items.filter(status=FormulaItem.Status.NEEDS_REVIEW).count(),
-        "ready_to_export": project.formula_items.filter(status__in=EXPORT_READY_STATUSES).count(),
-        "exported": project.formula_items.filter(status=FormulaItem.Status.EXPORTED).count(),
+        "total_formulas": total_formulas,
+        "needs_review": needs_review,
+        "ready_to_export": ready_to_export,
+        "exported": exported,
         "recent_batches": project.batches.count(),
+        "completion_rate": completion_rate,
     }
     status_filter_links = _project_status_filter_links(request, active_item_status)
     next_item_querystring = (

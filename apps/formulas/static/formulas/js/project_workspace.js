@@ -126,7 +126,7 @@
 
     function setupFormulaInspector() {
         const items = reviewData();
-        const byId = new Map(items.map((item) => [item.id, item]));
+        const byId = new Map(items.map((item) => [Number(item.id), item]));
         const rows = Array.from(document.querySelectorAll("[data-workspace-item]"));
         const codeNode = document.querySelector("[data-inspector-code]");
         const batchNode = document.querySelector("[data-inspector-batch]");
@@ -145,7 +145,7 @@
                 return;
             }
             rows.forEach((row) => {
-                row.classList.toggle("is-selected", row.dataset.inspectorItemId === item.id);
+                row.classList.toggle("is-selected", Number(row.dataset.inspectorItemId) === Number(item.id));
             });
             codeNode.textContent = item.code || "Formula";
             if (batchNode) {
@@ -164,12 +164,22 @@
             updateInspectorFit(item.latex || "");
         }
 
-        rows.forEach((row) => {
-            const trigger = row.querySelector("[data-inspector-select]");
-            if (!trigger) {
-                return;
-            }
-            trigger.addEventListener("click", () => selectItem(byId.get(trigger.dataset.reviewItemId)));
+        document.querySelectorAll("[data-inspector-select]").forEach((trigger) => {
+            trigger.addEventListener("click", () => {
+                const itemId = Number(trigger.dataset.reviewItemId);
+                const item = byId.get(itemId);
+                if (item) {
+                    const queueTabTrigger = document.querySelector('.workspace-tab-trigger[data-tab="queue"]');
+                    if (queueTabTrigger && !queueTabTrigger.classList.contains('active')) {
+                        queueTabTrigger.click();
+                    }
+                    selectItem(item);
+                    const correspondingRow = document.querySelector(`[data-inspector-item-id="${item.id}"]`);
+                    if (correspondingRow) {
+                        correspondingRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            });
         });
 
         if (items.length) {

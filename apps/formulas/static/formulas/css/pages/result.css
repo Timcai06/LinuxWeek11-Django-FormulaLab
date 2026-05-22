@@ -2,7 +2,7 @@
     height: calc(100vh - var(--nav-height));
     min-height: 600px;
     display: grid;
-    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
     gap: clamp(14px, 2vw, 24px);
     padding: clamp(14px, 2.4vh, 22px) clamp(16px, 3vw, 28px);
     overflow: hidden;
@@ -13,7 +13,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);

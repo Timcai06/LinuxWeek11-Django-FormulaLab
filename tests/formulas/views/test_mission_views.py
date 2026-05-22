@@ -101,7 +101,7 @@ class FormulaMissionViewTests(FormulaViewTestCase):
         self.assertEqual(response.context["job"].mission_code, job.mission_code)
         self.assertEqual(response.context["formats"]["raw"], r"\frac{a}{b}")
         self.assertEqual(response.context["formats"]["block"], r"$$\frac{a}{b}$$")
-        self.assertContains(response, "COPY")
+        self.assertContains(response, "data-copy-current")
         self.assertContains(response, "console-actions-row")
         self.assertNotContains(response, "COPY CURRENT")
         self.assertContains(response, job.mission_code)

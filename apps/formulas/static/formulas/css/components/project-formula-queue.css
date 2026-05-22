@@ -88,11 +88,11 @@
 }
 
 .cell-label {
-    color: var(--dim);
+    color: rgba(255, 255, 255, 0.95);
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.64rem;
     font-weight: 900;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.08em;
 }
 
 .code-wrapper,
@@ -122,10 +122,11 @@
 .formula-render-surface-wrapper .formula-render-surface {
     min-height: 86px;
     background:
-        linear-gradient(rgba(255, 255, 255, 0.026) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px),
-        rgba(0, 0, 0, 0.42);
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        rgba(0, 0, 0, 0.55);
     background-size: 18px 18px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
 }
 
 .formula-item-actions {
@@ -140,6 +141,33 @@
     letter-spacing: 0.12em;
 }
 
+.inspector-header .review-trigger {
+    background: rgba(92, 255, 176, 0.08);
+    color: var(--status-ready);
+    border: 2px solid var(--status-ready);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.72rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.inspector-header .review-trigger:hover:not(:disabled) {
+    background: var(--status-ready);
+    color: #000000;
+    box-shadow: 0 0 16px rgba(92, 255, 176, 0.35);
+}
+
+.inspector-header .review-trigger:disabled {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    border-color: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+
 .formula-inspector-panel {
     position: sticky;
     top: calc(var(--nav-height) + 22px);
@@ -147,10 +175,10 @@
     gap: 14px;
     min-width: 0;
     padding: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.38);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.025);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 12px 40px rgba(0, 0, 0, 0.28);
+    background: #0c0c12;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 }
 
 .inspector-header {
@@ -171,15 +199,19 @@
     line-height: 1;
 }
 
-.inspector-meta,
-.inspector-fit-panel dl {
+.inspector-meta {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
 }
 
-.inspector-meta span,
-.inspector-fit-panel dl div {
+.inspector-fit-panel dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.inspector-meta span {
     min-width: 0;
     padding: 8px 9px;
     border: 1px solid rgba(255, 255, 255, 0.07);
@@ -188,6 +220,20 @@
     color: var(--muted);
     font-family: var(--font-mono);
     font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    overflow-wrap: anywhere;
+}
+
+.inspector-fit-panel dl div {
+    min-width: 0;
+    padding: 5px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.15);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
     font-weight: 900;
     letter-spacing: 0.05em;
     overflow-wrap: anywhere;
@@ -222,12 +268,12 @@
 
 .inspector-fit-panel {
     display: grid;
-    gap: 10px;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-left: 3px solid var(--dim);
-    border-radius: 7px;
-    background: rgba(0, 0, 0, 0.24);
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    background: rgba(13, 13, 20, 0.4);
 }
 
 .inspector-fit-panel > div {
@@ -238,10 +284,10 @@
 }
 
 .inspector-fit-panel strong {
-    color: var(--dim);
+    color: rgba(255, 255, 255, 0.7);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    font-weight: 900;
+    font-size: 0.65rem;
+    font-weight: 800;
     letter-spacing: 0.06em;
 }
 
@@ -271,14 +317,19 @@
 }
 
 .inspector-fit-panel dt {
-    color: var(--dim);
-    font-size: 0.54rem;
+    color: rgba(255, 255, 255, 0.45);
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.52rem;
+    letter-spacing: 0.06em;
 }
 
 .inspector-fit-panel dd {
-    margin-top: 4px;
-    color: var(--on-night);
-    font-size: 0.74rem;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-mono);
+    font-weight: 900;
+    font-size: 0.72rem;
 }
 
 @media (max-width: 1120px) {

@@ -21,9 +21,15 @@
     z-index: 2;
 }
 
+.telemetry-panel .telemetry-label {
+    color: rgba(255, 255, 255, 0.98);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+}
+
 .telemetry-section strong {
     display: block;
-    color: var(--on-night);
+    color: #ffffff;
     font-size: 1.4rem;
     font-family: var(--font-industrial);
     margin-top: 0;
@@ -31,9 +37,10 @@
 
 .telemetry-section p {
     margin: 6px 0 0;
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.88);
     font-size: 0.78rem;
     line-height: 1.4;
+    font-weight: 500;
 }
 
 .queue-grid dl {
@@ -47,7 +54,7 @@
 .queue-grid div {
     padding: 12px;
     background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -56,14 +63,14 @@
     transform: translateY(-3px);
     background: rgba(255, 255, 255, 0.06);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .queue-grid dt {
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.85);
     font-family: var(--font-sans);
     font-size: 0.65rem;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: 0.05em;
 }
 
@@ -100,8 +107,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.015);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 6px;
     transition: all 0.3s ease;
     position: relative;
@@ -181,13 +188,13 @@
 }
 
 .recent-list .stage-badge {
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.85);
     font-family: var(--font-mono);
     font-size: 0.6rem;
     letter-spacing: 0.02em;
     padding: 2px 6px;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 @media (max-width: 900px) {

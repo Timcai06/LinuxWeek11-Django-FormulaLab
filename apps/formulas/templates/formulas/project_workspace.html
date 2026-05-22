@@ -204,64 +204,38 @@
         </main>
 
         <aside class="workspace-sidebar-col">
-            <section class="workspace-panel review-panel">
+            <section class="workspace-panel workflow-panel">
                 <div class="panel-heading">
-                    <p>QUEUE</p>
-                    <h2>Needs Review</h2>
+                    <p>WORKSPACE TELEMETRY</p>
+                    <h2>Workflow Status</h2>
                 </div>
-                {% if overview.needs_review %}
-                    <ol class="compact-item-list">
-                        {% for item in formula_items %}
-                            {% if item.status == "needs_review" %}
-                                <li>
-                                    <span>{{ item.formula_code }}</span>
-                                    <strong>Q {{ item.quality_score|default:0 }}</strong>
-                                </li>
-                            {% endif %}
+
+                <div class="flow-section">
+                    <h3>PROJECT COMPLETION</h3>
+                    <div class="telemetry-completion-deck">
+                        <div class="completion-bar-outer" aria-label="Completion progress: {{ overview.completion_rate }}%">
+                            <div class="completion-bar-inner" style="width: {{ overview.completion_rate }}%;"></div>
+                            <span class="completion-rate-text">{{ overview.completion_rate }}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-section">
+                    <h3>RECENT BATCHES</h3>
+                    <ol class="batch-list">
+                        {% for batch in batches %}
+                            <li>
+                                <div class="batch-left">
+                                    <span class="batch-code">{{ batch.batch_code }}</span>
+                                    <strong>{{ batch.title|default:"Untitled batch" }}</strong>
+                                </div>
+                                <span class="batch-status is-{{ batch.status|default:'queued' }}">{{ batch.status|default:"queued"|upper }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-empty">No batch missions recorded.</li>
                         {% endfor %}
                     </ol>
-                {% else %}
-                    <p class="panel-empty">No formulas are waiting for review.</p>
-                {% endif %}
-            </section>
-
-            <section class="workspace-panel export-panel">
-                <div class="panel-heading">
-                    <p>EXPORT</p>
-                    <h2>Ready to Export</h2>
                 </div>
-                {% if overview.ready_to_export %}
-                    <ol class="compact-item-list">
-                        {% for item in formula_items %}
-                            {% if item.status == "auto_ready" or item.status == "confirmed" or item.status == "edited" %}
-                                <li>
-                                    <span>{{ item.formula_code }}</span>
-                                    <strong>{{ item.status|upper }}</strong>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ol>
-                {% else %}
-                    <p class="panel-empty">No formulas are export-ready yet.</p>
-                {% endif %}
-            </section>
-
-            <section class="workspace-panel batches-panel">
-                <div class="panel-heading">
-                    <p>MISSIONS</p>
-                    <h2>Recent Batches</h2>
-                </div>
-                <ol class="batch-list">
-                    {% for batch in batches %}
-                        <li>
-                            <span>{{ batch.batch_code }}</span>
-                            <strong>{{ batch.title|default:"Untitled batch" }}</strong>
-                            <em>{{ batch.status|default:"queued"|upper }}</em>
-                        </li>
-                    {% empty %}
-                        <li class="list-empty">No batch missions recorded.</li>
-                    {% endfor %}
-                </ol>
             </section>
 
             <section class="workspace-panel intelligence-panel">
