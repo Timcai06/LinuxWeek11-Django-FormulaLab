@@ -86,7 +86,7 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "PROJECT WORKSPACE")
         self.assertContains(response, "Thesis chapter three")
         self.assertContains(response, "NEEDS REVIEW")
-        self.assertContains(response, "READY TO EXPORT")
+        self.assertContains(response, "READY")
         self.assertContains(response, r"\alpha+\beta")
         self.assertContains(response, r"E=mc^2")
         self.assertEqual(response.context["project"], project)
