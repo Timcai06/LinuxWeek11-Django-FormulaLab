@@ -61,12 +61,15 @@
     grid-template-columns: minmax(220px, 0.26fr) minmax(0, 0.74fr);
     gap: 12px;
     padding: 14px;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.015);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .formula-item-row:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.035);
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .formula-item-meta {
@@ -101,7 +104,7 @@
     min-height: 62px;
     margin: 0;
     padding: 13px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     background: rgba(0, 0, 0, 0.46);
     border-radius: 6px;
 }
@@ -264,7 +267,7 @@
         linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
         rgba(0, 0, 0, 0.55);
     background-size: 18px 18px;
-    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .formula-item-actions {

@@ -13,7 +13,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -22,6 +22,13 @@
     padding: clamp(18px, 3vw, 34px);
     min-height: 0;
     overflow-y: auto;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.source-panel:hover,
+.latex-console:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 18px 54px rgba(0, 0, 0, 0.55);
 }
 
 .source-panel {

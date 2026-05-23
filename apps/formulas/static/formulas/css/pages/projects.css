@@ -82,12 +82,13 @@
 .project-empty-state,
 .workspace-overview > div,
 .formula-item-row {
-    border: 2px solid rgba(255, 255, 255, 0.48);
-    background: rgba(12, 12, 18, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
     border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .project-card {
@@ -96,13 +97,18 @@
     flex-direction: column;
     gap: 18px;
     padding: 20px;
-    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
 }
 
-.project-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.035);
+.project-card:hover,
+.workspace-panel:hover,
+.formula-items-panel:hover,
+.paper-preview-panel:hover,
+.project-empty-state:hover,
+.workspace-overview > div:hover,
+.formula-item-row:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
 .project-card-topline {
@@ -155,7 +161,17 @@
 .workspace-overview > div {
     min-width: 0;
     padding: 13px 14px;
-    background: rgba(0, 0, 0, 0.24);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.project-metrics div:hover,
+.workspace-overview > div:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .project-metrics dt,
@@ -292,9 +308,16 @@
     display: grid;
     gap: 5px;
     padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(0, 0, 0, 0.24);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.015);
     border-radius: 6px;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.compact-item-list li:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .compact-item-list strong {
