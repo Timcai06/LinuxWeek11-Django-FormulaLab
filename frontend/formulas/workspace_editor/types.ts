@@ -10,6 +10,42 @@ export type FormulaItem = {
   updated_at: string;
 };
 
+export type PaperFile = {
+  id: string;
+  document_id: string;
+  path: string;
+  file_type: string;
+  content: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PaperDocument = {
+  id: string;
+  document_code: string;
+  project_id: string;
+  title: string;
+  root_file_path: string;
+  files: PaperFile[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectDocumentsResponse = {
+  project: {
+    id: string;
+    project_code: string;
+    name: string;
+  };
+  documents: PaperDocument[];
+};
+
+export type ProjectDocumentCreateResponse = {
+  document: Omit<PaperDocument, "files">;
+  files: PaperFile[];
+};
+
 export type FormulaItemVersion = {
   id: number;
   latex: string;

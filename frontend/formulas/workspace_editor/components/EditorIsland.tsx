@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 
 import {
+  createProjectDocument,
   fetchFormulaItem,
   fetchFormulaItemVersions,
   fetchProjectItems,
+  fetchProjectDocuments,
   restoreFormulaItemVersion,
+  savePaperFile,
   saveFormulaItem,
 } from "../api";
-import type { FormulaItem, FormulaItemVersion, WorkspaceEditorConfig } from "../types";
+import type { FormulaItem, FormulaItemVersion, PaperDocument, PaperFile, WorkspaceEditorConfig } from "../types";
 import { FormulaItemList } from "./FormulaItemList";
 import { FormulaSourceEditor } from "./FormulaSourceEditor";
+import { PaperWorkspace } from "./PaperWorkspace";
 import { VersionTimeline } from "./VersionTimeline";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
@@ -21,9 +25,13 @@ type EditorIslandProps = {
 
 export function EditorIsland({ config }: EditorIslandProps) {
   const [activeItem, setActiveItem] = useState<FormulaItem | null>(null);
+  const [activePaperFile, setActivePaperFile] = useState<PaperFile | null>(null);
   const [draftLatex, setDraftLatex] = useState("");
+  const [draftPaperContent, setDraftPaperContent] = useState("");
+  const [documents, setDocuments] = useState<PaperDocument[]>([]);
   const [items, setItems] = useState<FormulaItem[]>([]);
   const [restoringVersionId, setRestoringVersionId] = useState<number | null>(null);
+  const [paperSaveState, setPaperSaveState] = useState<SaveState>("idle");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [state, setState] = useState<LoadState>("idle");
   const [versions, setVersions] = useState<FormulaItemVersion[]>([]);
@@ -32,13 +40,23 @@ export function EditorIsland({ config }: EditorIslandProps) {
     const controller = new AbortController();
     setState("loading");
 
-    fetchProjectItems(config.projectItemsUrl, controller.signal)
-      .then((payload) => {
-        setItems(payload.items);
+    Promise.all([
+      fetchProjectItems(config.projectItemsUrl, controller.signal),
+      fetchProjectDocuments(config.projectId, controller.signal),
+    ])
+      .then(async ([itemPayload, documentPayload]) => {
+        setItems(itemPayload.items);
         const selectedItem =
-          payload.items.find((item) => item.id === config.initialItemId) ?? payload.items[0] ?? null;
+          itemPayload.items.find((item) => item.id === config.initialItemId) ?? itemPayload.items[0] ?? null;
         setActiveItem(selectedItem);
         setDraftLatex(selectedItem?.latex_current ?? "");
+        const hydratedDocuments = documentPayload.documents.length
+          ? documentPayload.documents
+          : [await createDefaultPaperDocument(config.projectId, itemPayload.project.name)];
+        setDocuments(hydratedDocuments);
+        const initialFile = firstRootFile(hydratedDocuments);
+        setActivePaperFile(initialFile);
+        setDraftPaperContent(initialFile?.content ?? "");
         setState("ready");
       })
       .catch((error: unknown) => {
@@ -71,6 +89,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
   }, [activeItem]);
 
   const hasChanges = Boolean(activeItem && draftLatex.trim() && draftLatex !== activeItem.latex_current);
+  const paperHasChanges = Boolean(activePaperFile && draftPaperContent !== activePaperFile.content);
 
   function selectItem(itemId: string) {
     const item = items.find((candidate) => candidate.id === itemId);
@@ -107,6 +126,34 @@ export function EditorIsland({ config }: EditorIslandProps) {
     } catch {
       setSaveState("error");
     }
+  }
+
+  async function savePaperDraft() {
+    if (!activePaperFile || !paperHasChanges) {
+      return;
+    }
+
+    setPaperSaveState("saving");
+    try {
+      const savedFile = await savePaperFile(activePaperFile.id, draftPaperContent, readCsrfToken());
+      setActivePaperFile(savedFile);
+      setDraftPaperContent(savedFile.content);
+      setDocuments((currentDocuments) =>
+        currentDocuments.map((document) => ({
+          ...document,
+          files: document.files.map((file) => (file.id === savedFile.id ? savedFile : file)),
+        })),
+      );
+      setPaperSaveState("saved");
+    } catch {
+      setPaperSaveState("error");
+    }
+  }
+
+  function selectPaperFile(file: PaperFile) {
+    setActivePaperFile(file);
+    setDraftPaperContent(file.content);
+    setPaperSaveState("idle");
   }
 
   async function restoreVersion(versionId: number) {
@@ -149,7 +196,31 @@ export function EditorIsland({ config }: EditorIslandProps) {
       <section className="workspace-editor-panel" aria-label="Formula editor island">
         <header className="workspace-editor-header">
           <div>
-            <span>REACT EDITOR ISLAND</span>
+            <span>PROJECT PAPER WORKSPACE</span>
+            <h2>{activePaperFile?.path ?? "No Paper File Selected"}</h2>
+          </div>
+          <div className="workspace-editor-status" data-save-state={paperSaveState}>
+            {paperSaveState.toUpperCase()}
+          </div>
+        </header>
+
+        <PaperWorkspace
+          activeFile={activePaperFile}
+          documents={documents}
+          draftContent={draftPaperContent}
+          hasChanges={paperHasChanges}
+          isSaving={paperSaveState === "saving"}
+          onDraftChange={(content) => {
+            setDraftPaperContent(content);
+            setPaperSaveState("idle");
+          }}
+          onSave={savePaperDraft}
+          onSelectFile={selectPaperFile}
+        />
+
+        <header className="workspace-editor-header workspace-formula-header">
+          <div>
+            <span>FORMULA MATERIALS</span>
             <h2>{activeItem?.formula_code ?? "No Formula Selected"}</h2>
           </div>
           <div className="workspace-editor-status" data-save-state={saveState}>
@@ -181,4 +252,20 @@ export function EditorIsland({ config }: EditorIslandProps) {
 function readCsrfToken(): string {
   const tokenInput = document.querySelector<HTMLInputElement>("input[name='csrfmiddlewaretoken']");
   return tokenInput?.value ?? "";
+}
+
+async function createDefaultPaperDocument(projectId: string, projectName: string): Promise<PaperDocument> {
+  const payload = await createProjectDocument(projectId, `${projectName} manuscript`, readCsrfToken());
+  return {
+    ...payload.document,
+    files: payload.files,
+  };
+}
+
+function firstRootFile(documents: PaperDocument[]): PaperFile | null {
+  const document = documents[0];
+  if (!document) {
+    return null;
+  }
+  return document.files.find((file) => file.path === document.root_file_path) ?? document.files[0] ?? null;
 }

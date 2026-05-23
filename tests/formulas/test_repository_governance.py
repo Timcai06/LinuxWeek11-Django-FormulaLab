@@ -81,6 +81,23 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn("fetchFormulaItemVersions", component_sources)
         self.assertIn("restoreFormulaItemVersion", component_sources)
 
+    def test_workspace_editor_uses_paper_document_api_contract(self):
+        api_source = Path("frontend/formulas/workspace_editor/api.ts").read_text(encoding="utf-8")
+        component_sources = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in Path("frontend/formulas/workspace_editor/components").glob("*.tsx")
+        )
+
+        self.assertIn("fetchProjectDocuments", api_source)
+        self.assertIn("createProjectDocument", api_source)
+        self.assertIn("savePaperFile", api_source)
+        self.assertIn("/api/projects/${projectId}/documents/", api_source)
+        self.assertIn("/api/document-files/${fileId}/", api_source)
+        self.assertIn("workspace-paper-shell", component_sources)
+        self.assertIn("workspace-paper-file-tree", component_sources)
+        self.assertIn("workspace-paper-source", component_sources)
+        self.assertIn("workspace-paper-preview", component_sources)
+
     def test_required_runtime_paths_are_listed_in_gitignore(self):
         gitignore_path = Path(".gitignore")
 

@@ -249,3 +249,21 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - 默认文档会生成 `main.tex`，包含 `article` 文档类、`amsmath` 和项目标题。
 - 文档 API 放在独立 `document_views.py`，避免继续扩大 `project_views.py`。
 - 下一片可以让 React editor island 读取 documents/files API，把现有公式编辑区升级为论文文件编辑区。
+
+## Task 8: 论文编辑器三栏雏形
+
+- [x] React editor island 读取 `GET /api/projects/<project_id>/documents/`。
+- [x] 当项目没有文档时，自动调用 `POST /api/projects/<project_id>/documents/` 创建默认文档。
+- [x] 新增 `PaperWorkspace`，包含文件树、LaTeX 源码编辑区和源码预览区。
+- [x] 新增 `PaperFileTree`，展示文档标题、文档编号和文件列表。
+- [x] 新增 `PaperSourceEditor`，编辑当前 `PaperFile.content`。
+- [x] 新增 `PaperPreview`，先以源码 preview 占位，后续替换为 PDF/LaTeX preview。
+- [x] 保存文件调用 `PATCH /api/document-files/<file_id>/`。
+- [x] 下方 Formula Materials 继续保留，作为 OCR 公式素材区。
+
+当前实现说明：
+
+- 第一版先做单人编辑闭环，不做多人 presence、批注或 PDF 编译。
+- Paper Workspace 位于 Project Workspace 顶部，Formula Materials 位于下方，形成“论文编辑区 + 公式素材区”的产品层次。
+- `main.tex` 保存后会同步 React 本地文件树状态，避免保存后预览和文件内容脱节。
+- 下一片应从源码 preview 进入真正的 LaTeX 编辑体验：CodeMirror、插入公式、基础文件操作和 PDF 编译/预览入口。
