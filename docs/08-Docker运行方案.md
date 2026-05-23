@@ -26,6 +26,14 @@ make local
 
 镜像构建使用 `uv pip install --system` 安装 Python 依赖，并通过 BuildKit cache 缓存 `/root/.cache/uv`。为了缓解大 wheel 下载超时，Dockerfile 设置了 `UV_HTTP_TIMEOUT=300`，并配置 PyPI 镜像源。
 
+PaddlePaddle 3.3.1 没有 Linux ARM64 wheel。Apple Silicon Mac 的 Docker 默认会按 `linux/arm64` 构建，导致容器内安装 `paddlepaddle==3.3.1` 失败。因此 Compose 中 `web`、`worker`、`model-api` 固定为：
+
+```text
+platform: linux/amd64
+```
+
+这与常见 Linux 服务器部署架构一致，也保证 Paddle wheel 可以安装。代价是 Apple Silicon Mac 本机构建和运行容器会走 amd64 emulation，速度会比本机 `.conda` 慢。
+
 前端布局智能使用 Node 构建层生成静态 bundle。Docker 构建时先在 Node stage 运行 `npm run build`，再把生成的 `layout-intelligence.js` 复制进最终 Python 镜像。最终运行时仍然只有 Python 服务、PostgreSQL 和 Redis，不启动 Node 服务。
 
 ## 服务设计
@@ -121,6 +129,12 @@ http://127.0.0.1:9000/
 ## db 服务
 
 PostgreSQL 使用 volume 持久化数据。
+
+容器内部仍然使用 `db:5432` 通信；宿主机调试端口默认映射到 `5433`，避免抢占 Mac 或 Linux 宿主机上已有的 PostgreSQL `5432`。如果确实要改回 `5432`，可以在 `.env` 中设置：
+
+```text
+POSTGRES_HOST_PORT=5432
+```
 
 建议环境变量：
 
