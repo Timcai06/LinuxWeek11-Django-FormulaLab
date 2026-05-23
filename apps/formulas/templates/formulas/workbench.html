@@ -36,9 +36,16 @@
             </section>
             <label class="drop-zone" for="id_image" data-drop-zone>
                 {{ form.image }}
-                <div class="hud-corners" aria-hidden="true"></div>
+                <div class="laser-sweep" aria-hidden="true"></div>
+                <div class="hud-corners" aria-hidden="true">
+                    <span class="corner-data top-left">[SYS-READY]</span>
+                    <span class="corner-data top-right">[AQC-01]</span>
+                    <span class="corner-data bottom-left">[OPTICAL]</span>
+                    <span class="corner-data bottom-right">[LOCK-ON]</span>
+                </div>
                 <span class="preview-stage">
                     <span class="drop-reticle" aria-hidden="true"></span>
+                    <span class="drop-reticle-cross" aria-hidden="true"></span>
                     <img data-preview-image hidden alt="Selected formula preview">
                 </span>
                 <span class="drop-status" data-drop-status>AWAITING IMAGE INPUT</span>
@@ -50,7 +57,7 @@
                     <span data-preview-meta>Format and dimensions pending</span>
                 </div>
             </label>
-            <button class="button button-primary launch-button" type="submit" data-launch-button>START RECOGNITION</button>
+            <button class="button button-secondary launch-button" type="submit" data-launch-button>START RECOGNITION</button>
         </form>
     </div>
 

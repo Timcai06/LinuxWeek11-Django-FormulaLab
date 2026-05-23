@@ -19,9 +19,9 @@
         </label>
         {% if active_status %}<input type="hidden" name="status" value="{{ active_status }}">{% endif %}
         <div class="status-filter" aria-label="Mission status filter">
-            <a href="{% url 'history' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" {% if not active_status %}aria-current="true"{% endif %}>ALL</a>
+            <a class="button-filter" href="{% url 'history' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" {% if not active_status %}aria-current="true"{% endif %}>ALL</a>
             {% for value, label in status_choices.choices %}
-                <a href="{% url 'history' %}?status={{ value }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" {% if active_status == value %}aria-current="true"{% endif %}>{{ label|upper }}</a>
+                <a class="button-filter" href="{% url 'history' %}?status={{ value }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" {% if active_status == value %}aria-current="true"{% endif %}>{{ label|upper }}</a>
             {% endfor %}
         </div>
         <button class="button button-secondary" type="submit">SEARCH</button>
@@ -29,6 +29,7 @@
     <ol class="timeline{% if not active_status %} is-all-view{% endif %}">
         {% for job in jobs %}
             <li class="timeline-entry status-{{ job.status }}">
+                <div class="timeline-floating-time">{{ job.created_at|date:"Y-m-d H:i:s" }}</div>
                 <div class="timeline-primary">
                     <a href="{% url 'mission-progress' job.id %}">{{ job.mission_code }}</a>
                     <span>{{ job.status|upper }}</span>

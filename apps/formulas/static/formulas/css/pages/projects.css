@@ -167,6 +167,11 @@
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.workspace-overview > div {
+    border-radius: 0;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
 .project-metrics div:hover,
 .workspace-overview > div:hover {
     background: rgba(255, 255, 255, 0.04);
@@ -263,6 +268,11 @@
     display: grid;
     gap: 16px;
     padding: 18px;
+}
+
+.workspace-panel {
+    border-radius: 0;
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
 }
 
 .review-panel,
