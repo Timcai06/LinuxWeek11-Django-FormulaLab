@@ -32,6 +32,18 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn("tokenizers", normalized_paddle)
         self.assertTrue({"pix2tex", "torch", "torchvision"}.issubset(normalized_optional))
 
+    def test_docker_web_entrypoint_uses_wsgi_runtime_not_runserver(self):
+        entrypoint = Path("scripts/entrypoint-web.sh").read_text(encoding="utf-8")
+        base_requirements = Path("requirements.txt").read_text(encoding="utf-8")
+        compose = Path("docker-compose.yml").read_text(encoding="utf-8")
+
+        self.assertIn("gunicorn", base_requirements)
+        self.assertIn("collectstatic --noinput", entrypoint)
+        self.assertIn("gunicorn config.wsgi:application", entrypoint)
+        self.assertNotIn("runserver", entrypoint)
+        self.assertIn("service_healthy", compose)
+        self.assertIn("curl -fsS http://localhost:8000/", compose)
+
     def test_required_runtime_paths_are_listed_in_gitignore(self):
         gitignore_path = Path(".gitignore")
 
@@ -40,7 +52,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertEqual(missing_entries, [])
         self.assertEqual(
             REQUIRED_GITIGNORE_ENTRIES,
-            [".conda/", ".pip-cache/", ".model-cache/", "node_modules/", "media/", "*.sqlite3"],
+            [".conda/", ".pip-cache/", ".model-cache/", "node_modules/", "media/", "staticfiles/", "*.sqlite3"],
         )
 
     def test_missing_runtime_paths_are_reported(self):
@@ -50,7 +62,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
 
             missing_entries = check_gitignore_contains_runtime_paths(gitignore_path)
 
-        self.assertEqual(missing_entries, [".pip-cache/", ".model-cache/", "*.sqlite3"])
+        self.assertEqual(missing_entries, [".pip-cache/", ".model-cache/", "staticfiles/", "*.sqlite3"])
 
     def test_semantically_equivalent_gitignore_patterns_are_accepted(self):
         with TemporaryDirectory() as temp_dir:
@@ -63,6 +75,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
                         "/.model-cache/",
                         "/node_modules/",
                         "/media/",
+                        "/staticfiles/",
                         "**/*.sqlite3",
                     ]
                 ),

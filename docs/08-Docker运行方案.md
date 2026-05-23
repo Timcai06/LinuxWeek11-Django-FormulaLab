@@ -51,7 +51,7 @@ platform: linux/amd64
 
 ```text
 web
-  Django 开发服务器
+  Gunicorn WSGI 服务
   对外暴露 8000 端口
 
 worker
@@ -77,9 +77,28 @@ redis
 `web` 服务负责：
 
 - 执行 Django migration。
-- 启动开发服务器。
+- 收集静态文件。
+- 启动 Gunicorn WSGI 服务。
 - 提供页面和 API。
 - 读取和写入上传媒体文件。
+
+启动入口：
+
+```bash
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+gunicorn config.wsgi:application --bind 0.0.0.0:8000
+```
+
+这一步把 Docker Web 从开发型 `runserver` 调整为更接近生产部署的 WSGI 运行时。Compose 仍然保留 bind mount 和 `.env.example`，方便课程验收和本机调试；后续如果继续生产化，可以再拆 `compose.prod.yml`、Nginx/static/media 边界和非 root 容器用户。
+
+可调环境变量：
+
+```text
+FORMULA_LAB_WEB_BIND=0.0.0.0:8000
+FORMULA_LAB_WEB_WORKERS=2
+FORMULA_LAB_WEB_TIMEOUT=180
+```
 
 开发阶段端口：
 

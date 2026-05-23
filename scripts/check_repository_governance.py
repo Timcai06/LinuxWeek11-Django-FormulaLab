@@ -12,6 +12,7 @@ REQUIRED_GITIGNORE_ENTRIES = [
     ".model-cache/",
     "node_modules/",
     "media/",
+    "staticfiles/",
     "*.sqlite3",
 ]
 

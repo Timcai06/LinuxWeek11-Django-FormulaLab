@@ -13,6 +13,7 @@ __pycache__/
 .coverage.*
 coverage.xml
 htmlcov/
+staticfiles/
 .venv/
 .venv*/
 .conda/
