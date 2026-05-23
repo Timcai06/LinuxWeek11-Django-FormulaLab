@@ -239,6 +239,31 @@ class FormulaItem(models.Model):
         _save_with_generated_code(self, "formula_code", "FF", super().save, args, kwargs)
 
 
+class FormulaItemVersion(models.Model):
+    class Source(models.TextChoices):
+        OCR = "ocr", "OCR"
+        MANUAL = "manual", "Manual"
+        SYSTEM_CORRECTION = "system_correction", "System correction"
+        EXPORT_SNAPSHOT = "export_snapshot", "Export snapshot"
+
+    item = models.ForeignKey(
+        FormulaItem,
+        on_delete=models.CASCADE,
+        related_name="versions",
+    )
+    latex = models.TextField()
+    source = models.CharField(max_length=32, choices=Source.choices)
+    created_by_label = models.CharField(max_length=80, blank=True)
+    note = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self) -> str:
+        return f"{self.item.formula_code or self.item_id} {self.source}"
+
+
 def _next_sequence_from_code(code: str | None) -> int:
     if not code:
         return 1

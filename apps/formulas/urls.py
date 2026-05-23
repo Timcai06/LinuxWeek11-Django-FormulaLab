@@ -16,6 +16,13 @@ urlpatterns = [
     path("history/", views.history, name="history"),
     path("system/", views.system_page, name="system"),
     path("api/missions/<uuid:job_id>/", views.mission_status_api, name="api-mission-status"),
+    path("api/projects/<uuid:project_id>/items/", views.api_project_items, name="api-project-items"),
+    path("api/formula-items/<uuid:item_id>/", views.api_formula_item_detail, name="api-formula-item-detail"),
+    path(
+        "api/formula-items/<uuid:item_id>/versions/",
+        views.api_formula_item_versions,
+        name="api-formula-item-versions",
+    ),
     path("api/system/health/", views.health_api, name="api-system-health"),
     path("api/system/warmup/", views.warmup_api, name="api-system-warmup"),
 ]

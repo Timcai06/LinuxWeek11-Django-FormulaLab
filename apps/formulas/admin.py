@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BatchMission, FormulaItem, FormulaJob, PaperProject
+from .models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob, PaperProject
 
 
 @admin.register(PaperProject)
@@ -53,6 +53,19 @@ class FormulaItemAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "quality_score", "created_at", "updated_at")
     readonly_fields = ("formula_code", "id", "created_at", "updated_at")
+
+
+@admin.register(FormulaItemVersion)
+class FormulaItemVersionAdmin(admin.ModelAdmin):
+    list_display = (
+        "item",
+        "source",
+        "created_by_label",
+        "created_at",
+    )
+    search_fields = ("item__formula_code", "latex", "created_by_label", "note")
+    list_filter = ("source", "created_at")
+    readonly_fields = ("id", "created_at")
 
 
 @admin.register(FormulaJob)

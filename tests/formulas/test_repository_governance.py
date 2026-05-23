@@ -1,4 +1,5 @@
 import os
+import json
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
@@ -43,6 +44,35 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertNotIn("runserver", entrypoint)
         self.assertIn("service_healthy", compose)
         self.assertIn("curl -fsS http://localhost:8000/", compose)
+
+    def test_workspace_editor_build_chain_is_declared(self):
+        package_json = json.loads(Path("package.json").read_text(encoding="utf-8"))
+        dependencies = package_json["dependencies"]
+        dev_dependencies = package_json["devDependencies"]
+        scripts = package_json["scripts"]
+
+        self.assertIn("react", dependencies)
+        self.assertIn("react-dom", dependencies)
+        self.assertIn("@vitejs/plugin-react", dev_dependencies)
+        self.assertIn("typescript", dev_dependencies)
+        self.assertIn("vite", dev_dependencies)
+        self.assertIn("tsc --noEmit", scripts["check:editor"])
+        self.assertIn("vite build", scripts["build:editor"])
+        self.assertIn("npm run build:editor", scripts["build"])
+
+    def test_workspace_editor_uses_formula_item_api_contract(self):
+        api_source = Path("frontend/formulas/workspace_editor/api.ts").read_text(encoding="utf-8")
+        editor_source = Path("frontend/formulas/workspace_editor/components/EditorIsland.tsx").read_text(encoding="utf-8")
+
+        self.assertIn("fetchFormulaItem", api_source)
+        self.assertIn("saveFormulaItem", api_source)
+        self.assertIn("fetchFormulaItemVersions", api_source)
+        self.assertIn('method: "PATCH"', api_source)
+        self.assertIn('"X-CSRFToken"', api_source)
+        self.assertIn("workspace-editor-form", editor_source)
+        self.assertIn("workspace-editor-version-list", editor_source)
+        self.assertIn("saveFormulaItem", editor_source)
+        self.assertIn("fetchFormulaItemVersions", editor_source)
 
     def test_required_runtime_paths_are_listed_in_gitignore(self):
         gitignore_path = Path(".gitignore")

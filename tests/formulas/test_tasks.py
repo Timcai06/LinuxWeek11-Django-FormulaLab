@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 from django.test import TestCase, override_settings
 from PIL import Image
 
-from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
+from apps.formulas.models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob, PaperProject
 from apps.formulas.services.model_state import MODEL_MESSAGE_KEY, MODEL_STATUS_KEY
 from apps.formulas.services.recognition_types import RecognitionResult
 from apps.formulas.tasks import run_formula_job, warmup_model_task
@@ -168,6 +168,10 @@ class FormulaTaskTests(TestCase):
         self.assertEqual(item.latex_current, r"\alpha + \beta")
         self.assertEqual(item.status, FormulaItem.Status.AUTO_READY)
         self.assertEqual(item.quality_score, 90)
+        version = item.versions.get()
+        self.assertEqual(version.latex, r"\alpha + \beta")
+        self.assertEqual(version.source, FormulaItemVersion.Source.OCR)
+        self.assertEqual(version.created_by_label, "paddle")
 
     def test_run_formula_job_skips_non_queued_job(self):
         job = self.create_job()

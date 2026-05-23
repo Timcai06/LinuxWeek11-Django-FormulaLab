@@ -8,7 +8,7 @@ from celery.signals import worker_process_init
 from django.db import transaction
 from django.utils import timezone
 
-from apps.formulas.models import BatchMission, FormulaItem, FormulaJob
+from apps.formulas.models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob
 from apps.formulas.services.latex_formats import correct_latex_result
 from apps.formulas.services.model_state import WORKER_HEARTBEAT_KEY, set_model_status
 from apps.formulas.services.recognizer import prepare_formula_image
@@ -183,17 +183,27 @@ def _materialize_formula_item(job: FormulaJob) -> None:
         return
 
     next_sort_order = FormulaItem.objects.filter(batch=job.batch).count() + 1
-    FormulaItem.objects.update_or_create(
-        recognition_job=job,
-        defaults={
-            "project": job.project,
-            "batch": job.batch,
-            "latex_current": job.latex_result,
-            "status": FormulaItem.Status.AUTO_READY,
-            "quality_score": 90,
-            "sort_order": next_sort_order,
-        },
-    )
+    with transaction.atomic():
+        item, _created = FormulaItem.objects.update_or_create(
+            recognition_job=job,
+            defaults={
+                "project": job.project,
+                "batch": job.batch,
+                "latex_current": job.latex_result,
+                "status": FormulaItem.Status.AUTO_READY,
+                "quality_score": 90,
+                "sort_order": next_sort_order,
+            },
+        )
+        FormulaItemVersion.objects.get_or_create(
+            item=item,
+            source=FormulaItemVersion.Source.OCR,
+            defaults={
+                "latex": job.latex_result,
+                "created_by_label": job.engine_name,
+                "note": f"Initial OCR result from {job.mission_code}",
+            },
+        )
 
 
 def _mark_batch_status(batch: BatchMission | None, status: str) -> None:

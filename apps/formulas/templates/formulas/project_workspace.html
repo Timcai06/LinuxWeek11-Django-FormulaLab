@@ -10,11 +10,18 @@
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-formula-queue.css' %}?v=workflow-inspector">
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-formula-inspector.css' %}?v=component-split">
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-review-drawer.css' %}">
+<link rel="stylesheet" href="{% static 'formulas/css/generated/workspace-editor.css' %}">
 {% endblock %}
 
 {% block content %}
 {{ paper_preview_items|json_script:"paper-preview-data" }}
 {{ review_items|json_script:"review-drawer-data" }}
+<div
+    id="workspace-editor-root"
+    data-project-id="{{ project.id }}"
+    data-initial-item-id="{% if review_items %}{{ review_items.0.id }}{% endif %}"
+    data-project-items-url="{% url 'api-project-items' project.id %}"
+></div>
 <section class="workspace-shell">
     <div class="workspace-header">
         <div class="section-header">
@@ -292,4 +299,5 @@
 <script defer src="{% static 'formulas/js/project_workspace/inspector.js' %}?v=module-split"></script>
 <script defer src="{% static 'formulas/js/project_workspace/review_drawer.js' %}?v=module-split"></script>
 <script defer src="{% static 'formulas/js/project_workspace/index.js' %}?v=module-split"></script>
+<script type="module" src="{% static 'formulas/js/generated/workspace-editor.js' %}"></script>
 {% endblock %}

@@ -194,6 +194,10 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "/static/formulas/js/project_workspace/inspector.js")
         self.assertContains(response, "/static/formulas/js/project_workspace/review_drawer.js")
         self.assertContains(response, "/static/formulas/js/project_workspace/index.js")
+        self.assertContains(response, 'id="workspace-editor-root"')
+        self.assertContains(response, 'data-project-id="')
+        self.assertContains(response, "/static/formulas/js/generated/workspace-editor.js")
+        self.assertContains(response, "/static/formulas/css/generated/workspace-editor.css")
         self.assertNotContains(response, "/static/formulas/js/project_workspace.js")
 
     def test_project_workspace_paginates_formula_items_without_truncating_project(self):

@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils import timezone
 
-from apps.formulas.models import BatchMission, FormulaItem, FormulaJob, PaperProject
+from apps.formulas.models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob, PaperProject
 
 
 def tiny_png(name: str = "formula.png") -> SimpleUploadedFile:
@@ -87,6 +87,27 @@ class ProductCoreModelTests(TestCase):
         self.assertEqual(first.status, FormulaItem.Status.NEEDS_REVIEW)
         self.assertEqual(first.quality_score, 0)
         self.assertEqual(second.quality_flags, [])
+
+    def test_formula_item_versions_are_ordered_with_latest_first(self):
+        project = PaperProject.objects.create(name="Versioned formula")
+        batch = BatchMission.objects.create(project=project)
+        item = FormulaItem.objects.create(project=project, batch=batch, latex_current=r"\alpha")
+
+        first = FormulaItemVersion.objects.create(
+            item=item,
+            latex=r"\alpha",
+            source=FormulaItemVersion.Source.OCR,
+            created_by_label="paddle",
+        )
+        second = FormulaItemVersion.objects.create(
+            item=item,
+            latex=r"\alpha+\beta",
+            source=FormulaItemVersion.Source.MANUAL,
+            created_by_label="reviewer",
+        )
+
+        self.assertEqual(list(item.versions.all()), [second, first])
+        self.assertEqual(str(second), f"{item.formula_code} manual")
 
     def test_formula_job_can_optionally_attach_to_project_and_batch(self):
         project = PaperProject.objects.create(name="Attached OCR flow")

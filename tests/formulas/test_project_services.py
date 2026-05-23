@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from apps.formulas.models import BatchMission, FormulaItem, PaperProject
+from apps.formulas.models import BatchMission, FormulaItem, FormulaItemVersion, PaperProject
 from apps.formulas.services.project_items import confirm_formula_item_review
 
 
@@ -21,6 +21,10 @@ class ProjectItemServiceTests(TestCase):
         self.assertEqual(reviewed_item.id, item.id)
         self.assertEqual(item.latex_current, r"\beta + \gamma")
         self.assertEqual(item.status, FormulaItem.Status.CONFIRMED)
+        version = item.versions.get()
+        self.assertEqual(version.latex, r"\beta + \gamma")
+        self.assertEqual(version.source, FormulaItemVersion.Source.MANUAL)
+        self.assertEqual(version.created_by_label, "review")
 
     def test_confirm_formula_item_review_keeps_existing_latex_when_input_is_blank(self):
         project = PaperProject.objects.create(name="Blank review service")
@@ -37,3 +41,4 @@ class ProjectItemServiceTests(TestCase):
         item.refresh_from_db()
         self.assertEqual(item.latex_current, r"E=mc^2")
         self.assertEqual(item.status, FormulaItem.Status.CONFIRMED)
+        self.assertFalse(item.versions.exists())
