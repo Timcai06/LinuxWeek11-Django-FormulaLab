@@ -67,9 +67,13 @@ class RepositoryGovernanceTests(SimpleTestCase):
 
     def test_workspace_editor_uses_formula_item_api_contract(self):
         api_source = Path("frontend/formulas/workspace_editor/api.ts").read_text(encoding="utf-8")
-        component_sources = "\n".join(
+        workspace_sources = "\n".join(
             path.read_text(encoding="utf-8")
-            for path in Path("frontend/formulas/workspace_editor/components").glob("*.tsx")
+            for source_dir, pattern in [
+                (Path("frontend/formulas/workspace_editor/components"), "*.tsx"),
+                (Path("frontend/formulas/workspace_editor/hooks"), "*.ts"),
+            ]
+            for path in source_dir.glob(pattern)
         )
 
         self.assertIn("fetchFormulaItem", api_source)
@@ -79,21 +83,25 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn('method: "PATCH"', api_source)
         self.assertIn('method: "POST"', api_source)
         self.assertIn('"X-CSRFToken"', api_source)
-        self.assertIn("workspace-editor-form", component_sources)
-        self.assertIn("workspace-editor-preview", component_sources)
-        self.assertIn("workspace-editor-version-list", component_sources)
-        self.assertIn("FormulaReviewInbox", component_sources)
-        self.assertIn("workspace-review-inbox", component_sources)
-        self.assertIn("source_job_code", component_sources)
-        self.assertIn("saveFormulaItem", component_sources)
-        self.assertIn("fetchFormulaItemVersions", component_sources)
-        self.assertIn("restoreFormulaItemVersion", component_sources)
+        self.assertIn("workspace-editor-form", workspace_sources)
+        self.assertIn("workspace-editor-preview", workspace_sources)
+        self.assertIn("workspace-editor-version-list", workspace_sources)
+        self.assertIn("FormulaReviewInbox", workspace_sources)
+        self.assertIn("workspace-review-inbox", workspace_sources)
+        self.assertIn("source_job_code", workspace_sources)
+        self.assertIn("saveFormulaItem", workspace_sources)
+        self.assertIn("fetchFormulaItemVersions", workspace_sources)
+        self.assertIn("restoreFormulaItemVersion", workspace_sources)
 
     def test_workspace_editor_uses_paper_document_api_contract(self):
         api_source = Path("frontend/formulas/workspace_editor/api.ts").read_text(encoding="utf-8")
-        component_sources = "\n".join(
+        workspace_sources = "\n".join(
             path.read_text(encoding="utf-8")
-            for path in Path("frontend/formulas/workspace_editor/components").glob("*.tsx")
+            for source_dir, pattern in [
+                (Path("frontend/formulas/workspace_editor/components"), "*.tsx"),
+                (Path("frontend/formulas/workspace_editor/hooks"), "*.ts"),
+            ]
+            for path in source_dir.glob(pattern)
         )
 
         self.assertIn("fetchProjectDocuments", api_source)
@@ -105,26 +113,40 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn("/api/projects/${projectId}/documents/", api_source)
         self.assertIn("/api/documents/${documentId}/files/", api_source)
         self.assertIn("/api/document-files/${fileId}/", api_source)
-        self.assertIn("EditorView", component_sources)
-        self.assertIn("lineNumbers()", component_sources)
-        self.assertIn('data-editor-engine="codemirror"', component_sources)
-        self.assertIn("workspace-panel", component_sources)
-        self.assertIn("panel-heading", component_sources)
-        self.assertIn("PaperFileDialog", component_sources)
-        self.assertIn("PaperDeleteDialog", component_sources)
-        self.assertIn("workspace-paper-template-options", component_sources)
-        self.assertIn("insertFormulaIntoPaper", component_sources)
-        self.assertIn("INSERT INTO PAPER", component_sources)
-        self.assertIn("workspace-formula-transfer", component_sources)
-        self.assertIn("workspace-paper-dialog", component_sources)
-        self.assertNotIn("window.prompt", component_sources)
-        self.assertNotIn("window.confirm", component_sources)
-        self.assertIn("workspace-code-editor", component_sources)
-        self.assertIn("workspace-paper-file-actions", component_sources)
-        self.assertIn("workspace-paper-shell", component_sources)
-        self.assertIn("workspace-paper-file-tree", component_sources)
-        self.assertIn("workspace-paper-source", component_sources)
-        self.assertIn("workspace-paper-preview", component_sources)
+        self.assertIn("EditorView", workspace_sources)
+        self.assertIn("lineNumbers()", workspace_sources)
+        self.assertIn('data-editor-engine="codemirror"', workspace_sources)
+        self.assertIn("workspace-panel", workspace_sources)
+        self.assertIn("panel-heading", workspace_sources)
+        self.assertIn("PaperFileDialog", workspace_sources)
+        self.assertIn("PaperDeleteDialog", workspace_sources)
+        self.assertIn("workspace-paper-template-options", workspace_sources)
+        self.assertIn("insertFormulaIntoPaper", workspace_sources)
+        self.assertIn("INSERT INTO PAPER", workspace_sources)
+        self.assertIn("workspace-formula-transfer", workspace_sources)
+        self.assertIn("workspace-paper-dialog", workspace_sources)
+        self.assertNotIn("window.prompt", workspace_sources)
+        self.assertNotIn("window.confirm", workspace_sources)
+        self.assertIn("workspace-code-editor", workspace_sources)
+        self.assertIn("workspace-paper-file-actions", workspace_sources)
+        self.assertIn("workspace-paper-shell", workspace_sources)
+        self.assertIn("workspace-paper-file-tree", workspace_sources)
+        self.assertIn("workspace-paper-source", workspace_sources)
+        self.assertIn("workspace-paper-preview", workspace_sources)
+
+    def test_workspace_editor_state_is_split_into_hooks(self):
+        editor_path = Path("frontend/formulas/workspace_editor/components/EditorIsland.tsx")
+        editor_source = editor_path.read_text(encoding="utf-8")
+        editor_line_count = len(editor_source.splitlines())
+        hooks_dir = Path("frontend/formulas/workspace_editor/hooks")
+
+        self.assertLessEqual(editor_line_count, 260)
+        self.assertTrue((hooks_dir / "useFormulaReview.ts").exists())
+        self.assertTrue((hooks_dir / "usePaperDocuments.ts").exists())
+        self.assertIn("useFormulaReview", editor_source)
+        self.assertIn("usePaperDocuments", editor_source)
+        self.assertNotIn("fetchProjectItems", editor_source)
+        self.assertNotIn("fetchProjectDocuments", editor_source)
 
     def test_required_runtime_paths_are_listed_in_gitignore(self):
         gitignore_path = Path(".gitignore")
