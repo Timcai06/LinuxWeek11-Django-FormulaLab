@@ -18,6 +18,19 @@ export default defineConfig({
           return "js/generated/[name][extname]";
         },
         entryFileNames: "js/generated/workspace-editor.js",
+        chunkFileNames: "js/generated/[name].js",
+        manualChunks: (id) => {
+          if (
+            id.includes("node_modules/@codemirror") ||
+            id.includes("node_modules/@lezer") ||
+            id.includes("node_modules/crelt") ||
+            id.includes("node_modules/style-mod") ||
+            id.includes("node_modules/w3c-keyname")
+          ) {
+            return "codemirror";
+          }
+          return undefined;
+        },
       },
     },
   },

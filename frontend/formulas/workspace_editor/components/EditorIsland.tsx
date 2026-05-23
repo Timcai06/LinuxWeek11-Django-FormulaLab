@@ -15,6 +15,7 @@ import {
 import type { FormulaItem, FormulaItemVersion, PaperDocument, PaperFile, WorkspaceEditorConfig } from "../types";
 import { FormulaItemList } from "./FormulaItemList";
 import { FormulaSourceEditor } from "./FormulaSourceEditor";
+import { PaperFileDialog } from "./PaperFileDialog";
 import { PaperWorkspace } from "./PaperWorkspace";
 import { VersionTimeline } from "./VersionTimeline";
 
@@ -25,12 +26,26 @@ type EditorIslandProps = {
   config: WorkspaceEditorConfig;
 };
 
+type PaperFileDialogState =
+  | {
+      document: PaperDocument;
+      initialPath: string;
+      mode: "create";
+    }
+  | {
+      file: PaperFile;
+      initialPath: string;
+      mode: "rename";
+    };
+
 export function EditorIsland({ config }: EditorIslandProps) {
   const [activeItem, setActiveItem] = useState<FormulaItem | null>(null);
   const [activePaperFile, setActivePaperFile] = useState<PaperFile | null>(null);
   const [draftLatex, setDraftLatex] = useState("");
   const [draftPaperContent, setDraftPaperContent] = useState("");
   const [documents, setDocuments] = useState<PaperDocument[]>([]);
+  const [fileDialog, setFileDialog] = useState<PaperFileDialogState | null>(null);
+  const [fileDialogError, setFileDialogError] = useState("");
   const [fileMutationState, setFileMutationState] = useState<SaveState>("idle");
   const [items, setItems] = useState<FormulaItem[]>([]);
   const [restoringVersionId, setRestoringVersionId] = useState<number | null>(null);
@@ -146,42 +161,56 @@ export function EditorIsland({ config }: EditorIslandProps) {
     }
   }
 
-  async function createPaperFileFromPrompt(document: PaperDocument) {
-    const path = window.prompt("New file path", suggestedFilePath(document));
-    if (!path) {
-      return;
-    }
-
-    setFileMutationState("saving");
-    try {
-      const file = await createPaperFile(document.id, path.trim(), defaultPaperFileContent(path.trim()), readCsrfToken());
-      setDocuments((currentDocuments) =>
-        currentDocuments.map((candidate) =>
-          candidate.id === document.id ? { ...candidate, files: [...candidate.files, file] } : candidate,
-        ),
-      );
-      setActivePaperFile(file);
-      setDraftPaperContent(file.content);
-      setPaperSaveState("idle");
-      setFileMutationState("saved");
-    } catch {
-      setFileMutationState("error");
-    }
+  function openCreatePaperFileDialog(document: PaperDocument) {
+    setFileDialog({ document, initialPath: suggestedFilePath(document), mode: "create" });
+    setFileDialogError("");
+    setFileMutationState("idle");
   }
 
-  async function renamePaperFileFromPrompt(file: PaperFile) {
-    const path = window.prompt("Rename file path", file.path);
-    if (!path || path.trim() === file.path) {
+  function openRenamePaperFileDialog(file: PaperFile) {
+    setFileDialog({ file, initialPath: file.path, mode: "rename" });
+    setFileDialogError("");
+    setFileMutationState("idle");
+  }
+
+  async function submitPaperFileDialog(path: string) {
+    if (!fileDialog) {
+      return;
+    }
+
+    const normalizedPath = path.trim();
+    if (!normalizedPath) {
+      setFileDialogError("Path is required.");
       return;
     }
 
     setFileMutationState("saving");
     try {
-      const renamedFile = await renamePaperFile(file.id, path.trim(), readCsrfToken());
-      applyPaperFileUpdate(renamedFile);
+      if (fileDialog.mode === "create") {
+        const file = await createPaperFile(
+          fileDialog.document.id,
+          normalizedPath,
+          defaultPaperFileContent(normalizedPath),
+          readCsrfToken(),
+        );
+        setDocuments((currentDocuments) =>
+          currentDocuments.map((candidate) =>
+            candidate.id === fileDialog.document.id ? { ...candidate, files: [...candidate.files, file] } : candidate,
+          ),
+        );
+        setActivePaperFile(file);
+        setDraftPaperContent(file.content);
+        setPaperSaveState("idle");
+      } else if (normalizedPath !== fileDialog.file.path) {
+        const renamedFile = await renamePaperFile(fileDialog.file.id, normalizedPath, readCsrfToken());
+        applyPaperFileUpdate(renamedFile);
+      }
+      setFileDialog(null);
+      setFileDialogError("");
       setFileMutationState("saved");
     } catch {
       setFileMutationState("error");
+      setFileDialogError("Unable to save this file path. Check for duplicates or unsafe path segments.");
     }
   }
 
@@ -257,15 +286,29 @@ export function EditorIsland({ config }: EditorIslandProps) {
           hasChanges={paperHasChanges}
           isFileMutating={fileMutationState === "saving"}
           isSaving={paperSaveState === "saving"}
-          onCreateFile={createPaperFileFromPrompt}
+          onCreateFile={openCreatePaperFileDialog}
           onDraftChange={(content) => {
             setDraftPaperContent(content);
             setPaperSaveState("idle");
           }}
-          onRenameFile={renamePaperFileFromPrompt}
+          onRenameFile={openRenamePaperFileDialog}
           onSave={savePaperDraft}
           onSelectFile={selectPaperFile}
         />
+
+        {fileDialog ? (
+          <PaperFileDialog
+            error={fileDialogError}
+            initialPath={fileDialog.initialPath}
+            isSaving={fileMutationState === "saving"}
+            mode={fileDialog.mode}
+            onClose={() => {
+              setFileDialog(null);
+              setFileDialogError("");
+            }}
+            onSubmit={submitPaperFileDialog}
+          />
+        ) : null}
 
         <header className="workspace-editor-header workspace-formula-header panel-heading">
           <div>

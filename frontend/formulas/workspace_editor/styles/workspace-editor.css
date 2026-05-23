@@ -221,6 +221,107 @@
     white-space: pre-wrap;
 }
 
+.workspace-paper-dialog-backdrop {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.58);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 24px;
+    position: fixed;
+    z-index: 40;
+}
+
+.workspace-paper-dialog {
+    background: rgba(8, 8, 8, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.72);
+    max-width: 460px;
+    width: min(100%, 460px);
+}
+
+.workspace-paper-dialog form {
+    display: grid;
+    gap: 16px;
+    padding: 18px;
+}
+
+.workspace-paper-dialog-heading {
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding-bottom: 12px;
+}
+
+.workspace-paper-dialog-heading p,
+.workspace-paper-dialog label span {
+    color: var(--muted);
+    font-size: 0.72rem;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.workspace-paper-dialog-heading h2 {
+    color: var(--on-night);
+    font-size: 1.05rem;
+    margin: 0;
+    text-align: right;
+}
+
+.workspace-paper-dialog label {
+    display: grid;
+    gap: 6px;
+}
+
+.workspace-paper-dialog input {
+    background: #050505;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    color: var(--on-night);
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    padding: 10px 12px;
+    width: 100%;
+}
+
+.workspace-paper-dialog input:focus {
+    border-color: rgba(255, 255, 255, 0.42);
+    outline: 0;
+}
+
+.workspace-paper-dialog-error {
+    color: #ffb4a8;
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.workspace-paper-dialog-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.workspace-paper-dialog-actions button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    color: var(--on-night);
+    cursor: pointer;
+    font-size: 0.72rem;
+    padding: 8px 10px;
+}
+
+.workspace-paper-dialog-actions button:not(:disabled):hover {
+    border-color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.workspace-paper-dialog-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
 .workspace-editor-item-list {
     display: grid;
     gap: 8px;

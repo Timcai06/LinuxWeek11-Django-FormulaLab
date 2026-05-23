@@ -277,10 +277,12 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - [x] 新增 `PaperCodeEditor`，用 CodeMirror 6 替代裸 textarea，支持行号、历史记录、搜索快捷键、LaTeX/STeX 高亮和自动换行。
 - [x] 文件操作更新本地 `PaperDocument.files` 状态，避免创建/重命名后必须整页刷新。
 - [x] React 论文区复用 Project Workspace 的 `workspace-panel`、`panel-heading`、细线面板和 hover 风格，减少与其他页面的视觉割裂。
+- [x] 新增 `PaperFileDialog`，用项目内 modal 取代浏览器 prompt 处理新建/重命名。
+- [x] Vite 将 CodeMirror 相关依赖拆为 `codemirror` 独立 chunk，避免主 editor bundle 过大。
 
 当前实现说明：
 
 - 这一片仍然是单人编辑器，不处理多人冲突、锁定和 OT/CRDT。
-- 新建/重命名暂时使用浏览器 prompt，后续 UI 美化时替换为项目内 drawer/modal。
+- 新建/重命名已经进入项目内 modal，但仍是单字段路径编辑；后续可升级为文件模板、路径校验提示和删除/移动操作。
 - CodeMirror 目前只接管论文源码区，下方 Formula Materials 仍维持轻量 textarea，避免一次性改动两个工作流。
-- 下一片应把新建/重命名从浏览器 prompt 换成项目内 drawer/modal，并继续收敛 Project Workspace 的视觉密度。
+- 下一片应继续收敛 Project Workspace 的视觉密度，并补 PDF 编译入口或公式插入论文的动作。

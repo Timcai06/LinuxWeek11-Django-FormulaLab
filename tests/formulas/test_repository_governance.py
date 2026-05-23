@@ -47,6 +47,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
 
     def test_workspace_editor_build_chain_is_declared(self):
         package_json = json.loads(Path("package.json").read_text(encoding="utf-8"))
+        vite_config = Path("vite.workspace-editor.config.ts").read_text(encoding="utf-8")
         dependencies = package_json["dependencies"]
         dev_dependencies = package_json["devDependencies"]
         scripts = package_json["scripts"]
@@ -61,6 +62,8 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn("tsc --noEmit", scripts["check:editor"])
         self.assertIn("vite build", scripts["build:editor"])
         self.assertIn("npm run build:editor", scripts["build"])
+        self.assertIn("manualChunks", vite_config)
+        self.assertIn("codemirror", vite_config)
 
     def test_workspace_editor_uses_formula_item_api_contract(self):
         api_source = Path("frontend/formulas/workspace_editor/api.ts").read_text(encoding="utf-8")
@@ -103,6 +106,9 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn('data-editor-engine="codemirror"', component_sources)
         self.assertIn("workspace-panel", component_sources)
         self.assertIn("panel-heading", component_sources)
+        self.assertIn("PaperFileDialog", component_sources)
+        self.assertIn("workspace-paper-dialog", component_sources)
+        self.assertNotIn("window.prompt", component_sources)
         self.assertIn("workspace-code-editor", component_sources)
         self.assertIn("workspace-paper-file-actions", component_sources)
         self.assertIn("workspace-paper-shell", component_sources)
