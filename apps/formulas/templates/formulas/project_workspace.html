@@ -30,31 +30,31 @@
         </div>
     </div>
 
-    <section class="workspace-overview" aria-label="Project overview">
-        <div class="metric-card metric-total">
-            <span>TOTAL FORMULAS</span>
-            <strong>{{ overview.total_formulas|default:0 }}</strong>
-        </div>
-        <div class="metric-card metric-needs-review">
-            <span>NEEDS REVIEW</span>
-            <strong>{{ overview.needs_review|default:0 }}</strong>
-        </div>
-        <div class="metric-card metric-ready">
-            <span>READY TO EXPORT</span>
-            <strong>{{ overview.ready_to_export|default:0 }}</strong>
-        </div>
-        <div class="metric-card metric-exported">
-            <span>EXPORTED</span>
-            <strong>{{ overview.exported|default:0 }}</strong>
-        </div>
-        <div class="metric-card metric-batches">
-            <span>RECENT BATCHES</span>
-            <strong>{{ overview.recent_batches|default:0 }}</strong>
-        </div>
-    </section>
-
     <div class="workspace-body-layout">
         <main class="workspace-main-col">
+            <section class="workspace-overview" aria-label="Project overview">
+                <div class="metric-card metric-total">
+                    <span>TOTAL FORMULAS</span>
+                    <strong>{{ overview.total_formulas|default:0 }}</strong>
+                </div>
+                <div class="metric-card metric-needs-review">
+                    <span>NEEDS REVIEW</span>
+                    <strong>{{ overview.needs_review|default:0 }}</strong>
+                </div>
+                <div class="metric-card metric-ready">
+                    <span>READY</span>
+                    <strong>{{ overview.ready_to_export|default:0 }}</strong>
+                </div>
+                <div class="metric-card metric-exported">
+                    <span>EXPORTED</span>
+                    <strong>{{ overview.exported|default:0 }}</strong>
+                </div>
+                <div class="metric-card metric-batches">
+                    <span>BATCHES</span>
+                    <strong>{{ overview.recent_batches|default:0 }}</strong>
+                </div>
+            </section>
+
             <section class="paper-preview-panel" aria-label="Paper preview">
                 <div class="panel-heading">
                     <p>PAPER ADAPTABILITY CHECK</p>
@@ -85,15 +85,6 @@
                             {% endfor %}
                         </div>
                     </article>
-                    <aside class="paper-preview-notes">
-                        <span class="empty-kicker">HTML FIRST</span>
-                        <p>This preview is built for fast paper-shape checking. PDF compilation will become an async export artifact later.</p>
-                        <div class="export-actions" aria-label="Export files">
-                            <span>EXPORT FILES</span>
-                            <a class="button button-secondary" href="{% url 'export-project' project.id 'tex' %}">TEX</a>
-                            <a class="button button-secondary" href="{% url 'export-project' project.id 'markdown' %}">MARKDOWN</a>
-                        </div>
-                    </aside>
                 </div>
             </section>
         </main>
@@ -103,6 +94,14 @@
                 <div class="panel-heading">
                     <p>WORKSPACE TELEMETRY</p>
                     <h2>Workflow Status</h2>
+                </div>
+
+                <div class="flow-section export-section">
+                    <h3>EXPORT FILES</h3>
+                    <div class="export-actions" aria-label="Export files">
+                        <a class="button button-secondary" href="{% url 'export-project' project.id 'tex' %}">TEX SOURCE</a>
+                        <a class="button button-secondary" href="{% url 'export-project' project.id 'markdown' %}">MARKDOWN</a>
+                    </div>
                 </div>
 
                 <div class="flow-section">
