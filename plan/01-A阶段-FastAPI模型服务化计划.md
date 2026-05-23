@@ -1,12 +1,25 @@
 # FastAPI 模型服务化 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 将 Formula Lab 的公式识别模型从 Django/Celery 进程中抽象出来，支持本地 Paddle 调用和独立 FastAPI 模型服务两种后端。
 
 **Architecture:** Django 继续负责页面、项目、任务、数据库和导出；Celery 继续负责任务编排；新增 recognition client 层选择 `local` 或 `http` 后端；FastAPI `model-api` 只负责模型加载、预热、识别和健康检查。
 
 **Tech Stack:** Django 5.2、Celery、Redis、PostgreSQL、PaddleOCR Formula Recognition、FastAPI、Pydantic、httpx、Docker Compose。
+
+## 当前完成情况
+
+A 阶段已经落地为 Formula Lab 的模型服务边界：
+
+- `apps/formulas/services/recognition_clients.py` 已经提供本地与 HTTP recognition backend。
+- `apps/formulas/services/model_api_client.py` 已经实现模型服务 HTTP client。
+- `model_service/` 已经提供 FastAPI app、schema 与 engine 边界。
+- `Makefile` 已经提供 `make local-http`，用于本机 Django + Celery + FastAPI 模型服务联调。
+- `docker-compose.yml` 已经包含 `model-api`，Compose 内的 worker 通过 HTTP 调用模型服务。
+- 默认 `make local` 仍保留本地 Paddle 开发路径。
+
+本文件后续保留为 A 阶段实施记录和回归参考。
 
 ---
 
@@ -51,7 +64,7 @@ docs/08-Docker运行方案.md
 - Modify: `config/settings/base.py`
 - Test: `tests/formulas/test_recognition_clients.py`
 
-- [ ] **Step 1: 写配置读取测试**
+- [x] **Step 1: 写配置读取测试**
 
 测试目标：
 
@@ -76,7 +89,7 @@ def test_get_http_recognition_client():
     assert client.name == "http"
 ```
 
-- [ ] **Step 2: 运行测试，确认失败**
+- [x] **Step 2: 运行测试，确认失败**
 
 Run:
 
@@ -90,7 +103,7 @@ Expected:
 ModuleNotFoundError: No module named 'apps.formulas.services.recognition_clients'
 ```
 
-- [ ] **Step 3: 增加配置默认值**
+- [x] **Step 3: 增加配置默认值**
 
 在 `config/settings/base.py` 增加：
 
@@ -100,7 +113,7 @@ FORMULA_LAB_MODEL_API_URL = os.environ.get("FORMULA_LAB_MODEL_API_URL", "http://
 FORMULA_LAB_MODEL_API_TIMEOUT_SECONDS = int(os.environ.get("FORMULA_LAB_MODEL_API_TIMEOUT_SECONDS", "120"))
 ```
 
-- [ ] **Step 4: 新增 client 工厂**
+- [x] **Step 4: 新增 client 工厂**
 
 `apps/formulas/services/recognition_clients.py`：
 
@@ -149,7 +162,7 @@ def get_recognition_client():
     raise ValueError(f"Unsupported recognition backend: {backend}")
 ```
 
-- [ ] **Step 5: 暂时增加 HTTP client 空实现以通过导入**
+- [x] **Step 5: 暂时增加 HTTP client 空实现以通过导入**
 
 `apps/formulas/services/model_api_client.py`：
 
@@ -162,7 +175,7 @@ class ModelApiRecognitionClient:
         self.timeout_seconds = timeout_seconds
 ```
 
-- [ ] **Step 6: 运行测试**
+- [x] **Step 6: 运行测试**
 
 Run:
 
@@ -186,7 +199,7 @@ OK
 - Modify: `apps/formulas/services/recognizer.py`
 - Test: `tests/formulas/test_recognition_clients.py`
 
-- [ ] **Step 1: 写任务识别结果保存测试**
+- [x] **Step 1: 写任务识别结果保存测试**
 
 测试目标：
 
@@ -214,7 +227,7 @@ def test_recognize_formula_saves_engine_name(formula_job):
     assert formula_job.engine_name == "paddle"
 ```
 
-- [ ] **Step 2: 更新 `recognizer.py`**
+- [x] **Step 2: 更新 `recognizer.py`**
 
 替换识别调用为：
 
@@ -231,7 +244,7 @@ def recognize_formula(job: FormulaJob) -> str:
     return correct_latex_result(result.latex, job.original_image.path)
 ```
 
-- [ ] **Step 3: 运行测试**
+- [x] **Step 3: 运行测试**
 
 Run:
 
@@ -255,7 +268,7 @@ OK
 - Modify: `apps/formulas/services/model_api_client.py`
 - Test: `tests/formulas/test_model_api_client.py`
 
-- [ ] **Step 1: 写成功响应测试**
+- [x] **Step 1: 写成功响应测试**
 
 ```python
 from pathlib import Path
@@ -293,7 +306,7 @@ def test_model_api_client_parses_success_response(tmp_path):
     assert result.duration_ms == 1200
 ```
 
-- [ ] **Step 2: 写错误响应测试**
+- [x] **Step 2: 写错误响应测试**
 
 ```python
 import httpx
@@ -315,7 +328,7 @@ def test_model_api_client_raises_readable_error(tmp_path):
         client.recognize(str(image_path))
 ```
 
-- [ ] **Step 3: 实现 client**
+- [x] **Step 3: 实现 client**
 
 ```python
 import httpx
@@ -360,7 +373,7 @@ class ModelApiRecognitionClient:
         )
 ```
 
-- [ ] **Step 4: 修复循环导入**
+- [x] **Step 4: 修复循环导入**
 
 如果 `recognition_clients.py` 和 `model_api_client.py` 出现循环导入，将 `RecognitionResult` 移入新文件：
 
@@ -370,7 +383,7 @@ apps/formulas/services/recognition_types.py
 
 并让两个模块都从该文件导入。
 
-- [ ] **Step 5: 运行测试**
+- [x] **Step 5: 运行测试**
 
 Run:
 
@@ -396,7 +409,7 @@ OK
 - Create: `model_service/main.py`
 - Test: `tests/model_service/test_model_api.py`
 
-- [ ] **Step 1: 写 FastAPI API 测试**
+- [x] **Step 1: 写 FastAPI API 测试**
 
 ```python
 from fastapi.testclient import TestClient
@@ -419,7 +432,7 @@ def test_models_current_endpoint():
     assert "model" in response.json()
 ```
 
-- [ ] **Step 2: 新增 schema**
+- [x] **Step 2: 新增 schema**
 
 `model_service/schemas.py`：
 
@@ -441,7 +454,7 @@ class HealthResponse(BaseModel):
     model: str
 ```
 
-- [ ] **Step 3: 新增 engine 适配**
+- [x] **Step 3: 新增 engine 适配**
 
 `model_service/engine.py`：
 
@@ -473,7 +486,7 @@ def recognize_image(image_path: str) -> dict[str, object]:
     }
 ```
 
-- [ ] **Step 4: 新增 FastAPI app**
+- [x] **Step 4: 新增 FastAPI app**
 
 `model_service/main.py`：
 
@@ -516,7 +529,7 @@ async def recognize_formula(image: UploadFile = File(...)):
     return RecognitionResponse(**result)
 ```
 
-- [ ] **Step 5: 增加依赖**
+- [x] **Step 5: 增加依赖**
 
 `requirements.txt` 增加：
 
@@ -527,7 +540,7 @@ httpx
 python-multipart
 ```
 
-- [ ] **Step 6: 运行测试**
+- [x] **Step 6: 运行测试**
 
 Run:
 
@@ -552,7 +565,7 @@ OK
 - Modify: `docker-compose.yml`
 - Modify: `Dockerfile`
 
-- [ ] **Step 1: Makefile 增加本机命令**
+- [x] **Step 1: Makefile 增加本机命令**
 
 ```makefile
 model-api:
@@ -563,7 +576,7 @@ local-http:
 	FORMULA_LAB_RECOGNITION_BACKEND=http FORMULA_LAB_MODEL_API_URL=http://127.0.0.1:9000 $(MAKE) -j4 dev-redis model-api dev-worker dev
 ```
 
-- [ ] **Step 2: Docker Compose 增加 model-api 服务**
+- [x] **Step 2: Docker Compose 增加 model-api 服务**
 
 ```yaml
 model-api:
@@ -583,7 +596,7 @@ worker:
     FORMULA_LAB_MODEL_API_URL: http://model-api:9000
 ```
 
-- [ ] **Step 3: 运行本机 HTTP 模式**
+- [x] **Step 3: 运行本机 HTTP 模式**
 
 Run:
 
@@ -599,7 +612,7 @@ Django development server at http://127.0.0.1:8000/
 celery ... ready
 ```
 
-- [ ] **Step 4: 运行 Docker 构建**
+- [x] **Step 4: 运行 Docker 构建**
 
 Run:
 
@@ -617,12 +630,12 @@ model-api-1  | Uvicorn running on http://0.0.0.0:9000
 
 ## A6：验收标准
 
-- [ ] 默认 `make local` 仍然走本地 Paddle，不依赖 FastAPI。
-- [ ] `make local-http` 可以通过 FastAPI 完成一次真实图片识别。
-- [ ] Docker Compose 中 `worker` 不直接加载 Paddle 模型，只调用 `model-api`。
-- [ ] `model-api` 可独立健康检查：`curl http://127.0.0.1:9000/health`。
-- [ ] 模型服务异常时，Django 页面不崩溃，任务进入 failed 状态并显示可读错误。
-- [ ] 所有新增测试通过。
+- [x] 默认 `make local` 仍然走本地 Paddle，不依赖 FastAPI。
+- [x] `make local-http` 可以通过 FastAPI 完成一次真实图片识别。
+- [x] Docker Compose 中 `worker` 不直接加载 Paddle 模型，只调用 `model-api`。
+- [x] `model-api` 可独立健康检查：`curl http://127.0.0.1:9000/health`。
+- [x] 模型服务异常时，Django 页面不崩溃，任务进入 failed 状态并显示可读错误。
+- [x] 所有新增测试通过。
 
 ## 回滚策略
 
@@ -633,4 +646,3 @@ FORMULA_LAB_RECOGNITION_BACKEND=local
 ```
 
 即可回到现有 Celery 本地 Paddle 调用链。A 阶段所有改动必须保持这个回滚路径可用。
-
