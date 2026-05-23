@@ -100,11 +100,11 @@ Inspector + AI Sidecar 入口
 
 ### 任务
 
-- [ ] 在 React editor island 内新增 `FormulaReviewInbox` 组件。
-- [ ] 复用 `fetchProjectItems` 读取公式资产。
-- [ ] 增加状态分组：Needs Review、Auto Ready、Edited、Confirmed、Exported、Rejected。
-- [ ] 每张卡展示公式编号、状态、来源 mission、LaTeX 摘要、KaTeX 小预览和最近更新时间。
-- [ ] 点击卡片时同步当前选中公式，与现有 Inspector / Paper insertion 链路打通。
+- [x] 在 React editor island 内新增 `FormulaReviewInbox` 组件。
+- [x] 复用 `fetchProjectItems` 读取公式资产。
+- [x] 增加状态分组：Needs Review、Auto Ready、Edited、Confirmed、Exported、Rejected。
+- [x] 每张卡展示公式编号、状态、来源 mission、LaTeX 摘要、KaTeX 小预览和最近更新时间。
+- [x] 点击卡片时同步当前选中公式，与现有 Inspector / Paper insertion 链路打通。
 
 ### 验收
 
@@ -116,10 +116,10 @@ Inspector + AI Sidecar 入口
 
 ### 任务
 
-- [ ] 在 `frontend/formulas/layout_intelligence.js` 中补充卡片高度测量 helper。
-- [ ] 在 Inbox 中按预测高度安排稳定 masonry 布局。
-- [ ] 对长 LaTeX 和错误信息做两行/三行稳定截断。
-- [ ] 增加前端 guard，防止 Pretext 再次接管卡片外壳宽度。
+- [x] 在 `frontend/formulas/layout_intelligence.js` 中补充卡片高度测量 helper。
+- [x] 在 Inbox 中按预测高度安排稳定 masonry 布局。
+- [x] 对长 LaTeX 做三行稳定截断；错误信息待后续 API 暴露后接入。
+- [x] 增加前端 guard，防止 Pretext 再次接管卡片外壳宽度。
 
 ### 验收
 

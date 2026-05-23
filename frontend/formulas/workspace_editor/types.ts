@@ -91,8 +91,33 @@ export type KatexRenderer = {
   ) => void;
 };
 
+export type ReviewCardLayout = {
+  density: "dense" | "normal";
+  estimatedHeight: number;
+  originalLineCount: number;
+  previewText: string;
+  rowSpan: number;
+  truncated: boolean;
+  visibleLineCount: number;
+};
+
+export type FormulaLayoutApi = {
+  measureReviewCard?: (
+    source: string,
+    config: {
+      chromeHeight?: number;
+      font?: string;
+      lineHeight?: number;
+      maxLines?: number;
+      rowUnit?: number;
+      width?: number;
+    },
+  ) => ReviewCardLayout;
+};
+
 declare global {
   interface Window {
     katex?: KatexRenderer;
+    FormulaLayout?: FormulaLayoutApi;
   }
 }

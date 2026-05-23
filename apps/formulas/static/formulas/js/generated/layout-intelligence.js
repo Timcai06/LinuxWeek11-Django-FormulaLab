@@ -3697,12 +3697,38 @@ var FormulaLayoutBundle = (() => {
       truncated: true
     };
   }
+  function measureReviewCard(text, config = {}) {
+    const width = toPositiveNumber(config.width, 240);
+    const lineHeight = toPositiveNumber(config.lineHeight, 17);
+    const maxLines = Math.max(1, Math.floor(toPositiveNumber(config.maxLines, 3)));
+    const chromeHeight = toPositiveNumber(config.chromeHeight, 98);
+    const rowUnit = toPositiveNumber(config.rowUnit, 8);
+    const fitted = fitTextToLines(text, {
+      width,
+      lineHeight,
+      maxLines,
+      font: config.font || "12px JetBrains Mono, ui-monospace, monospace"
+    });
+    const visibleLines = Math.max(1, fitted.lineCount || 1);
+    const originalLineCount = fitted.originalLineCount || fitted.lineCount || visibleLines;
+    const estimatedHeight = chromeHeight + visibleLines * lineHeight;
+    return {
+      density: originalLineCount > maxLines ? "dense" : "normal",
+      estimatedHeight,
+      originalLineCount,
+      previewText: fitted.text,
+      rowSpan: Math.max(14, Math.ceil(estimatedHeight / rowUnit)),
+      truncated: Boolean(fitted.truncated),
+      visibleLineCount: visibleLines
+    };
+  }
   var formulaLayoutTarget = globalThis.window || globalThis;
   formulaLayoutTarget.FormulaLayout = {
     measureTextBlock,
     measureLatexSummary,
     findTightWidth,
     collectLineWidths,
-    fitTextToLines
+    fitTextToLines,
+    measureReviewCard
   };
 })();

@@ -5,8 +5,8 @@
     background: rgba(255, 255, 255, 0.018);
     display: grid;
     gap: 8px;
-    max-height: 440px;
-    min-width: 220px;
+    max-height: 520px;
+    min-width: 260px;
     padding: 12px;
 }
 
@@ -56,7 +56,7 @@
 .workspace-review-inbox-filters {
     display: grid;
     gap: 6px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .workspace-review-inbox-filters button {
@@ -70,6 +70,12 @@
     text-align: left;
 }
 
+.workspace-review-inbox-filters button:hover,
+.workspace-review-inbox-filters button.is-active {
+    border-color: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.045);
+}
+
 .workspace-review-inbox-filters span {
     color: var(--muted);
     font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
@@ -78,14 +84,34 @@
 .workspace-review-inbox-list {
     display: grid;
     gap: 8px;
+    grid-auto-flow: dense;
+    grid-auto-rows: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     min-height: 0;
     overflow: auto;
     padding-right: 2px;
 }
 
 .workspace-review-inbox-list button {
+    align-content: start;
     display: grid;
     gap: 7px;
+    grid-row: span var(--review-card-rows, 16);
+    min-height: 0;
+}
+
+.workspace-review-inbox-list button:hover {
+    border-color: rgba(255, 255, 255, 0.42);
+    background: rgba(255, 255, 255, 0.028);
+}
+
+.workspace-review-inbox-list button[data-review-status="needs_review"],
+.workspace-review-inbox-list button[data-review-status="edited"] {
+    border-color: rgba(246, 200, 95, 0.22);
+}
+
+.workspace-review-inbox-list button[data-review-status="rejected"] {
+    border-color: rgba(255, 77, 77, 0.22);
 }
 
 .workspace-review-inbox-card-topline,
@@ -110,12 +136,35 @@
     font-weight: 800;
 }
 
+.workspace-review-inbox-katex {
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    background: rgba(245, 241, 232, 0.96);
+    color: #080808;
+    display: flex;
+    justify-content: center;
+    min-height: 42px;
+    overflow: hidden;
+    padding: 8px;
+}
+
+.workspace-review-inbox-katex .katex {
+    font-size: 0.92rem;
+}
+
 .workspace-review-inbox code {
     color: var(--on-night);
     display: block;
     font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
     font-size: 0.7rem;
     overflow-wrap: anywhere;
+}
+
+.workspace-review-inbox-truncation {
+    color: var(--muted);
+    font-size: 0.64rem;
+    text-transform: uppercase;
 }
 
 .workspace-review-inbox-list > p {
