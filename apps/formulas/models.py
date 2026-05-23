@@ -1,4 +1,5 @@
 import uuid
+from pathlib import PurePosixPath
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
@@ -111,6 +112,59 @@ class BatchMission(models.Model):
 
     def save(self, *args, **kwargs) -> None:
         _save_with_generated_code(self, "batch_code", "FB", super().save, args, kwargs)
+
+
+class PaperDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    document_code = models.CharField(max_length=36, unique=True, db_index=True, blank=True)
+    project = models.ForeignKey(PaperProject, on_delete=models.CASCADE, related_name="documents")
+    title = models.CharField(max_length=160, default="Untitled manuscript")
+    root_file_path = models.CharField(max_length=255, default="main.tex")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at", "-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.document_code or self.id} {self.title}"
+
+    def save(self, *args, **kwargs) -> None:
+        _save_with_generated_code(self, "document_code", "FD", super().save, args, kwargs)
+
+
+class PaperFile(models.Model):
+    class FileType(models.TextChoices):
+        TEX = "tex", "TeX"
+        BIB = "bib", "BibTeX"
+        MARKDOWN = "markdown", "Markdown"
+        TEXT = "text", "Text"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    document = models.ForeignKey(PaperDocument, on_delete=models.CASCADE, related_name="files")
+    path = models.CharField(max_length=255)
+    file_type = models.CharField(max_length=20, choices=FileType.choices, default=FileType.TEX)
+    content = models.TextField(blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "path", "created_at"]
+        unique_together = [("document", "path")]
+
+    def __str__(self) -> str:
+        return f"{self.document.document_code or self.document_id} {self.path}"
+
+    def clean(self) -> None:
+        super().clean()
+        path = PurePosixPath(self.path or "")
+        if not self.path or path.is_absolute() or "." in path.parts or ".." in path.parts:
+            raise ValidationError({"path": "Paper file path must be a safe relative path."})
+
+    def save(self, *args, **kwargs) -> None:
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class FormulaJob(models.Model):

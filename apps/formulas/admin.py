@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob, PaperProject
+from .models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob, PaperDocument, PaperFile, PaperProject
 
 
 @admin.register(PaperProject)
@@ -30,6 +30,21 @@ class BatchMissionAdmin(admin.ModelAdmin):
     search_fields = ("batch_code", "title", "project__project_code", "project__name")
     list_filter = ("status", "created_at", "updated_at")
     readonly_fields = ("batch_code", "id", "created_at", "updated_at")
+
+
+@admin.register(PaperDocument)
+class PaperDocumentAdmin(admin.ModelAdmin):
+    list_display = ("document_code", "title", "project", "root_file_path", "updated_at")
+    search_fields = ("document_code", "title", "project__project_code", "project__name")
+    readonly_fields = ("document_code", "id", "created_at", "updated_at")
+
+
+@admin.register(PaperFile)
+class PaperFileAdmin(admin.ModelAdmin):
+    list_display = ("path", "document", "file_type", "sort_order", "updated_at")
+    search_fields = ("path", "content", "document__document_code", "document__title")
+    list_filter = ("file_type", "created_at", "updated_at")
+    readonly_fields = ("id", "created_at", "updated_at")
 
 
 @admin.register(FormulaItem)

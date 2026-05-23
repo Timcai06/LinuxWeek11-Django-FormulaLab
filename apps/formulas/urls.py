@@ -16,7 +16,9 @@ urlpatterns = [
     path("history/", views.history, name="history"),
     path("system/", views.system_page, name="system"),
     path("api/missions/<uuid:job_id>/", views.mission_status_api, name="api-mission-status"),
+    path("api/projects/<uuid:project_id>/documents/", views.api_project_documents, name="api-project-documents"),
     path("api/projects/<uuid:project_id>/items/", views.api_project_items, name="api-project-items"),
+    path("api/document-files/<uuid:file_id>/", views.api_document_file_detail, name="api-document-file-detail"),
     path("api/formula-items/<uuid:item_id>/", views.api_formula_item_detail, name="api-formula-item-detail"),
     path(
         "api/formula-items/<uuid:item_id>/versions/",

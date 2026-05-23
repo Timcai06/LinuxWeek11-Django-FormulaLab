@@ -232,3 +232,20 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - React 不直接读取 CSRF cookie 以外的全局状态，所有业务数据来自 Django JSON API。
 - 不在第一版做多人协作、实时同步和 PDF 编译。
 - 不把 Pretext 当作 LaTeX 真相，只作为布局辅助。
+
+## Task 7: 论文文件模型
+
+- [x] 新增 `PaperDocument`，归属 `PaperProject`，记录 `document_code`、标题和 `root_file_path`。
+- [x] 新增 `PaperFile`，归属 `PaperDocument`，记录相对路径、文件类型、内容和排序。
+- [x] `PaperFile.path` 限制为安全相对路径，禁止绝对路径、`.`、`..`。
+- [x] 同一篇文档内文件路径唯一。
+- [x] 新增 service：`create_default_document(project, title)`，创建文档并生成 `main.tex`。
+- [x] 新增 API：`GET/POST /api/projects/<project_id>/documents/`。
+- [x] 新增 API：`GET/PATCH /api/document-files/<file_id>/`。
+
+当前实现说明：
+
+- 这一片只建立 Overleaf 型编辑器的后端地基，不直接引入 PDF 编译或多人协同。
+- 默认文档会生成 `main.tex`，包含 `article` 文档类、`amsmath` 和项目标题。
+- 文档 API 放在独立 `document_views.py`，避免继续扩大 `project_views.py`。
+- 下一片可以让 React editor island 读取 documents/files API，把现有公式编辑区升级为论文文件编辑区。

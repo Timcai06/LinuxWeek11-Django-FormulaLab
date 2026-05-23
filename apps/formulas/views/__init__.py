@@ -1,3 +1,4 @@
+from .document_views import api_document_file_detail, api_project_documents
 from .mission_views import history, mission_progress, mission_report, mission_status_api, retry_mission
 from .project_views import (
     api_formula_item_detail,
@@ -17,6 +18,8 @@ __all__ = [
     "api_formula_item_detail",
     "api_formula_item_version_restore",
     "api_formula_item_versions",
+    "api_document_file_detail",
+    "api_project_documents",
     "api_project_items",
     "export_project",
     "health_api",
