@@ -76,9 +76,10 @@ For the Projects-first product core, open http://127.0.0.1:8000/projects/ after 
 FORMULA_LAB_OCR_ENGINE=paddle
 ```
 
-如果需要和旧模型做对照，可以运行：
+如果需要和旧模型做对照，先安装可选 pix2tex/Torch 依赖，再运行：
 
 ```bash
+make install-pix2tex
 make local-pix2tex
 ```
 

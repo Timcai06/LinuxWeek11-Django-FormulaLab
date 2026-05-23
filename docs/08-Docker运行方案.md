@@ -26,6 +26,17 @@ make local
 
 镜像构建使用 `uv pip install --system` 安装 Python 依赖，并通过 BuildKit cache 缓存 `/root/.cache/uv`。为了缓解大 wheel 下载超时，Dockerfile 设置了 `UV_HTTP_TIMEOUT=300`，并配置 PyPI 镜像源。
 
+Docker 默认只安装：
+
+```text
+requirements.txt
+requirements-paddle.txt
+```
+
+`pix2tex`、`torch`、`torchvision` 已拆到 `requirements-pix2tex.txt`，不进入默认 Docker 镜像。当前 Linux 部署主线使用 PaddleOCR，避免同时下载 Paddle 与 Torch/CUDA 两套模型生态。
+
+`requirements-paddle.txt` 显式保留 `tokenizers`，这是 PaddleX 公式识别后处理的运行时依赖，不是 pix2tex 依赖。
+
 PaddlePaddle 3.3.1 没有 Linux ARM64 wheel。Apple Silicon Mac 的 Docker 默认会按 `linux/arm64` 构建，导致容器内安装 `paddlepaddle==3.3.1` 失败。因此 Compose 中 `web`、`worker`、`model-api` 固定为：
 
 ```text
@@ -157,10 +168,10 @@ Redis 不保存业务数据，只作为消息队列。
 ```text
 postgres_data                 Docker 命名 volume，保存 PostgreSQL 数据
 ./media:/app/media            bind mount，保存上传图片和预处理图片
-./.model-cache:/app/.model-cache  bind mount，保存 PaddleOCR / pix2tex 模型缓存
+./.model-cache:/app/.model-cache  bind mount，保存 PaddleOCR 模型缓存
 ```
 
-模型缓存很重要，因为 PaddleOCR 和 pix2tex 都可能需要下载模型权重。如果每次重建容器都重新下载，会明显影响开发体验和验收稳定性。
+模型缓存很重要，因为 PaddleOCR 需要下载模型权重。如果每次重建容器都重新下载，会明显影响开发体验和验收稳定性。
 
 这种设计偏向课程验收和本地调试：宿主机可以直接看到上传文件和模型缓存。未来如果要做更接近生产环境的 Compose，可以把 `media` 和 `model_cache` 改成命名 volume，并拆出 `compose.prod.yml`。
 

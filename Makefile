@@ -4,7 +4,7 @@ PORT ?= 8000
 DOCKER_BUILDKIT ?= 1
 OCR_ENGINE ?= paddle
 
-.PHONY: up down logs web-logs worker-logs model-api-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis dev-model-api docker-build local local-http local-pix2tex paddle-web paddle-worker paddle-redis frontend-build frontend-check governance-check
+.PHONY: up down logs web-logs worker-logs model-api-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis dev-model-api docker-build local local-http local-pix2tex install-pix2tex paddle-web paddle-worker paddle-redis frontend-build frontend-check governance-check
 
 up:
 	docker compose up --build
@@ -63,6 +63,9 @@ local-http:
 
 local-pix2tex:
 	$(MAKE) OCR_ENGINE=pix2tex local
+
+install-pix2tex:
+	$(PYTHON) -m pip install -r requirements-pix2tex.txt
 
 paddle-web:
 	FORMULA_LAB_OCR_ENGINE=paddle $(MAKE) dev

@@ -17,6 +17,21 @@ from scripts.check_repository_governance import (
 
 
 class RepositoryGovernanceTests(SimpleTestCase):
+    def test_base_requirements_keep_pix2tex_stack_optional(self):
+        base_requirements = Path("requirements.txt").read_text(encoding="utf-8").splitlines()
+        paddle_requirements = Path("requirements-paddle.txt").read_text(encoding="utf-8").splitlines()
+        optional_pix2tex_requirements = Path("requirements-pix2tex.txt").read_text(encoding="utf-8").splitlines()
+
+        normalized_base = {line.strip().split("==")[0].split(">=")[0] for line in base_requirements if line.strip()}
+        normalized_paddle = {line.strip().split("==")[0].split(">=")[0] for line in paddle_requirements if line.strip()}
+        normalized_optional = {
+            line.strip().split("==")[0].split(">=")[0] for line in optional_pix2tex_requirements if line.strip()
+        }
+
+        self.assertTrue({"pix2tex", "torch", "torchvision"}.isdisjoint(normalized_base))
+        self.assertIn("tokenizers", normalized_paddle)
+        self.assertTrue({"pix2tex", "torch", "torchvision"}.issubset(normalized_optional))
+
     def test_required_runtime_paths_are_listed_in_gitignore(self):
         gitignore_path = Path(".gitignore")
 
