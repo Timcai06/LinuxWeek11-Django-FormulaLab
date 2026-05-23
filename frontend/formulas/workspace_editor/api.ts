@@ -1,4 +1,9 @@
-import type { FormulaItem, FormulaItemVersionsResponse, ProjectItemsResponse } from "./types";
+import type {
+  FormulaItem,
+  FormulaItemVersionRestoreResponse,
+  FormulaItemVersionsResponse,
+  ProjectItemsResponse,
+} from "./types";
 
 export async function fetchProjectItems(url: string, signal?: AbortSignal): Promise<ProjectItemsResponse> {
   const response = await fetch(url, {
@@ -64,4 +69,24 @@ export async function saveFormulaItem(itemId: string, latexCurrent: string, csrf
   }
 
   return response.json() as Promise<FormulaItem>;
+}
+
+export async function restoreFormulaItemVersion(
+  itemId: string,
+  versionId: number,
+  csrfToken: string,
+): Promise<FormulaItemVersionRestoreResponse> {
+  const response = await fetch(`/api/formula-items/${itemId}/versions/${versionId}/restore/`, {
+    headers: {
+      Accept: "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to restore formula version: ${response.status}`);
+  }
+
+  return response.json() as Promise<FormulaItemVersionRestoreResponse>;
 }

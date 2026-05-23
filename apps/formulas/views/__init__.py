@@ -1,6 +1,7 @@
 from .mission_views import history, mission_progress, mission_report, mission_status_api, retry_mission
 from .project_views import (
     api_formula_item_detail,
+    api_formula_item_version_restore,
     api_formula_item_versions,
     api_project_items,
     export_project,
@@ -14,6 +15,7 @@ from .workbench_views import create_job, landing, workbench
 __all__ = [
     "create_job",
     "api_formula_item_detail",
+    "api_formula_item_version_restore",
     "api_formula_item_versions",
     "api_project_items",
     "export_project",

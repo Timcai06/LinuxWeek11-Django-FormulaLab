@@ -24,6 +24,11 @@ export type FormulaItemVersionsResponse = {
   versions: FormulaItemVersion[];
 };
 
+export type FormulaItemVersionRestoreResponse = {
+  item: FormulaItem;
+  version: FormulaItemVersion;
+};
+
 export type ProjectItemsResponse = {
   project: {
     id: string;
@@ -38,3 +43,20 @@ export type WorkspaceEditorConfig = {
   initialItemId: string;
   projectItemsUrl: string;
 };
+
+export type KatexRenderer = {
+  render: (
+    source: string,
+    target: HTMLElement,
+    options: {
+      displayMode: boolean;
+      throwOnError: boolean;
+    },
+  ) => void;
+};
+
+declare global {
+  interface Window {
+    katex?: KatexRenderer;
+  }
+}

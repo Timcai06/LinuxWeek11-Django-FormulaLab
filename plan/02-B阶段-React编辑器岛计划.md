@@ -86,6 +86,7 @@ GET    /api/formula-items/<item_id>/
 PATCH  /api/formula-items/<item_id>/
 GET    /api/formula-items/<item_id>/versions/
 POST   /api/formula-items/<item_id>/versions/
+POST   /api/formula-items/<item_id>/versions/<version_id>/restore/
 POST   /api/formula-items/<item_id>/review/
 ```
 
@@ -201,24 +202,28 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 ## Task 5: 编辑器体验
 
 - [ ] 用 CodeMirror 6 提供 LaTeX 编辑区。
-- [ ] 编辑时实时更新 KaTeX preview。
+- [x] 编辑时实时更新 KaTeX preview。
 - [x] 保存按钮触发 `PATCH /api/formula-items/<id>/`。
 - [x] 成功保存后刷新版本时间线。
 - [x] 保存失败时显示不覆盖内容的错误提示。
+- [x] 版本时间线支持审计式 restore，恢复旧 LaTeX 时创建新的 `source=manual` 版本。
 
 当前实现说明：
 
 - 第一版 React 编辑器使用受控 textarea，先打通真实保存链路。
 - 保存请求带 `X-CSRFToken`，后端写入 `FormulaItem.latex_current` 并创建 `source=manual` 版本。
 - 版本时间线通过 `GET /api/formula-items/<item_id>/versions/` 加载。
-- CodeMirror 6 和 React 内部 KaTeX preview 留到下一片，避免把编辑器库选型、公式渲染和保存链路混在同一轮。
+- React 内部 KaTeX preview 读取全局 `window.katex`，保留与全站 KaTeX 资产一致的渲染能力。
+- `POST /api/formula-items/<item_id>/versions/<version_id>/restore/` 不修改旧版本，而是把目标版本的 LaTeX 写回当前快照并生成一条新的人工版本，保证历史可审计。
+- CodeMirror 6 留到下一片，避免在没有确认 LaTeX language package 的情况下引入不稳定依赖。
 
 ## Task 6: 验收标准
 
 - [ ] 未启用 React bundle 时，Project Workspace 仍能看到基本公式信息。
 - [x] React 编辑器可以编辑并保存 `FormulaItem.latex_current`。
 - [x] 每次保存都会产生版本历史。
-- [ ] KaTeX preview 和现有项目视觉风格一致。
+- [x] KaTeX preview 和现有项目视觉风格一致。
+- [x] 旧版本可从 timeline 恢复，并产生新的审计版本。
 - [ ] 不影响 landing、history、system、report 页面。
 - [ ] `make frontend-check` 和 Django tests 通过。
 

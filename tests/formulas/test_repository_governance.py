@@ -62,17 +62,24 @@ class RepositoryGovernanceTests(SimpleTestCase):
 
     def test_workspace_editor_uses_formula_item_api_contract(self):
         api_source = Path("frontend/formulas/workspace_editor/api.ts").read_text(encoding="utf-8")
-        editor_source = Path("frontend/formulas/workspace_editor/components/EditorIsland.tsx").read_text(encoding="utf-8")
+        component_sources = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in Path("frontend/formulas/workspace_editor/components").glob("*.tsx")
+        )
 
         self.assertIn("fetchFormulaItem", api_source)
         self.assertIn("saveFormulaItem", api_source)
+        self.assertIn("restoreFormulaItemVersion", api_source)
         self.assertIn("fetchFormulaItemVersions", api_source)
         self.assertIn('method: "PATCH"', api_source)
+        self.assertIn('method: "POST"', api_source)
         self.assertIn('"X-CSRFToken"', api_source)
-        self.assertIn("workspace-editor-form", editor_source)
-        self.assertIn("workspace-editor-version-list", editor_source)
-        self.assertIn("saveFormulaItem", editor_source)
-        self.assertIn("fetchFormulaItemVersions", editor_source)
+        self.assertIn("workspace-editor-form", component_sources)
+        self.assertIn("workspace-editor-preview", component_sources)
+        self.assertIn("workspace-editor-version-list", component_sources)
+        self.assertIn("saveFormulaItem", component_sources)
+        self.assertIn("fetchFormulaItemVersions", component_sources)
+        self.assertIn("restoreFormulaItemVersion", component_sources)
 
     def test_required_runtime_paths_are_listed_in_gitignore(self):
         gitignore_path = Path(".gitignore")

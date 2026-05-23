@@ -111,3 +111,50 @@ class FormulaProjectApiViewTests(FormulaViewTestCase):
         self.assertEqual(version.source, FormulaItemVersion.Source.MANUAL)
         self.assertEqual(version.created_by_label, "api")
         self.assertEqual(version.note, "fixed subscript")
+
+    def test_api_formula_item_version_restore_creates_audit_version(self):
+        project = PaperProject.objects.create(name="API restore version")
+        batch = BatchMission.objects.create(project=project, title="Chapter 7")
+        item = FormulaItem.objects.create(project=project, batch=batch, latex_current=r"\gamma")
+        original = FormulaItemVersion.objects.create(
+            item=item,
+            latex=r"\alpha",
+            source=FormulaItemVersion.Source.OCR,
+            created_by_label="paddle",
+        )
+        FormulaItemVersion.objects.create(
+            item=item,
+            latex=r"\gamma",
+            source=FormulaItemVersion.Source.MANUAL,
+            created_by_label="api",
+        )
+
+        response = self.client.post(f"/api/formula-items/{item.id}/versions/{original.id}/restore/")
+
+        item.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(item.latex_current, r"\alpha")
+        restored = item.versions.first()
+        self.assertEqual(restored.latex, r"\alpha")
+        self.assertEqual(restored.source, FormulaItemVersion.Source.MANUAL)
+        self.assertEqual(restored.created_by_label, "api")
+        self.assertEqual(restored.note, f"restored from version {original.id}")
+        self.assertEqual(response.json()["item"]["latest_version"]["id"], restored.id)
+
+    def test_api_formula_item_version_restore_rejects_version_from_another_item(self):
+        project = PaperProject.objects.create(name="API restore rejected")
+        batch = BatchMission.objects.create(project=project, title="Chapter 8")
+        item = FormulaItem.objects.create(project=project, batch=batch, latex_current=r"\alpha")
+        other_item = FormulaItem.objects.create(project=project, batch=batch, latex_current=r"\beta")
+        other_version = FormulaItemVersion.objects.create(
+            item=other_item,
+            latex=r"\beta",
+            source=FormulaItemVersion.Source.OCR,
+            created_by_label="paddle",
+        )
+
+        response = self.client.post(f"/api/formula-items/{item.id}/versions/{other_version.id}/restore/")
+
+        item.refresh_from_db()
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(item.latex_current, r"\alpha")

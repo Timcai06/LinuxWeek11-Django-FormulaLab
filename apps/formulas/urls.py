@@ -23,6 +23,11 @@ urlpatterns = [
         views.api_formula_item_versions,
         name="api-formula-item-versions",
     ),
+    path(
+        "api/formula-items/<uuid:item_id>/versions/<int:version_id>/restore/",
+        views.api_formula_item_version_restore,
+        name="api-formula-item-version-restore",
+    ),
     path("api/system/health/", views.health_api, name="api-system-health"),
     path("api/system/warmup/", views.warmup_api, name="api-system-warmup"),
 ]

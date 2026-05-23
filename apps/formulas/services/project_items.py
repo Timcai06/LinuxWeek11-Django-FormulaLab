@@ -45,3 +45,14 @@ def confirm_formula_item_review(item: FormulaItem, latex_current: str) -> Formul
         item.status = FormulaItem.Status.CONFIRMED
         item.save(update_fields=["status", "updated_at"])
     return item
+
+
+def restore_formula_item_version(item: FormulaItem, version: FormulaItemVersion) -> FormulaItem:
+    return update_formula_item_latex(
+        item,
+        version.latex,
+        source=FormulaItemVersion.Source.MANUAL,
+        created_by_label="api",
+        note=f"restored from version {version.id}",
+        status=FormulaItem.Status.EDITED,
+    )

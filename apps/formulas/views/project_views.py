@@ -18,7 +18,11 @@ from apps.formulas.services.export_artifacts import (
     render_latex_export,
     render_markdown_export,
 )
-from apps.formulas.services.project_items import confirm_formula_item_review, update_formula_item_latex
+from apps.formulas.services.project_items import (
+    confirm_formula_item_review,
+    restore_formula_item_version,
+    update_formula_item_latex,
+)
 
 
 def projects(request):
@@ -93,6 +97,21 @@ def api_formula_item_versions(request, item_id):
         {
             "item_id": str(item.id),
             "versions": [formula_item_version_payload(version) for version in versions],
+        }
+    )
+
+
+@require_POST
+def api_formula_item_version_restore(request, item_id, version_id):
+    item = _get_api_formula_item(item_id)
+    version = get_object_or_404(FormulaItemVersion, id=version_id, item=item)
+    restore_formula_item_version(item, version)
+    item = _get_api_formula_item(item_id)
+    latest_version = item.versions.first()
+    return JsonResponse(
+        {
+            "item": formula_item_detail_payload(item),
+            "version": formula_item_version_payload(latest_version),
         }
     )
 

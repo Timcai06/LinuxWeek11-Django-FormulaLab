@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 
-import { fetchFormulaItem, fetchFormulaItemVersions, fetchProjectItems, saveFormulaItem } from "../api";
+import {
+  fetchFormulaItem,
+  fetchFormulaItemVersions,
+  fetchProjectItems,
+  restoreFormulaItemVersion,
+  saveFormulaItem,
+} from "../api";
 import type { FormulaItem, FormulaItemVersion, WorkspaceEditorConfig } from "../types";
+import { FormulaItemList } from "./FormulaItemList";
+import { FormulaSourceEditor } from "./FormulaSourceEditor";
+import { VersionTimeline } from "./VersionTimeline";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -14,6 +23,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
   const [activeItem, setActiveItem] = useState<FormulaItem | null>(null);
   const [draftLatex, setDraftLatex] = useState("");
   const [items, setItems] = useState<FormulaItem[]>([]);
+  const [restoringVersionId, setRestoringVersionId] = useState<number | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [state, setState] = useState<LoadState>("idle");
   const [versions, setVersions] = useState<FormulaItemVersion[]>([]);
@@ -99,6 +109,35 @@ export function EditorIsland({ config }: EditorIslandProps) {
     }
   }
 
+  async function restoreVersion(versionId: number) {
+    if (!activeItem) {
+      return;
+    }
+
+    setRestoringVersionId(versionId);
+    setSaveState("saving");
+    try {
+      const payload = await restoreFormulaItemVersion(activeItem.id, versionId, readCsrfToken());
+      setActiveItem(payload.item);
+      setDraftLatex(payload.item.latex_current);
+      setItems((currentItems) =>
+        currentItems.map((item) => {
+          if (item.id === payload.item.id) {
+            return payload.item;
+          }
+          return item;
+        }),
+      );
+      const versionPayload = await fetchFormulaItemVersions(payload.item.id);
+      setVersions(versionPayload.versions);
+      setSaveState("saved");
+    } catch {
+      setSaveState("error");
+    } finally {
+      setRestoringVersionId(null);
+    }
+  }
+
   return (
     <div
       className="workspace-editor-island"
@@ -119,55 +158,20 @@ export function EditorIsland({ config }: EditorIslandProps) {
         </header>
 
         <div className="workspace-editor-grid">
-          <nav className="workspace-editor-item-list" aria-label="Editor formula items">
-            {items.map((item) => (
-              <button
-                className={item.id === activeItem?.id ? "is-active" : ""}
-                key={item.id}
-                onClick={() => selectItem(item.id)}
-                type="button"
-              >
-                <span>{item.formula_code}</span>
-                <small>{item.review_status.toUpperCase()}</small>
-              </button>
-            ))}
-          </nav>
+          <FormulaItemList activeItemId={activeItem?.id} items={items} onSelect={selectItem} />
 
-          <form className="workspace-editor-form" onSubmit={(event) => event.preventDefault()}>
-            <label>
-              <span>LATEX SOURCE</span>
-              <textarea
-                onChange={(event) => {
-                  setDraftLatex(event.target.value);
-                  setSaveState("idle");
-                }}
-                spellCheck={false}
-                value={draftLatex}
-              />
-            </label>
-            <div className="workspace-editor-actions">
-              <button disabled={!hasChanges || saveState === "saving"} onClick={saveDraft} type="button">
-                SAVE
-              </button>
-            </div>
-          </form>
+          <FormulaSourceEditor
+            draftLatex={draftLatex}
+            hasChanges={hasChanges}
+            isSaving={saveState === "saving"}
+            onDraftChange={(latex) => {
+              setDraftLatex(latex);
+              setSaveState("idle");
+            }}
+            onSave={saveDraft}
+          />
 
-          <aside className="workspace-editor-version-list" aria-label="Formula version timeline">
-            <span>VERSION TIMELINE</span>
-            {versions.length ? (
-              <ol>
-                {versions.map((version) => (
-                  <li key={version.id}>
-                    <strong>{version.source.toUpperCase()}</strong>
-                    <small>{version.created_by_label || "system"}</small>
-                    <code>{version.latex}</code>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p>No versions recorded.</p>
-            )}
-          </aside>
+          <VersionTimeline onRestore={restoreVersion} restoringVersionId={restoringVersionId} versions={versions} />
         </div>
       </section>
     </div>
