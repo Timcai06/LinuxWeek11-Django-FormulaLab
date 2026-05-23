@@ -51,6 +51,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
   const [fileDialog, setFileDialog] = useState<PaperFileDialogState | null>(null);
   const [fileDialogError, setFileDialogError] = useState("");
   const [fileMutationState, setFileMutationState] = useState<SaveState>("idle");
+  const [formulaTransferMessage, setFormulaTransferMessage] = useState("");
   const [items, setItems] = useState<FormulaItem[]>([]);
   const [restoringVersionId, setRestoringVersionId] = useState<number | null>(null);
   const [paperSaveState, setPaperSaveState] = useState<SaveState>("idle");
@@ -112,6 +113,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
 
   const hasChanges = Boolean(activeItem && draftLatex.trim() && draftLatex !== activeItem.latex_current);
   const paperHasChanges = Boolean(activePaperFile && draftPaperContent !== activePaperFile.content);
+  const canInsertFormulaIntoPaper = Boolean(activePaperFile && draftLatex.trim());
 
   function selectItem(itemId: string) {
     const item = items.find((candidate) => candidate.id === itemId);
@@ -121,6 +123,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
     setActiveItem(item);
     setDraftLatex(item.latex_current);
     setSaveState("idle");
+    setFormulaTransferMessage("");
   }
 
   async function saveDraft() {
@@ -205,6 +208,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
         setActivePaperFile(file);
         setDraftPaperContent(file.content);
         setPaperSaveState("idle");
+        setFormulaTransferMessage("");
       } else if (normalizedPath !== fileDialog.file.path) {
         const renamedFile = await renamePaperFile(fileDialog.file.id, normalizedPath, readCsrfToken());
         applyPaperFileUpdate(renamedFile);
@@ -246,11 +250,13 @@ export function EditorIsland({ config }: EditorIslandProps) {
     setActivePaperFile(file);
     setDraftPaperContent(file.content);
     setPaperSaveState("idle");
+    setFormulaTransferMessage("");
   }
 
   function applyPaperFileUpdate(updatedFile: PaperFile) {
     setActivePaperFile(updatedFile);
     setDraftPaperContent(updatedFile.content);
+    setFormulaTransferMessage("");
     setDocuments((currentDocuments) =>
       currentDocuments.map((document) => ({
         ...document,
@@ -276,7 +282,18 @@ export function EditorIsland({ config }: EditorIslandProps) {
       setActivePaperFile(fallbackFile);
       setDraftPaperContent(fallbackFile?.content ?? "");
       setPaperSaveState("idle");
+      setFormulaTransferMessage("");
     }
+  }
+
+  function handleInsertFormulaIntoPaper() {
+    if (!activePaperFile || !draftLatex.trim()) {
+      return;
+    }
+
+    setDraftPaperContent((currentContent) => insertFormulaIntoPaper(currentContent, draftLatex));
+    setPaperSaveState("idle");
+    setFormulaTransferMessage(`Inserted into ${activePaperFile.path}. Save the paper file to persist it.`);
   }
 
   async function restoreVersion(versionId: number) {
@@ -386,14 +403,19 @@ export function EditorIsland({ config }: EditorIslandProps) {
           <FormulaItemList activeItemId={activeItem?.id} items={items} onSelect={selectItem} />
 
           <FormulaSourceEditor
+            canInsertIntoPaper={canInsertFormulaIntoPaper}
             draftLatex={draftLatex}
             hasChanges={hasChanges}
+            insertTargetPath={activePaperFile?.path}
             isSaving={saveState === "saving"}
             onDraftChange={(latex) => {
               setDraftLatex(latex);
               setSaveState("idle");
+              setFormulaTransferMessage("");
             }}
+            onInsertIntoPaper={handleInsertFormulaIntoPaper}
             onSave={saveDraft}
+            transferMessage={formulaTransferMessage}
           />
 
           <VersionTimeline onRestore={restoreVersion} restoringVersionId={restoringVersionId} versions={versions} />
@@ -441,4 +463,27 @@ function defaultPaperFileContent(path: string, template: PaperFileTemplateKey): 
     ?.replace(/\.[^.]+$/, "")
     .replace(/[-_]/g, " ");
   return `\\section{${title || "New Section"}}\n\n`;
+}
+
+function insertFormulaIntoPaper(content: string, latex: string): string {
+  const source = latex.trim();
+  if (!source) {
+    return content;
+  }
+
+  const equationBlock = `\\begin{equation}\n${source}\n\\end{equation}`;
+  const endDocumentToken = "\\end{document}";
+  const endDocumentIndex = content.lastIndexOf(endDocumentToken);
+
+  if (endDocumentIndex >= 0) {
+    const beforeEndDocument = content.slice(0, endDocumentIndex).trimEnd();
+    const afterEndDocument = content.slice(endDocumentIndex).trimStart();
+    return `${beforeEndDocument}\n\n${equationBlock}\n\n${afterEndDocument}`;
+  }
+
+  const existingContent = content.trimEnd();
+  if (!existingContent) {
+    return `${equationBlock}\n`;
+  }
+  return `${existingContent}\n\n${equationBlock}\n`;
 }

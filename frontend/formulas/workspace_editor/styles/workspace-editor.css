@@ -447,8 +447,17 @@
 }
 
 .workspace-editor-actions {
+    align-items: center;
     justify-content: flex-end;
     margin-top: 10px;
+}
+
+.workspace-formula-transfer {
+    color: var(--muted);
+    flex: 1;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    min-width: 160px;
 }
 
 .workspace-editor-actions button:disabled {

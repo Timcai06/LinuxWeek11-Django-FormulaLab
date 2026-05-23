@@ -282,10 +282,12 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - [x] 新增 `DELETE /api/document-files/<file_id>/`，允许删除非根文件，保护 `root_file_path` 和最后一个文件。
 - [x] React 新增 `PaperDeleteDialog`，用项目内确认弹窗处理删除操作，不使用浏览器原生 confirm。
 - [x] 新建文件支持 Section、Blank、Bibliography 三种模板，减少空文件后的第一步手工输入。
+- [x] Formula Materials 新增 `INSERT INTO PAPER`，把当前 LaTeX 以 `equation` block 插入当前论文文件草稿。
 
 当前实现说明：
 
 - 这一片仍然是单人编辑器，不处理多人冲突、锁定和 OT/CRDT。
 - 新建、重命名、删除已经形成项目内 modal 闭环；删除操作保护根文件，避免把论文项目删成不可启动状态。
-- CodeMirror 目前只接管论文源码区，下方 Formula Materials 仍维持轻量 textarea，避免一次性改动两个工作流。
-- 下一片应继续收敛 Project Workspace 的视觉密度，并补公式插入论文、PDF 编译入口或文件拖拽排序。
+- CodeMirror 目前只接管论文源码区，下方 Formula Materials 仍维持轻量 textarea，但已经能把当前公式转移到论文草稿。
+- 公式插入不会自动保存；用户可以先检查论文源码和预览，再点击 `SAVE FILE` 持久化。
+- 下一片应继续收敛 Project Workspace 的视觉密度，并补 PDF 编译入口、文件拖拽排序或公式插入位置控制。
