@@ -1,3 +1,5 @@
+import { PaperCodeEditor } from "./PaperCodeEditor";
+
 type PaperSourceEditorProps = {
   content: string;
   hasChanges: boolean;
@@ -12,7 +14,7 @@ export function PaperSourceEditor({ content, hasChanges, isSaving, onChange, onS
     <form className="workspace-paper-source" onSubmit={(event) => event.preventDefault()}>
       <label>
         <span>{path ? `SOURCE / ${path}` : "SOURCE"}</span>
-        <textarea onChange={(event) => onChange(event.target.value)} spellCheck={false} value={content} />
+        <PaperCodeEditor content={content} onChange={onChange} />
       </label>
       <div>
         <button disabled={!hasChanges || isSaving} onClick={onSave} type="button">

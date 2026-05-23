@@ -83,6 +83,13 @@
     gap: 6px;
 }
 
+.workspace-paper-document-heading {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+
 .workspace-paper-file-tree strong {
     font-size: 0.82rem;
 }
@@ -98,6 +105,11 @@
     gap: 6px;
 }
 
+.workspace-paper-file-row {
+    display: grid;
+    gap: 6px;
+}
+
 .workspace-paper-file-tree button,
 .workspace-paper-source button {
     border: 1px solid var(--hairline-on-dark);
@@ -106,6 +118,19 @@
     cursor: pointer;
     padding: 8px 10px;
     text-align: left;
+}
+
+.workspace-paper-document-heading button,
+.workspace-paper-file-actions button {
+    color: var(--muted);
+    font-size: 0.64rem;
+    padding: 5px 7px;
+    text-align: center;
+}
+
+.workspace-paper-file-actions {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .workspace-paper-file-tree button.is-active,
@@ -119,11 +144,33 @@
     gap: 10px;
 }
 
-.workspace-paper-source textarea {
+.workspace-code-editor {
     border: 1px solid var(--hairline-on-dark);
     background: #050505;
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    min-height: 300px;
+}
+
+.workspace-code-editor-gutter {
+    border-right: 1px solid var(--hairline-on-dark);
+    color: var(--muted);
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    margin: 0;
+    overflow: hidden;
+    padding: 12px 8px;
+    text-align: right;
+    user-select: none;
+}
+
+.workspace-code-editor textarea {
+    background: #050505;
+    border: 0;
     color: var(--on-night);
     font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    line-height: 1.55;
     min-height: 300px;
     padding: 12px;
     resize: vertical;

@@ -267,3 +267,18 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - Paper Workspace 位于 Project Workspace 顶部，Formula Materials 位于下方，形成“论文编辑区 + 公式素材区”的产品层次。
 - `main.tex` 保存后会同步 React 本地文件树状态，避免保存后预览和文件内容脱节。
 - 下一片应从源码 preview 进入真正的 LaTeX 编辑体验：CodeMirror、插入公式、基础文件操作和 PDF 编译/预览入口。
+
+## Task 9: 论文文件操作与编辑器壳
+
+- [x] 新增 API：`POST /api/documents/<document_id>/files/`，在文档内创建安全相对路径文件。
+- [x] `PATCH /api/document-files/<file_id>/` 支持同时更新 `content` 和 `path`，用于保存与重命名。
+- [x] 后端根据扩展名推断 `tex`、`bib`、`markdown`、`text` 文件类型。
+- [x] React 新增 `createPaperFile`、`renamePaperFile`，文件树可以新建和重命名文件。
+- [x] 新增 `PaperCodeEditor`，用行号 gutter、等宽排版和稳定编辑区域替代裸 textarea，为后续接入 CodeMirror 留接口。
+- [x] 文件操作更新本地 `PaperDocument.files` 状态，避免创建/重命名后必须整页刷新。
+
+当前实现说明：
+
+- 这一片仍然是单人编辑器，不处理多人冲突、锁定和 OT/CRDT。
+- 新建/重命名暂时使用浏览器 prompt，后续 UI 美化时替换为项目内 drawer/modal。
+- `PaperCodeEditor` 目前是 CodeMirror-ready 的轻量编辑器壳，还没有引入真实 CodeMirror 包；下一片再接入语法高亮、快捷键和搜索。

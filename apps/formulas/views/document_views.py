@@ -1,5 +1,7 @@
 import json
 
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
@@ -10,7 +12,7 @@ from apps.formulas.presenters.document_api import (
     paper_file_payload,
     project_documents_payload,
 )
-from apps.formulas.services.documents import create_default_document
+from apps.formulas.services.documents import create_default_document, create_document_file, update_document_file
 
 
 @require_http_methods(["GET", "POST"])
@@ -32,16 +34,35 @@ def api_project_documents(request, project_id):
     return JsonResponse(project_documents_payload(project, documents))
 
 
+@require_http_methods(["POST"])
+def api_document_files(request, document_id):
+    document = get_object_or_404(PaperDocument.objects.select_related("project"), id=document_id)
+    payload = _json_payload(request)
+    path = str(payload.get("path", "")).strip()
+    if not path:
+        return JsonResponse({"error": "path is required"}, status=400)
+
+    try:
+        file = create_document_file(document, path=path, content=str(payload.get("content", "")))
+    except (IntegrityError, ValidationError) as error:
+        return JsonResponse({"error": _validation_error_message(error)}, status=400)
+
+    return JsonResponse(paper_file_payload(file), status=201)
+
+
 @require_http_methods(["GET", "PATCH"])
 def api_document_file_detail(request, file_id):
     file = get_object_or_404(PaperFile.objects.select_related("document", "document__project"), id=file_id)
     if request.method == "PATCH":
         payload = _json_payload(request)
-        if "content" not in payload:
-            return JsonResponse({"error": "content is required"}, status=400)
-        file.content = str(payload["content"])
-        file.save(update_fields=["content", "updated_at"])
-        file.refresh_from_db()
+        path = str(payload["path"]).strip() if "path" in payload else None
+        content = str(payload["content"]) if "content" in payload else None
+        if path is None and content is None:
+            return JsonResponse({"error": "path or content is required"}, status=400)
+        try:
+            file = update_document_file(file, path=path, content=content)
+        except (IntegrityError, ValidationError) as error:
+            return JsonResponse({"error": _validation_error_message(error)}, status=400)
     return JsonResponse(paper_file_payload(file))
 
 
@@ -57,3 +78,11 @@ def _json_payload(request) -> dict:
     except json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
+
+
+def _validation_error_message(error: IntegrityError | ValidationError) -> str:
+    if isinstance(error, ValidationError):
+        messages = getattr(error, "messages", None)
+        if messages:
+            return " ".join(messages)
+    return "Paper file path must be unique and safe."

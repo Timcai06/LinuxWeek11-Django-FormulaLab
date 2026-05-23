@@ -50,3 +50,55 @@ class PaperDocumentApiViewTests(FormulaViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(file.content, r"\section{Method}")
         self.assertEqual(response.json()["content"], r"\section{Method}")
+
+    def test_api_document_files_post_creates_project_file(self):
+        project = PaperProject.objects.create(name="API file create")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        PaperFile.objects.create(document=document, path="main.tex", content="root")
+
+        response = self.client.post(
+            f"/api/documents/{document.id}/files/",
+            data='{"path": "sections/method.tex", "content": "\\\\section{Method}"}',
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        payload = response.json()
+        self.assertEqual(payload["path"], "sections/method.tex")
+        self.assertEqual(payload["file_type"], PaperFile.FileType.TEX)
+        self.assertEqual(payload["content"], r"\section{Method}")
+        self.assertTrue(document.files.filter(path="sections/method.tex").exists())
+
+    def test_api_document_file_patch_updates_path_and_content(self):
+        project = PaperProject.objects.create(name="API file rename")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        file = PaperFile.objects.create(document=document, path="draft.tex", content="old")
+
+        response = self.client.generic(
+            "PATCH",
+            f"/api/document-files/{file.id}/",
+            data='{"path": "sections/results.tex", "content": "\\\\section{Results}"}',
+            content_type="application/json",
+        )
+
+        file.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(file.path, "sections/results.tex")
+        self.assertEqual(file.content, r"\section{Results}")
+
+    def test_api_document_file_rejects_duplicate_rename(self):
+        project = PaperProject.objects.create(name="API file duplicate")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        file = PaperFile.objects.create(document=document, path="draft.tex", content="old")
+        PaperFile.objects.create(document=document, path="main.tex", content="root")
+
+        response = self.client.generic(
+            "PATCH",
+            f"/api/document-files/{file.id}/",
+            data='{"path": "main.tex"}',
+            content_type="application/json",
+        )
+
+        file.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(file.path, "draft.tex")

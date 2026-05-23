@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 
 import {
+  createPaperFile,
   createProjectDocument,
   fetchFormulaItem,
   fetchFormulaItemVersions,
   fetchProjectItems,
   fetchProjectDocuments,
+  renamePaperFile,
   restoreFormulaItemVersion,
   savePaperFile,
   saveFormulaItem,
@@ -29,6 +31,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
   const [draftLatex, setDraftLatex] = useState("");
   const [draftPaperContent, setDraftPaperContent] = useState("");
   const [documents, setDocuments] = useState<PaperDocument[]>([]);
+  const [fileMutationState, setFileMutationState] = useState<SaveState>("idle");
   const [items, setItems] = useState<FormulaItem[]>([]);
   const [restoringVersionId, setRestoringVersionId] = useState<number | null>(null);
   const [paperSaveState, setPaperSaveState] = useState<SaveState>("idle");
@@ -136,17 +139,49 @@ export function EditorIsland({ config }: EditorIslandProps) {
     setPaperSaveState("saving");
     try {
       const savedFile = await savePaperFile(activePaperFile.id, draftPaperContent, readCsrfToken());
-      setActivePaperFile(savedFile);
-      setDraftPaperContent(savedFile.content);
-      setDocuments((currentDocuments) =>
-        currentDocuments.map((document) => ({
-          ...document,
-          files: document.files.map((file) => (file.id === savedFile.id ? savedFile : file)),
-        })),
-      );
+      applyPaperFileUpdate(savedFile);
       setPaperSaveState("saved");
     } catch {
       setPaperSaveState("error");
+    }
+  }
+
+  async function createPaperFileFromPrompt(document: PaperDocument) {
+    const path = window.prompt("New file path", suggestedFilePath(document));
+    if (!path) {
+      return;
+    }
+
+    setFileMutationState("saving");
+    try {
+      const file = await createPaperFile(document.id, path.trim(), defaultPaperFileContent(path.trim()), readCsrfToken());
+      setDocuments((currentDocuments) =>
+        currentDocuments.map((candidate) =>
+          candidate.id === document.id ? { ...candidate, files: [...candidate.files, file] } : candidate,
+        ),
+      );
+      setActivePaperFile(file);
+      setDraftPaperContent(file.content);
+      setPaperSaveState("idle");
+      setFileMutationState("saved");
+    } catch {
+      setFileMutationState("error");
+    }
+  }
+
+  async function renamePaperFileFromPrompt(file: PaperFile) {
+    const path = window.prompt("Rename file path", file.path);
+    if (!path || path.trim() === file.path) {
+      return;
+    }
+
+    setFileMutationState("saving");
+    try {
+      const renamedFile = await renamePaperFile(file.id, path.trim(), readCsrfToken());
+      applyPaperFileUpdate(renamedFile);
+      setFileMutationState("saved");
+    } catch {
+      setFileMutationState("error");
     }
   }
 
@@ -154,6 +189,17 @@ export function EditorIsland({ config }: EditorIslandProps) {
     setActivePaperFile(file);
     setDraftPaperContent(file.content);
     setPaperSaveState("idle");
+  }
+
+  function applyPaperFileUpdate(updatedFile: PaperFile) {
+    setActivePaperFile(updatedFile);
+    setDraftPaperContent(updatedFile.content);
+    setDocuments((currentDocuments) =>
+      currentDocuments.map((document) => ({
+        ...document,
+        files: document.files.map((file) => (file.id === updatedFile.id ? updatedFile : file)),
+      })),
+    );
   }
 
   async function restoreVersion(versionId: number) {
@@ -209,11 +255,14 @@ export function EditorIsland({ config }: EditorIslandProps) {
           documents={documents}
           draftContent={draftPaperContent}
           hasChanges={paperHasChanges}
+          isFileMutating={fileMutationState === "saving"}
           isSaving={paperSaveState === "saving"}
+          onCreateFile={createPaperFileFromPrompt}
           onDraftChange={(content) => {
             setDraftPaperContent(content);
             setPaperSaveState("idle");
           }}
+          onRenameFile={renamePaperFileFromPrompt}
           onSave={savePaperDraft}
           onSelectFile={selectPaperFile}
         />
@@ -268,4 +317,15 @@ function firstRootFile(documents: PaperDocument[]): PaperFile | null {
     return null;
   }
   return document.files.find((file) => file.path === document.root_file_path) ?? document.files[0] ?? null;
+}
+
+function suggestedFilePath(document: PaperDocument): string {
+  return `sections/section-${document.files.length + 1}.tex`;
+}
+
+function defaultPaperFileContent(path: string): string {
+  if (path.endsWith(".bib")) {
+    return "";
+  }
+  return "% New manuscript file\n";
 }

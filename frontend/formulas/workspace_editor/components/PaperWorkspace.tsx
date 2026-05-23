@@ -8,8 +8,11 @@ type PaperWorkspaceProps = {
   draftContent: string;
   documents: PaperDocument[];
   hasChanges: boolean;
+  isFileMutating: boolean;
   isSaving: boolean;
   onDraftChange: (content: string) => void;
+  onCreateFile: (document: PaperDocument) => void;
+  onRenameFile: (file: PaperFile) => void;
   onSave: () => void;
   onSelectFile: (file: PaperFile) => void;
 };
@@ -19,14 +22,24 @@ export function PaperWorkspace({
   draftContent,
   documents,
   hasChanges,
+  isFileMutating,
   isSaving,
   onDraftChange,
+  onCreateFile,
+  onRenameFile,
   onSave,
   onSelectFile,
 }: PaperWorkspaceProps) {
   return (
     <div className="workspace-paper-shell">
-      <PaperFileTree activeFileId={activeFile?.id} documents={documents} onSelectFile={onSelectFile} />
+      <PaperFileTree
+        activeFileId={activeFile?.id}
+        documents={documents}
+        isMutating={isFileMutating}
+        onCreateFile={onCreateFile}
+        onRenameFile={onRenameFile}
+        onSelectFile={onSelectFile}
+      />
       <PaperSourceEditor
         content={draftContent}
         hasChanges={hasChanges}

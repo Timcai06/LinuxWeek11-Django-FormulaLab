@@ -134,6 +134,29 @@ export async function createProjectDocument(
   return response.json() as Promise<ProjectDocumentCreateResponse>;
 }
 
+export async function createPaperFile(
+  documentId: string,
+  path: string,
+  content: string,
+  csrfToken: string,
+): Promise<PaperFile> {
+  const response = await fetch(`/api/documents/${documentId}/files/`, {
+    body: JSON.stringify({ content, path }),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to create paper file: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaperFile>;
+}
+
 export async function savePaperFile(fileId: string, content: string, csrfToken: string): Promise<PaperFile> {
   const response = await fetch(`/api/document-files/${fileId}/`, {
     body: JSON.stringify({ content }),
@@ -147,6 +170,24 @@ export async function savePaperFile(fileId: string, content: string, csrfToken: 
 
   if (!response.ok) {
     throw new Error(`Unable to save paper file: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaperFile>;
+}
+
+export async function renamePaperFile(fileId: string, path: string, csrfToken: string): Promise<PaperFile> {
+  const response = await fetch(`/api/document-files/${fileId}/`, {
+    body: JSON.stringify({ path }),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    method: "PATCH",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to rename paper file: ${response.status}`);
   }
 
   return response.json() as Promise<PaperFile>;
