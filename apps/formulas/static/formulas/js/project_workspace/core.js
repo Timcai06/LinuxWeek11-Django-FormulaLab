@@ -51,7 +51,6 @@
     workspace.renderWhenReady = renderWhenReady;
     workspace.readJsonScript = readJsonScript;
     workspace.previewData = () => readJsonScript("paper-preview-data");
-    workspace.reviewData = () => readJsonScript("review-drawer-data");
 
     window.FormulaProjectWorkspace = workspace;
 })();

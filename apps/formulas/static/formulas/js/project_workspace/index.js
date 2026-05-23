@@ -6,10 +6,11 @@
     }
 
     workspace.renderWhenReady(() => {
-        workspace.setupTabs();
-        workspace.renderFormulaItems();
-        workspace.renderPaperPreview();
-        workspace.setupFormulaInspector();
-        workspace.setupReviewDrawer();
+        if (typeof workspace.renderFormulaItems === "function") {
+            workspace.renderFormulaItems();
+        }
+        if (typeof workspace.renderPaperPreview === "function") {
+            workspace.renderPaperPreview();
+        }
     }, 0);
 })();

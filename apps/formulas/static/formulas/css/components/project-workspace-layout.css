@@ -52,81 +52,6 @@
     top: calc(var(--nav-height) + 34px);
 }
 
-.workspace-tabs-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.workspace-tabs-nav:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.workspace-tab-trigger {
-    min-height: 38px;
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    padding: 0 14px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--dim);
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.workspace-tab-trigger:hover {
-    border-color: rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--on-night);
-}
-
-.workspace-tab-trigger.active {
-    border-color: rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--on-night);
-    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02), 0 2px 6px rgba(0, 0, 0, 0.25);
-}
-
-.tab-indicator {
-    width: 7px;
-    height: 7px;
-    border: 1px solid currentColor;
-    border-radius: 50%;
-}
-
-.workspace-tab-trigger.active .tab-indicator {
-    background: var(--status-ready);
-    border-color: var(--status-ready);
-    box-shadow: 0 0 12px rgba(92, 255, 176, 0.45);
-}
-
-.workspace-tab-content {
-    display: none;
-}
-
-.workspace-tab-content.active {
-    display: block;
-}
-
-.workspace-tab-content .paper-preview-panel,
-.workspace-tab-content .formula-items-panel {
-    margin-top: 0;
-}
-
 .workspace-sidebar-col .workspace-panel {
     min-height: 0;
 }
@@ -160,8 +85,4 @@
         grid-template-columns: 1fr;
     }
 
-    .workspace-tab-trigger {
-        width: 100%;
-        justify-content: center;
-    }
 }

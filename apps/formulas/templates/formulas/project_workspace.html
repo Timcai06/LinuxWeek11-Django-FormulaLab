@@ -7,15 +7,11 @@
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-workspace-layout.css' %}">
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-workspace-sidebar.css' %}?v=component-split">
 <link rel="stylesheet" href="{% static 'formulas/css/components/project-paper-preview.css' %}?v=component-split">
-<link rel="stylesheet" href="{% static 'formulas/css/components/project-formula-queue.css' %}?v=workflow-inspector">
-<link rel="stylesheet" href="{% static 'formulas/css/components/project-formula-inspector.css' %}?v=component-split">
-<link rel="stylesheet" href="{% static 'formulas/css/components/project-review-drawer.css' %}">
 <link rel="stylesheet" href="{% static 'formulas/css/generated/workspace-editor.css' %}">
 {% endblock %}
 
 {% block content %}
 {{ paper_preview_items|json_script:"paper-preview-data" }}
-{{ review_items|json_script:"review-drawer-data" }}
 <div
     id="workspace-editor-root"
     data-project-id="{{ project.id }}"
@@ -59,157 +55,47 @@
 
     <div class="workspace-body-layout">
         <main class="workspace-main-col">
-            <div class="workspace-tabs-nav" role="tablist" aria-label="Workspace views">
-                <button class="workspace-tab-trigger active" type="button" data-tab="queue" role="tab" aria-selected="true">
-                    <span class="tab-indicator" aria-hidden="true"></span>
-                    <span class="tab-label">FORMULA INSPECTION QUEUE</span>
-                </button>
-                <button class="workspace-tab-trigger" type="button" data-tab="preview" role="tab" aria-selected="false">
-                    <span class="tab-indicator" aria-hidden="true"></span>
-                    <span class="tab-label">PAPER ADAPTABILITY CHECK</span>
-                </button>
-            </div>
-
-            <div class="workspace-tab-content active" data-tab-content="queue">
-                <section class="formula-items-panel">
-                    <div class="panel-heading">
-                        <p>ITEMS</p>
-                        <h2>Formula Items</h2>
-                    </div>
-                    <div class="formula-list-toolbar" aria-label="Formula item filters and pagination">
-                        <nav class="item-status-filters" aria-label="Formula status filters">
-                            {% for filter_link in status_filter_links %}
-                                <a class="{% if filter_link.active %}is-active{% endif %}" href="{{ filter_link.url }}">{{ filter_link.label }}</a>
-                            {% endfor %}
-                        </nav>
-                        <div class="item-pagination">
-                            {% if previous_item_querystring %}
-                                <a href="?{{ previous_item_querystring }}">PREV</a>
-                            {% endif %}
-                            <span>PAGE {{ item_page_obj.number }} OF {{ item_page_obj.paginator.num_pages }}</span>
-                            {% if next_item_querystring %}
-                                <a href="?{{ next_item_querystring }}">NEXT</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="workspace-review-grid">
-                        <div class="formula-item-list" aria-label="Formula inspection queue">
-                            {% for item in formula_items %}
-                                <article class="formula-item-row formula-item-card status-{{ item.status }}{% if forloop.first %} is-selected{% endif %}" data-workspace-item data-inspector-item-id="{{ item.id }}">
-                                    <button class="formula-item-select" type="button" data-inspector-select data-review-item-id="{{ item.id }}">
-                                        <span class="formula-code">{{ item.formula_code }}</span>
-                                        <span class="formula-status-pills">
-                                            <span class="status-chip status-{{ item.status }}">{{ item.status|upper }}</span>
-                                            <span class="quality-chip {% if item.quality_score >= 80 %}high-q{% elif item.quality_score >= 50 %}mid-q{% else %}low-q{% endif %}">Q {{ item.quality_score|default:0 }}</span>
-                                        </span>
-                                    </button>
-                                    <div class="formula-source-block formula-source-compact">
-                                        <span class="cell-label">LATEST SOURCE</span>
-                                        <div class="code-wrapper">
-                                            <pre data-latex-source-text>{% if item.latex_current %}{{ item.latex_current }}{% elif item.recognition_job.latex_result %}{{ item.recognition_job.latex_result }}{% else %}No LaTeX captured{% endif %}</pre>
-                                        </div>
+            <section class="paper-preview-panel" aria-label="Paper preview">
+                <div class="panel-heading">
+                    <p>PAPER ADAPTABILITY CHECK</p>
+                    <h2>Draft Formula Page</h2>
+                </div>
+                <div class="paper-preview-layout">
+                    <article class="paper-sheet">
+                        <header>
+                            <span>{{ project.project_code }}</span>
+                            <strong>{{ project.name }}</strong>
+                        </header>
+                        <div class="paper-body">
+                            {% for preview_item in paper_preview_items %}
+                                <section class="paper-formula-block">
+                                    <div class="paper-formula-meta">
+                                        <span>{{ preview_item.code }}</span>
+                                        <span>{{ preview_item.batch_title|default:"Untitled batch" }}</span>
+                                        <span>Q {{ preview_item.quality_score|default:0 }}</span>
                                     </div>
-                                </article>
+                                    <div class="paper-rendered-formula" data-paper-preview-slot data-preview-code="{{ preview_item.code }}">
+                                        {{ preview_item.latex }}
+                                    </div>
+                                </section>
                             {% empty %}
-                                <div class="project-empty-state compact">
-                                    <span class="empty-kicker">NO FORMULA ITEMS</span>
-                                    <h2>This workspace is ready for its first batch.</h2>
-                                    <a class="button button-secondary" href="{% url 'workbench' %}">OPEN WORKBENCH</a>
+                                <div class="paper-preview-empty">
+                                    <span>NO FORMULAS READY FOR PAPER PREVIEW</span>
                                 </div>
                             {% endfor %}
                         </div>
-
-                        <aside class="formula-inspector-panel" data-workspace-inspector aria-label="Selected formula inspector">
-                            <div class="inspector-header">
-                                <div>
-                                    <span class="cell-label">SELECTED FORMULA</span>
-                                    <h3 data-inspector-code>{% if review_items %}{{ review_items.0.code }}{% else %}No Formula{% endif %}</h3>
-                                </div>
-                                <button class="review-trigger" type="button" data-review-trigger data-inspector-review {% if review_items %}data-review-item-id="{{ review_items.0.id }}"{% else %}disabled{% endif %}>OPEN IN REVIEW</button>
-                            </div>
-                            <div class="inspector-meta">
-                                <span data-inspector-batch>{% if review_items %}{{ review_items.0.batch_title|default:"Untitled batch" }}{% else %}Batch pending{% endif %}</span>
-                                <span data-inspector-status>{% if review_items %}{{ review_items.0.status|upper }}{% else %}STATUS PENDING{% endif %}</span>
-                                <span data-inspector-quality>{% if review_items %}Q {{ review_items.0.quality_score|default:0 }}{% else %}Q --{% endif %}</span>
-                            </div>
-                            <div class="inspector-source-block">
-                                <span class="cell-label">LATEX SOURCE</span>
-                                <pre data-inspector-latex>{% if review_items %}{{ review_items.0.latex }}{% else %}Select a formula to inspect its LaTeX source.{% endif %}</pre>
-                            </div>
-                            <div class="formula-render-block inspector-render-block">
-                                <span class="cell-label">LATEX PREVIEW</span>
-                                <div class="formula-render-surface-wrapper">
-                                    <div class="formula-render-surface" data-inspector-preview data-project-katex-preview></div>
-                                </div>
-                            </div>
-                            <div class="inspector-fit-panel">
-                                <div>
-                                    <span class="cell-label">PAPER FIT</span>
-                                    <strong data-inspector-fit-status>STANDBY</strong>
-                                </div>
-                                <dl>
-                                    <div>
-                                        <dt>WIDTH</dt>
-                                        <dd data-inspector-fit-width>--</dd>
-                                    </div>
-                                    <div>
-                                        <dt>LINES</dt>
-                                        <dd data-inspector-fit-lines>--</dd>
-                                    </div>
-                                    <div>
-                                        <dt>TIGHT</dt>
-                                        <dd data-inspector-fit-tight>--</dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        </aside>
-                    </div>
-                </section>
-            </div>
-
-            <div class="workspace-tab-content" data-tab-content="preview">
-                <section class="paper-preview-panel" aria-label="Paper preview">
-                    <div class="panel-heading">
-                        <p>PAPER PREVIEW</p>
-                        <h2>Draft Formula Page</h2>
-                    </div>
-                    <div class="paper-preview-layout">
-                        <article class="paper-sheet">
-                            <header>
-                                <span>{{ project.project_code }}</span>
-                                <strong>{{ project.name }}</strong>
-                            </header>
-                            <div class="paper-body">
-                                {% for preview_item in paper_preview_items %}
-                                    <section class="paper-formula-block">
-                                        <div class="paper-formula-meta">
-                                            <span>{{ preview_item.code }}</span>
-                                            <span>{{ preview_item.batch_title|default:"Untitled batch" }}</span>
-                                            <span>Q {{ preview_item.quality_score|default:0 }}</span>
-                                        </div>
-                                        <div class="paper-rendered-formula" data-paper-preview-slot data-preview-code="{{ preview_item.code }}">
-                                            {{ preview_item.latex }}
-                                        </div>
-                                    </section>
-                                {% empty %}
-                                    <div class="paper-preview-empty">
-                                        <span>NO FORMULAS READY FOR PAPER PREVIEW</span>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </article>
-                        <aside class="paper-preview-notes">
-                            <span class="empty-kicker">HTML FIRST</span>
-                            <p>This preview is built for fast paper-shape checking. PDF compilation will become an async export artifact later.</p>
-                            <div class="export-actions" aria-label="Export files">
-                                <span>EXPORT FILES</span>
-                                <a class="button button-secondary" href="{% url 'export-project' project.id 'tex' %}">TEX</a>
-                                <a class="button button-secondary" href="{% url 'export-project' project.id 'markdown' %}">MARKDOWN</a>
-                            </div>
-                        </aside>
-                    </div>
-                </section>
-            </div>
+                    </article>
+                    <aside class="paper-preview-notes">
+                        <span class="empty-kicker">HTML FIRST</span>
+                        <p>This preview is built for fast paper-shape checking. PDF compilation will become an async export artifact later.</p>
+                        <div class="export-actions" aria-label="Export files">
+                            <span>EXPORT FILES</span>
+                            <a class="button button-secondary" href="{% url 'export-project' project.id 'tex' %}">TEX</a>
+                            <a class="button button-secondary" href="{% url 'export-project' project.id 'markdown' %}">MARKDOWN</a>
+                        </div>
+                    </aside>
+                </div>
+            </section>
         </main>
 
         <aside class="workspace-sidebar-col">
@@ -260,44 +146,13 @@
         </aside>
     </div>
 
-    <div class="drawer-backdrop" data-drawer-backdrop></div>
-
-    <aside class="review-drawer" data-review-drawer aria-label="Review drawer" aria-hidden="true">
-        <form method="post" action="{{ review_items.0.review_url }}" data-review-form>
-            {% csrf_token %}
-            <div class="review-drawer-header">
-                <div>
-                    <span class="telemetry-label">REVIEW DRAWER</span>
-                    <h2 data-review-code>Select Formula</h2>
-                </div>
-                <button type="button" class="review-close" data-review-close aria-label="Close review drawer">CLOSE</button>
-            </div>
-            <div class="review-drawer-meta">
-                <span data-review-batch>Batch pending</span>
-                <span data-review-status>Status pending</span>
-                <span data-review-quality>Q --</span>
-            </div>
-            <label class="review-editor">
-                <span>LATEX EDITOR</span>
-                <textarea name="latex_current" data-review-latex spellcheck="false"></textarea>
-            </label>
-            <div class="review-render-block">
-                <span>LIVE PREVIEW</span>
-                <div class="review-render-surface" data-review-preview></div>
-            </div>
-            <button class="button button-primary" type="submit">CONFIRM FORMULA</button>
-        </form>
-    </aside>
 </section>
 {% endblock %}
 
 {% block page_js %}
 <script defer src="{% static 'formulas/js/project_workspace/core.js' %}?v=module-split"></script>
-<script defer src="{% static 'formulas/js/project_workspace/tabs.js' %}?v=module-split"></script>
 <script defer src="{% static 'formulas/js/project_workspace/preview.js' %}?v=module-split"></script>
 <script defer src="{% static 'formulas/js/project_workspace/paper_fit.js' %}?v=module-split"></script>
-<script defer src="{% static 'formulas/js/project_workspace/inspector.js' %}?v=module-split"></script>
-<script defer src="{% static 'formulas/js/project_workspace/review_drawer.js' %}?v=module-split"></script>
 <script defer src="{% static 'formulas/js/project_workspace/index.js' %}?v=module-split"></script>
 <script type="module" src="{% static 'formulas/js/generated/workspace-editor.js' %}"></script>
 {% endblock %}

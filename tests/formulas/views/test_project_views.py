@@ -79,9 +79,9 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "/static/formulas/css/components/project-workspace-layout.css")
         self.assertContains(response, "/static/formulas/css/components/project-workspace-sidebar.css")
         self.assertContains(response, "/static/formulas/css/components/project-paper-preview.css")
-        self.assertContains(response, "/static/formulas/css/components/project-formula-queue.css")
-        self.assertContains(response, "/static/formulas/css/components/project-formula-inspector.css")
-        self.assertContains(response, "/static/formulas/css/components/project-review-drawer.css")
+        self.assertNotContains(response, "/static/formulas/css/components/project-formula-queue.css")
+        self.assertNotContains(response, "/static/formulas/css/components/project-formula-inspector.css")
+        self.assertNotContains(response, "/static/formulas/css/components/project-review-drawer.css")
         self.assertNotContains(response, "/static/formulas/css/components/project-workspace.css")
         self.assertContains(response, "PROJECT WORKSPACE")
         self.assertContains(response, "Thesis chapter three")
@@ -183,17 +183,15 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         response = self.client.get(f"/projects/{project.id}/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "PAPER PREVIEW")
-        self.assertContains(response, "LATEX PREVIEW")
+        self.assertContains(response, "PAPER ADAPTABILITY CHECK")
         self.assertContains(response, "paper-preview-data")
-        self.assertContains(response, "data-project-katex-preview")
         self.assertContains(response, "data-paper-preview-slot")
         self.assertContains(response, "/static/formulas/js/project_workspace/core.js")
-        self.assertContains(response, "/static/formulas/js/project_workspace/tabs.js")
         self.assertContains(response, "/static/formulas/js/project_workspace/paper_fit.js")
-        self.assertContains(response, "/static/formulas/js/project_workspace/inspector.js")
-        self.assertContains(response, "/static/formulas/js/project_workspace/review_drawer.js")
         self.assertContains(response, "/static/formulas/js/project_workspace/index.js")
+        self.assertNotContains(response, "/static/formulas/js/project_workspace/tabs.js")
+        self.assertNotContains(response, "/static/formulas/js/project_workspace/inspector.js")
+        self.assertNotContains(response, "/static/formulas/js/project_workspace/review_drawer.js")
         self.assertContains(response, 'id="workspace-editor-root"')
         self.assertContains(response, 'data-project-id="')
         self.assertContains(response, "/static/formulas/js/generated/workspace-editor.js")
@@ -219,8 +217,11 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertEqual(len(response.context["formula_items"]), 12)
         self.assertEqual(response.context["item_page_obj"].number, 1)
         self.assertEqual(response.context["item_page_obj"].paginator.num_pages, 3)
-        self.assertContains(response, "PAGE 1 OF 3")
-        self.assertContains(response, "?page=2")
+        self.assertContains(response, 'data-project-items-url="/api/projects/')
+        self.assertContains(response, "paper-preview-data")
+        self.assertNotContains(response, "PAGE 1 OF 3")
+        self.assertNotContains(response, "?page=2")
+        self.assertNotContains(response, "data-workspace-item")
 
     def test_project_workspace_filters_formula_items_by_status(self):
         project = PaperProject.objects.create(name="Filtered paper")
@@ -249,33 +250,11 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, r"\alpha")
         self.assertNotContains(response, r"\beta")
         self.assertContains(response, "NEEDS REVIEW")
-        self.assertContains(response, "?status=confirmed")
+        self.assertContains(response, 'data-project-items-url="/api/projects/')
+        self.assertNotContains(response, "?status=confirmed")
+        self.assertNotContains(response, "formula-status-pills")
 
-    def test_project_workspace_renders_review_drawer_hooks(self):
-        project = PaperProject.objects.create(name="Review UI")
-        batch = BatchMission.objects.create(project=project, title="Lemma screenshots")
-        item = FormulaItem.objects.create(
-            project=project,
-            batch=batch,
-            latex_current=r"\gamma = \frac{1}{\sqrt{1-v^2/c^2}}",
-            status=FormulaItem.Status.NEEDS_REVIEW,
-            quality_score=54,
-        )
-
-        response = self.client.get(f"/projects/{project.id}/")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "review-drawer-data")
-        self.assertContains(response, "REVIEW DRAWER")
-        self.assertContains(response, "data-review-drawer")
-        self.assertContains(response, "data-review-trigger")
-        self.assertContains(response, f'data-review-item-id="{item.id}"')
-        self.assertContains(response, f'action="/formula-items/{item.id}/review/"')
-        self.assertContains(response, "CONFIRM FORMULA")
-        self.assertEqual(response.context["review_items"][0]["id"], str(item.id))
-        self.assertEqual(response.context["review_items"][0]["latex"], item.latex_current)
-
-    def test_project_workspace_renders_inspection_tabs_and_drawer_backdrop(self):
+    def test_project_workspace_promotes_react_review_inbox_as_single_formula_entry(self):
         project = PaperProject.objects.create(name="Tabbed review")
         batch = BatchMission.objects.create(project=project, title="Audit screenshots")
         FormulaItem.objects.create(
@@ -290,37 +269,16 @@ class FormulaProjectViewTests(FormulaViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "workspace-body-layout")
-        self.assertContains(response, "workspace-tab-trigger")
-        self.assertContains(response, "FORMULA INSPECTION QUEUE")
+        self.assertContains(response, 'id="workspace-editor-root"')
+        self.assertContains(response, "/static/formulas/js/generated/workspace-editor.js")
+        self.assertContains(response, "/static/formulas/css/generated/workspace-editor.css")
         self.assertContains(response, "PAPER ADAPTABILITY CHECK")
-        self.assertContains(response, "data-drawer-backdrop")
-        self.assertContains(response, "formula-status-pills")
-        self.assertContains(response, "code-wrapper")
-
-    def test_project_workspace_renders_compact_queue_with_formula_inspector(self):
-        project = PaperProject.objects.create(name="Inspector workflow")
-        batch = BatchMission.objects.create(project=project, title="Equation batch")
-        item = FormulaItem.objects.create(
-            project=project,
-            batch=batch,
-            latex_current=r"\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2}",
-            status=FormulaItem.Status.NEEDS_REVIEW,
-            quality_score=67,
-        )
-
-        response = self.client.get(f"/projects/{project.id}/")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "workspace-review-grid")
-        self.assertContains(response, "formula-inspector-panel")
-        self.assertContains(response, "data-workspace-item")
-        self.assertContains(response, f'data-inspector-item-id="{item.id}"')
-        self.assertContains(response, "data-inspector-latex")
-        self.assertContains(response, "data-inspector-preview")
-        self.assertContains(response, "data-inspector-fit-width")
-        self.assertContains(response, "data-inspector-fit-lines")
-        self.assertContains(response, "PAPER FIT")
-        self.assertContains(response, "OPEN IN REVIEW")
+        self.assertNotContains(response, "workspace-tab-trigger")
+        self.assertNotContains(response, "FORMULA INSPECTION QUEUE")
+        self.assertNotContains(response, "data-drawer-backdrop")
+        self.assertNotContains(response, "formula-status-pills")
+        self.assertNotContains(response, "formula-inspector-panel")
+        self.assertNotContains(response, "data-workspace-item")
 
     def test_project_workspace_renders_export_download_links(self):
         project = PaperProject.objects.create(name="Export UI")
