@@ -167,9 +167,9 @@
 }
 
 .formula-item-card.is-selected {
-    border-color: rgba(92, 255, 176, 0.26);
-    background: rgba(92, 255, 176, 0.035);
-    box-shadow: inset 3px 0 0 var(--status-ready), inset 0 0 0 1px rgba(92, 255, 176, 0.08);
+    border-color: rgba(92, 255, 176, 0.35);
+    background: rgba(92, 255, 176, 0.05);
+    box-shadow: inset 3px 0 0 var(--status-ready), 0 0 16px rgba(92, 255, 176, 0.12), inset 0 0 20px rgba(92, 255, 176, 0.02);
 }
 
 .formula-item-select {

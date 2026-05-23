@@ -153,24 +153,46 @@
     background: rgba(255, 255, 255, 0.02);
 }
 
-.workspace-overview .metric-total {
-    border-left: 4px solid rgba(255, 255, 255, 0.85) !important;
+.workspace-overview > div {
+    position: relative;
+    overflow: hidden;
+    border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
-.workspace-overview .metric-needs-review {
-    border-left: 4px solid var(--status-warming) !important;
+.workspace-overview > div::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 2px;
+    opacity: 0.35;
+    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
 }
 
-.workspace-overview .metric-ready {
-    border-left: 4px solid var(--status-ready) !important;
+.workspace-overview > div:hover::before {
+    width: 100%;
+    opacity: 0.9;
 }
 
-.workspace-overview .metric-exported {
-    border-left: 4px solid #3b82f6 !important;
+.workspace-overview .metric-total::before {
+    background: rgba(255, 255, 255, 0.85);
 }
 
-.workspace-overview .metric-batches {
-    border-left: 4px solid #a855f7 !important;
+.workspace-overview .metric-needs-review::before {
+    background: var(--status-warming);
+}
+
+.workspace-overview .metric-ready::before {
+    background: var(--status-ready);
+}
+
+.workspace-overview .metric-exported::before {
+    background: #3b82f6;
+}
+
+.workspace-overview .metric-batches::before {
+    background: #a855f7;
 }
 
 .telemetry-completion-deck {

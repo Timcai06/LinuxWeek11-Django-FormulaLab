@@ -105,7 +105,7 @@
 .timeline-entry {
     display: grid;
     gap: 14px;
-    width: min(100%, var(--timeline-entry-width, 100%));
+    width: 100%;
     padding: 18px 22px;
     border: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.02);
@@ -298,5 +298,50 @@
 
     .status-filter {
         justify-content: flex-start;
+    }
+}
+
+@media (min-width: 900px) {
+    .timeline.is-all-view {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px 48px;
+        padding-left: 0;
+        align-items: start;
+    }
+
+    .timeline.is-all-view::before {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Left Column: Succeeded, running, queued, etc. */
+    .timeline.is-all-view .timeline-entry {
+        grid-column: 1;
+        justify-self: stretch;
+    }
+
+    .timeline.is-all-view .timeline-entry::before {
+        left: auto;
+        right: -29px; /* Centered in the 48px gap */
+    }
+
+    .timeline.is-all-view .timeline-entry:hover {
+        transform: translateX(-6px) translateY(-2px);
+    }
+
+    /* Right Column: Failed */
+    .timeline.is-all-view .timeline-entry.status-failed {
+        grid-column: 2;
+        justify-self: stretch;
+    }
+
+    .timeline.is-all-view .timeline-entry.status-failed::before {
+        right: auto;
+        left: -29px; /* Centered in the 48px gap */
+    }
+
+    .timeline.is-all-view .timeline-entry.status-failed:hover {
+        transform: translateX(6px) translateY(-2px);
     }
 }

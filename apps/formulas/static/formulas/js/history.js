@@ -1,9 +1,9 @@
 (function () {
     const SUMMARY_FONT = "13px Outfit, D-DIN, Arial Narrow, sans-serif";
     const SUMMARY_LINE_HEIGHT = 20;
-    const SUMMARY_MIN_WIDTH = 280;
+    const SUMMARY_MIN_WIDTH = 180;
     const SUMMARY_MAX_WIDTH = 760;
-    const SUMMARY_HORIZONTAL_RESERVE = 112;
+    const SUMMARY_HORIZONTAL_RESERVE = 96;
     const SUMMARY_CHIP_RESERVE = 54;
 
     function getLayoutApi() {
@@ -45,9 +45,11 @@
             }
 
             const fullText = ensureFullText(node);
-            const availableWidth = Math.max(SUMMARY_MIN_WIDTH, timeline.getBoundingClientRect().width - 32);
-            const targetMaxWidth = Math.min(SUMMARY_MAX_WIDTH, availableWidth);
-            const textMaxWidth = Math.max(SUMMARY_MIN_WIDTH, targetMaxWidth - SUMMARY_HORIZONTAL_RESERVE);
+            const summaryWidth = node.getBoundingClientRect().width || timeline.getBoundingClientRect().width;
+            const textMaxWidth = Math.min(
+                SUMMARY_MAX_WIDTH,
+                Math.max(SUMMARY_MIN_WIDTH, summaryWidth - SUMMARY_HORIZONTAL_RESERVE),
+            );
             const metrics = layout.findTightWidth(fullText, {
                 maxWidth: textMaxWidth,
                 minWidth: Math.min(SUMMARY_MIN_WIDTH, textMaxWidth),
@@ -59,8 +61,6 @@
                 return;
             }
 
-            const entryWidth = Math.min(targetMaxWidth, Math.ceil(metrics.width + SUMMARY_HORIZONTAL_RESERVE));
-            entry.style.setProperty("--timeline-entry-width", `${entryWidth}px`);
             node.dataset.layoutLines = String(metrics.lineCount || 1);
             node.title = fullText;
 
@@ -69,7 +69,7 @@
 
             if (shouldTruncate) {
                 const fitted = layout.fitTextToLines(fullText, {
-                    width: Math.max(180, entryWidth - SUMMARY_HORIZONTAL_RESERVE - SUMMARY_CHIP_RESERVE),
+                    width: Math.max(SUMMARY_MIN_WIDTH, textMaxWidth - SUMMARY_CHIP_RESERVE),
                     lineHeight: SUMMARY_LINE_HEIGHT,
                     maxLines: 2,
                     font: SUMMARY_FONT,
@@ -81,7 +81,7 @@
                 return;
             }
 
-            node.style.minHeight = `${Math.max(SUMMARY_LINE_HEIGHT, metrics.lineCount * SUMMARY_LINE_HEIGHT)}px`;
+            node.style.minHeight = `${SUMMARY_LINE_HEIGHT * 2}px`;
             renderSummary(node, fullText, "");
         });
     }

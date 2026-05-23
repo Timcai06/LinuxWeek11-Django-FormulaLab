@@ -57,9 +57,17 @@
     flex-wrap: wrap;
     gap: 8px;
     padding: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(0, 0, 0, 0.34);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.workspace-tabs-nav:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .workspace-tab-trigger {
@@ -77,14 +85,20 @@
     font-weight: 900;
     letter-spacing: 0.06em;
     cursor: pointer;
-    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.workspace-tab-trigger:hover,
-.workspace-tab-trigger.active {
-    border-color: rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.06);
+.workspace-tab-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
     color: var(--on-night);
+}
+
+.workspace-tab-trigger.active {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--on-night);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02), 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .tab-indicator {
