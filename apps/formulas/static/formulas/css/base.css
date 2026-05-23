@@ -365,6 +365,34 @@ textarea:focus-visible {
     outline-offset: 3px !important;
 }
 
+/* Filter Pill Button (extracted from mission log) */
+.button-filter {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid transparent; /* Transparent border prevents layout shift */
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); /* Use inset shadow instead of visible border to stop edge flickering */
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--muted);
+    border-radius: 32px;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    transform: translateZ(0); /* Hardware acceleration to stop sub-pixel flicker */
+}
+
+.button-filter:hover,
+.button-filter[aria-current="true"] {
+    box-shadow: inset 0 0 0 1px var(--on-night);
+    background: var(--on-night);
+    color: var(--ink);
+}
+
 .metadata-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

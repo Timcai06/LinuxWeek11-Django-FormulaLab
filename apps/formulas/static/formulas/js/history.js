@@ -86,6 +86,34 @@
         });
     }
 
+    function terminalGlitch(element) {
+        if (!element || element.dataset.glitching) return;
+        
+        const originalText = element.textContent;
+        element.dataset.glitching = "true";
+        
+        const chars = "01<>#@*+=-_/\\[]~^";
+        let iterations = 0;
+        const maxIterations = 12;
+        
+        const interval = setInterval(() => {
+            element.textContent = originalText.split('').map((char, index) => {
+                if (char === '\n' || char === ' ') return char;
+                if (index < (originalText.length / maxIterations) * iterations) {
+                    return originalText[index];
+                }
+                return chars[Math.floor(Math.random() * chars.length)];
+            }).join('');
+            
+            iterations++;
+            if (iterations > maxIterations) {
+                clearInterval(interval);
+                element.textContent = originalText;
+                element.dataset.glitching = "";
+            }
+        }, 30);
+    }
+
     function setupDetailsAnimation() {
         document.querySelectorAll(".timeline-entry details").forEach((details) => {
             const summary = details.querySelector("summary");
@@ -100,6 +128,11 @@
                 const startHeight = details.offsetHeight;
 
                 details.classList.add("is-animating");
+
+                if (!isOpen) {
+                    const pre = details.querySelector("pre");
+                    if (pre) terminalGlitch(pre);
+                }
 
                 if (isOpen) {
                     const summaryHeight = summary.offsetHeight;
@@ -129,9 +162,41 @@
         });
     }
 
+    function setupScrollObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        });
+
+        document.querySelectorAll(".timeline-entry").forEach(el => {
+            observer.observe(el);
+        });
+    }
+
+    function setupSpotlightHover() {
+        document.querySelectorAll(".timeline-entry").forEach(card => {
+            card.addEventListener("mousemove", (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty("--mouse-x", `${x}px`);
+                card.style.setProperty("--mouse-y", `${y}px`);
+            });
+        });
+    }
+
     window.addEventListener("load", () => {
         applyMeasuredSummaries();
         setupDetailsAnimation();
+        setupScrollObserver();
+        setupSpotlightHover();
     });
     window.addEventListener("resize", applyMeasuredSummaries);
 })();

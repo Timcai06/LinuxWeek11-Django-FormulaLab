@@ -25,10 +25,8 @@
     </header>
 
     <div class="dashboard-grid">
-        <!-- LEFT PANEL: FLOW MAP & QUEUE (2/3 width) -->
-        <div class="dashboard-main-col">
-            <!-- Topology Map -->
-            <section class="dependency-section" aria-label="Runtime services">
+        <!-- ROW 1: FULL WIDTH FLOW MAP -->
+        <section class="dependency-section" aria-label="Runtime services">
                 <div class="dashboard-heading">
                     <div>
                         <span class="telemetry-label">SYSTEM ARCHITECTURE</span>
@@ -128,45 +126,47 @@
                 </div>
             </section>
 
-            <!-- Queue monitor -->
-            <article class="summary-card queue-card">
-                <span class="telemetry-label">MISSION QUEUE LOAD</span>
-                
-                <div class="queue-load-bar" aria-hidden="true">
-                    <div class="load-segment queued" style="width: 0%;" data-queue-segment="queued"></div>
-                    <div class="load-segment running" style="width: 0%;" data-queue-segment="running"></div>
-                    <div class="load-segment succeeded" style="width: 0%;" data-queue-segment="succeeded"></div>
-                    <div class="load-segment failed" style="width: 0%;" data-queue-segment="failed"></div>
-                </div>
-
-                <div class="queue-metrics">
-                    <div><span>Queued</span><strong data-queue-count="queued">{{ health_snapshot.queues.queued|default:0 }}</strong></div>
-                    <div><span>Running</span><strong data-queue-count="running">{{ health_snapshot.queues.running|default:0 }}</strong></div>
-                    <div><span>Success</span><strong data-queue-count="succeeded">{{ health_snapshot.queues.succeeded|default:0 }}</strong></div>
-                    <div><span>Failed</span><strong data-queue-count="failed">{{ health_snapshot.queues.failed|default:0 }}</strong></div>
-                </div>
-            </article>
-        </div>
-
-        <!-- RIGHT PANEL: CONTROLS & LOGS (1/3 width) -->
-        <div class="dashboard-side-col">
-            <!-- Health Dial -->
-            <article class="summary-card health-score-card" aria-label="System health score">
-                <span class="telemetry-label">LIVE HEALTH</span>
-                <div class="health-dial-container">
-                    <svg class="health-dial" viewBox="0 0 100 100">
-                        <circle class="dial-bg" cx="50" cy="50" r="42"></circle>
-                        <circle class="dial-fg" cx="50" cy="50" r="42" style="stroke-dasharray: 264; stroke-dashoffset: 264;"></circle>
-                    </svg>
-                    <div class="health-dial-text">
-                        <strong data-health-score>--/6</strong>
+            <!-- ROW 2: TELEMETRY -->
+            <div class="dashboard-telemetry-row">
+                <!-- Health Dial -->
+                <article class="summary-card health-score-card" aria-label="System health score">
+                    <span class="telemetry-label">LIVE HEALTH</span>
+                    <div class="health-dial-container">
+                        <svg class="health-dial" viewBox="0 0 100 100">
+                            <circle class="dial-bg" cx="50" cy="50" r="42"></circle>
+                            <circle class="dial-fg" cx="50" cy="50" r="42" style="stroke-dasharray: 264; stroke-dashoffset: 264;"></circle>
+                        </svg>
+                        <div class="health-dial-text">
+                            <strong data-health-score>--/6</strong>
+                        </div>
                     </div>
-                </div>
-                <p data-health-summary>Reading runtime telemetry...</p>
-            </article>
+                    <p data-health-summary>Reading runtime telemetry...</p>
+                </article>
 
-            <!-- Warmup switch -->
-            <form class="summary-card model-summary is-{{ health_snapshot.model.state|default:'unknown' }}" action="{% url 'api-system-warmup' %}" method="post" data-warmup-form>
+                <!-- Queue monitor -->
+                <article class="summary-card queue-card">
+                    <span class="telemetry-label">MISSION QUEUE LOAD</span>
+                    
+                    <div class="queue-load-bar" aria-hidden="true">
+                        <div class="load-segment queued" style="width: 0%;" data-queue-segment="queued"></div>
+                        <div class="load-segment running" style="width: 0%;" data-queue-segment="running"></div>
+                        <div class="load-segment succeeded" style="width: 0%;" data-queue-segment="succeeded"></div>
+                        <div class="load-segment failed" style="width: 0%;" data-queue-segment="failed"></div>
+                    </div>
+
+                    <div class="queue-metrics">
+                        <div><span>Queued</span><strong data-queue-count="queued">{{ health_snapshot.queues.queued|default:0 }}</strong></div>
+                        <div><span>Running</span><strong data-queue-count="running">{{ health_snapshot.queues.running|default:0 }}</strong></div>
+                        <div><span>Success</span><strong data-queue-count="succeeded">{{ health_snapshot.queues.succeeded|default:0 }}</strong></div>
+                        <div><span>Failed</span><strong data-queue-count="failed">{{ health_snapshot.queues.failed|default:0 }}</strong></div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- ROW 3: CONTROL PANELS -->
+            <div class="dashboard-controls-row">
+                <!-- Warmup switch -->
+                <form class="summary-card control-panel-card model-summary is-{{ health_snapshot.model.state|default:'unknown' }}" action="{% url 'api-system-warmup' %}" method="post" data-warmup-form>
                 {% csrf_token %}
                 <div>
                     <span class="telemetry-label">MODEL STATUS</span>
@@ -177,7 +177,7 @@
             </form>
 
             <!-- Recognition queue control -->
-            <form class="summary-card queue-control-card{% if health_snapshot.queues.paused %} is-paused{% endif %}" action="{% url 'api-system-queue-pause' %}" method="post" data-queue-control-form>
+            <form class="summary-card control-panel-card queue-control-card{% if health_snapshot.queues.paused %} is-paused{% endif %}" action="{% url 'api-system-queue-pause' %}" method="post" data-queue-control-form>
                 {% csrf_token %}
                 <div>
                     <span class="telemetry-label">RECOGNITION QUEUE</span>
@@ -190,7 +190,7 @@
             </form>
 
             <!-- Last Job Log -->
-            <article class="summary-card last-job-card">
+            <article class="summary-card control-panel-card last-job-card">
                 <span class="telemetry-label">LATEST MISSION LOG</span>
                 <strong data-last-job-status>{{ health_snapshot.last_job.status|default:"NONE"|upper }}</strong>
                 <p data-last-job-detail>{{ health_snapshot.last_job.stage_label|default:"No mission has been recorded yet" }}</p>

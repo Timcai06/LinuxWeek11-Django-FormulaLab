@@ -15,7 +15,7 @@
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
-    border-radius: 12px;
+    clip-path: polygon(24px 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%, 0 24px);
     height: 100%;
     overflow-y: auto;
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -142,24 +142,30 @@
     width: 100%;
     min-height: 42px;
     padding: 0 12px;
-    border: 1.5px solid rgba(255, 255, 255, 0.18);
-    background: rgba(0, 0, 0, 0.6);
-    color: var(--on-night);
-    border-radius: 6px;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+    background: #030305;
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.8);
+    color: var(--status-ready);
+    text-shadow: 0 0 8px rgba(92, 255, 176, 0.4);
+    border-radius: 4px;
     font-family: var(--font-mono);
     font-size: 0.85rem;
+    font-weight: 700;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .project-routing-fields select:focus,
 .project-routing-fields input:focus {
     border-color: var(--status-ready);
-    box-shadow: 0 0 8px rgba(92, 255, 176, 0.2);
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.8), 0 0 12px rgba(92, 255, 176, 0.3);
+    background: #050806;
 }
 
 .project-routing-fields input::placeholder {
     color: var(--dim);
+    text-shadow: none;
 }
 
 .drop-zone {
@@ -174,10 +180,38 @@
     padding: 28px;
     overflow: hidden;
     border: 1px dashed rgba(255, 255, 255, 0.08);
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.2);
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 30px 30px;
+    background-position: center;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.laser-sweep {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--status-ready), transparent);
+    box-shadow: 0 0 15px rgba(92, 255, 176, 0.8), 0 0 30px rgba(92, 255, 176, 0.4);
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+}
+
+.drop-zone:hover .laser-sweep,
+.drop-zone.is-dragging .laser-sweep {
+    opacity: 1;
+    animation: scannerLaser 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes scannerLaser {
+    0% { transform: translateY(-10px); }
+    100% { transform: translateY(400px); }
 }
 
 .drop-zone input {
@@ -192,7 +226,24 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
+    z-index: 2;
 }
+
+.corner-data {
+    position: absolute;
+    color: var(--status-ready);
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.corner-data.top-left { top: 16px; left: 34px; }
+.corner-data.top-right { top: 16px; right: 34px; }
+.corner-data.bottom-left { bottom: 16px; left: 34px; }
+.corner-data.bottom-right { bottom: 16px; right: 34px; }
 
 .hud-corners::before,
 .hud-corners::after {
@@ -269,6 +320,28 @@
     animation: reticleSpin 20s linear infinite;
 }
 
+/* Static Crosshairs */
+.drop-reticle-cross {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.drop-reticle-cross::before {
+    content: '';
+    position: absolute;
+    top: -20px; bottom: -20px; left: 50%; width: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-50%);
+}
+.drop-reticle-cross::after {
+    content: '';
+    position: absolute;
+    left: -20px; right: -20px; top: 50%; height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%);
+}
+
 @keyframes pulseDot {
     0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.85); }
     50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
@@ -282,6 +355,7 @@
     border: 2px dashed rgba(255, 255, 255, 0.15);
     border-radius: 50%;
     transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: reticleSpin 15s linear infinite reverse;
 }
 
 .drop-reticle::after {
@@ -369,6 +443,11 @@
 .drop-zone.is-dragging::before { top: 8px; right: 8px; border-color: var(--status-ready); }
 .drop-zone.is-dragging::after { bottom: 8px; left: 8px; border-color: var(--status-ready); }
 
+.drop-zone.is-dragging .corner-data.top-left { top: 10px; left: 26px; opacity: 1; }
+.drop-zone.is-dragging .corner-data.top-right { top: 10px; right: 26px; opacity: 1; }
+.drop-zone.is-dragging .corner-data.bottom-left { bottom: 10px; left: 26px; opacity: 1; }
+.drop-zone.is-dragging .corner-data.bottom-right { bottom: 10px; right: 26px; opacity: 1; }
+
 .drop-zone.has-file {
     padding: 0;
 }
@@ -413,5 +492,5 @@
 }
 
 .launch-button {
-    width: fit-content;
+    width: 100%;
 }
