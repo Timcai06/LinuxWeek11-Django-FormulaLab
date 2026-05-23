@@ -43,7 +43,12 @@ def api_document_files(request, document_id):
         return JsonResponse({"error": "path is required"}, status=400)
 
     try:
-        file = create_document_file(document, path=path, content=str(payload.get("content", "")))
+        file = create_document_file(
+            document,
+            path=path,
+            content=str(payload.get("content", "")),
+            created_by_label="api",
+        )
     except (IntegrityError, ValidationError) as error:
         return JsonResponse({"error": _validation_error_message(error)}, status=400)
 
@@ -66,7 +71,7 @@ def api_document_file_detail(request, file_id):
         if path is None and content is None:
             return JsonResponse({"error": "path or content is required"}, status=400)
         try:
-            file = update_document_file(file, path=path, content=content)
+            file = update_document_file(file, path=path, content=content, created_by_label="api")
         except (IntegrityError, ValidationError) as error:
             return JsonResponse({"error": _validation_error_message(error)}, status=400)
     return JsonResponse(paper_file_payload(file))

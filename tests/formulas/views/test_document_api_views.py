@@ -1,4 +1,4 @@
-from apps.formulas.models import PaperDocument, PaperFile, PaperProject
+from apps.formulas.models import PaperDocument, PaperFile, PaperFileVersion, PaperProject
 from tests.formulas.views.base import FormulaViewTestCase
 
 
@@ -50,6 +50,10 @@ class PaperDocumentApiViewTests(FormulaViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(file.content, r"\section{Method}")
         self.assertEqual(response.json()["content"], r"\section{Method}")
+        version = file.versions.get()
+        self.assertEqual(version.content, r"\section{Method}")
+        self.assertEqual(version.source, PaperFileVersion.Source.MANUAL_SAVE)
+        self.assertEqual(version.created_by_label, "api")
 
     def test_api_document_files_post_creates_project_file(self):
         project = PaperProject.objects.create(name="API file create")
