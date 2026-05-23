@@ -335,3 +335,12 @@ Formula Review Inbox
 ### Collaboration review room
 
 支持导师/同学对论文片段和公式资产进行批注、建议修改、讨论和状态流转。这是接近 Overleaf 协作能力的中期目标。
+
+当前数据地基已经开始：
+
+- `ProjectMembership`：项目成员和角色。
+- `PaperFileVersion`：论文源码文件版本历史。
+- `PaperAnnotation`：锚定到 `PaperFile` 行列范围的批注。
+- `PaperChangeSuggestion`：锚定到源码范围的建议修改。
+
+下一步不直接做实时协同，而是先做版本保存服务、批注 API 和建议接受/拒绝服务，保证所有修改都可审计。

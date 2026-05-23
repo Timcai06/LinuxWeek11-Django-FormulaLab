@@ -325,3 +325,11 @@ def _next_sequence_from_code(code: str | None) -> int:
         return int(code.rsplit("-", 1)[1]) + 1
     except (IndexError, ValueError):
         return 1
+
+
+from .collaboration_models import (  # noqa: E402,F401
+    PaperAnnotation,
+    PaperChangeSuggestion,
+    PaperFileVersion,
+    ProjectMembership,
+)

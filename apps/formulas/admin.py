@@ -1,6 +1,18 @@
 from django.contrib import admin
 
-from .models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob, PaperDocument, PaperFile, PaperProject
+from .models import (
+    BatchMission,
+    FormulaItem,
+    FormulaItemVersion,
+    FormulaJob,
+    PaperAnnotation,
+    PaperChangeSuggestion,
+    PaperDocument,
+    PaperFile,
+    PaperFileVersion,
+    PaperProject,
+    ProjectMembership,
+)
 
 
 @admin.register(PaperProject)
@@ -44,6 +56,38 @@ class PaperFileAdmin(admin.ModelAdmin):
     list_display = ("path", "document", "file_type", "sort_order", "updated_at")
     search_fields = ("path", "content", "document__document_code", "document__title")
     list_filter = ("file_type", "created_at", "updated_at")
+    readonly_fields = ("id", "created_at", "updated_at")
+
+
+@admin.register(PaperFileVersion)
+class PaperFileVersionAdmin(admin.ModelAdmin):
+    list_display = ("file", "version_number", "source", "created_by_label", "created_at")
+    search_fields = ("file__path", "content", "created_by_label", "note")
+    list_filter = ("source", "created_at")
+    readonly_fields = ("id", "version_number", "created_at")
+
+
+@admin.register(ProjectMembership)
+class ProjectMembershipAdmin(admin.ModelAdmin):
+    list_display = ("project", "user", "role", "display_name", "updated_at")
+    search_fields = ("project__project_code", "project__name", "user__username", "display_name")
+    list_filter = ("role", "created_at", "updated_at")
+    readonly_fields = ("id", "created_at", "updated_at")
+
+
+@admin.register(PaperAnnotation)
+class PaperAnnotationAdmin(admin.ModelAdmin):
+    list_display = ("file", "line_start", "line_end", "status", "created_by_label", "updated_at")
+    search_fields = ("file__path", "quoted_text", "body", "created_by_label")
+    list_filter = ("status", "created_at", "updated_at")
+    readonly_fields = ("id", "created_at", "updated_at")
+
+
+@admin.register(PaperChangeSuggestion)
+class PaperChangeSuggestionAdmin(admin.ModelAdmin):
+    list_display = ("file", "line_start", "line_end", "status", "created_by_label", "updated_at")
+    search_fields = ("file__path", "original_text", "replacement_text", "created_by_label")
+    list_filter = ("status", "created_at", "updated_at")
     readonly_fields = ("id", "created_at", "updated_at")
 
 
