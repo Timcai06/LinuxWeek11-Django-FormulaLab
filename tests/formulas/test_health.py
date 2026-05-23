@@ -29,6 +29,14 @@ class FakeRedis:
     def get(self, key):
         return self.values.get(key)
 
+    def set(self, key, value, **kwargs):
+        self.values[key] = value
+        return True
+
+    def delete(self, key):
+        self.values.pop(key, None)
+        return 1
+
 
 class FailingRedis:
     def ping(self):
@@ -74,7 +82,20 @@ class HealthSnapshotTests(TestCase):
         self.assertEqual(snapshot["model"]["status"], "ready")
         self.assertEqual(snapshot["model"]["state"], "ready")
         self.assertEqual(snapshot["queues"]["queued"], 1)
+        self.assertFalse(snapshot["queues"]["paused"])
         self.assertIsNotNone(snapshot["last_job"])
+
+    def test_health_snapshot_reports_recognition_queue_pause_state(self):
+        from apps.formulas.services.health import build_health_snapshot
+        from apps.formulas.services.queue_control import RECOGNITION_QUEUE_PAUSED_KEY
+
+        redis_client = FakeRedis()
+        redis_client.values = {RECOGNITION_QUEUE_PAUSED_KEY: "1"}
+
+        with patch("apps.formulas.services.health.get_redis_client", return_value=redis_client):
+            snapshot = build_health_snapshot()
+
+        self.assertTrue(snapshot["queues"]["paused"])
 
     def test_health_snapshot_degrades_backend_failures_to_json_fields(self):
         from apps.formulas.services.health import build_health_snapshot
@@ -130,7 +151,7 @@ class ModelStateTests(SimpleTestCase):
         self.assertEqual(get_worker_heartbeat(redis_client), "2026-05-19T12:01:00+08:00")
 
 
-class HealthApiTests(SimpleTestCase):
+class HealthApiTests(TestCase):
     def test_health_api_returns_expected_json_shape(self):
         payload = {
             "web": {"ok": True},
@@ -180,3 +201,27 @@ class HealthApiTests(SimpleTestCase):
         self.assertEqual(response.json()["status"], "unavailable")
         self.assertEqual(response.json()["error"], "warmup broker unavailable")
         log_exception.assert_called_once_with("Unable to queue model warmup task")
+
+    def test_pause_queue_api_sets_recognition_queue_hold(self):
+        redis_client = FakeRedis()
+
+        with patch("apps.formulas.views.system_views.get_redis_client", return_value=redis_client):
+            response = Client().post("/api/system/queue/pause/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "paused", "paused": True})
+        self.assertTrue(redis_client.values)
+
+    def test_resume_queue_api_clears_hold_and_dispatches_queued_jobs(self):
+        redis_client = FakeRedis()
+        job = FormulaJob.objects.create(original_image="formula_uploads/source.png", status=FormulaJob.Status.QUEUED)
+
+        with (
+            patch("apps.formulas.views.system_views.get_redis_client", return_value=redis_client),
+            patch("apps.formulas.views.system_views.run_formula_job.delay") as delay,
+        ):
+            response = Client().post("/api/system/queue/resume/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "resumed", "paused": False, "dispatched": 1})
+        delay.assert_called_once_with(str(job.id))

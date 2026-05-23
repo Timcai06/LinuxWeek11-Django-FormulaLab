@@ -192,6 +192,25 @@ class FormulaTaskTests(TestCase):
         client.warmup.assert_not_called()
         prepare_image.assert_not_called()
 
+    def test_run_formula_job_holds_queued_job_when_recognition_queue_is_paused(self):
+        job = self.create_job()
+        client = make_client()
+
+        with (
+            patch("apps.formulas.tasks.is_recognition_queue_paused", return_value=True),
+            patch("apps.formulas.tasks.get_recognition_client", return_value=client),
+            patch("apps.formulas.tasks.prepare_formula_image") as prepare_image,
+        ):
+            result = run_formula_job.run(str(job.id))
+
+        job.refresh_from_db()
+        self.assertIsNone(result)
+        self.assertEqual(job.status, FormulaJob.Status.QUEUED)
+        self.assertEqual(job.stage_code, "QUEUE_PAUSED")
+        self.assertEqual(job.stage_label, "QUEUE PAUSED")
+        client.warmup.assert_not_called()
+        prepare_image.assert_not_called()
+
     def test_run_formula_job_inference_failure_records_inference_stage(self):
         job = self.create_job()
         long_detail = "boom " * 1200

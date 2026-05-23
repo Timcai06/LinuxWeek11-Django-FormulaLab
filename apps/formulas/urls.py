@@ -33,4 +33,6 @@ urlpatterns = [
     ),
     path("api/system/health/", views.health_api, name="api-system-health"),
     path("api/system/warmup/", views.warmup_api, name="api-system-warmup"),
+    path("api/system/queue/pause/", views.pause_queue_api, name="api-system-queue-pause"),
+    path("api/system/queue/resume/", views.resume_queue_api, name="api-system-queue-resume"),
 ]

@@ -9,7 +9,13 @@
 
 {% block content %}
 {{ health_snapshot|json_script:"initial-health" }}
-<section class="system-shell" data-health-url="{% url 'api-system-health' %}" data-warmup-url="{% url 'api-system-warmup' %}">
+<section
+    class="system-shell"
+    data-health-url="{% url 'api-system-health' %}"
+    data-warmup-url="{% url 'api-system-warmup' %}"
+    data-queue-pause-url="{% url 'api-system-queue-pause' %}"
+    data-queue-resume-url="{% url 'api-system-queue-resume' %}"
+>
     <header class="section-header system-header">
         <div>
             <p>SYSTEM OPERATIONS</p>
@@ -170,6 +176,19 @@
                 <button class="button button-secondary warmup-button" type="submit" data-warmup-button>WARMUP MODEL</button>
             </form>
 
+            <!-- Recognition queue control -->
+            <form class="summary-card queue-control-card{% if health_snapshot.queues.paused %} is-paused{% endif %}" action="{% url 'api-system-queue-pause' %}" method="post" data-queue-control-form>
+                {% csrf_token %}
+                <div>
+                    <span class="telemetry-label">RECOGNITION QUEUE</span>
+                    <strong data-queue-control-state>{% if health_snapshot.queues.paused %}PAUSED{% else %}ACTIVE{% endif %}</strong>
+                    <p data-queue-control-status>{% if health_snapshot.queues.paused %}New uploads will wait until resume.{% else %}New uploads dispatch to Celery immediately.{% endif %}</p>
+                </div>
+                <button class="button button-secondary queue-control-button" type="submit" data-queue-control-button>
+                    {% if health_snapshot.queues.paused %}RESUME RECOGNITION QUEUE{% else %}PAUSE RECOGNITION QUEUE{% endif %}
+                </button>
+            </form>
+
             <!-- Last Job Log -->
             <article class="summary-card last-job-card">
                 <span class="telemetry-label">LATEST MISSION LOG</span>
@@ -187,5 +206,6 @@
 <script src="{% static 'formulas/js/system/health_render.js' %}?v=module-split"></script>
 <script src="{% static 'formulas/js/system/polling.js' %}?v=module-split"></script>
 <script src="{% static 'formulas/js/system/warmup.js' %}?v=module-split"></script>
+<script src="{% static 'formulas/js/system/queue_control.js' %}?v=module-split"></script>
 <script src="{% static 'formulas/js/system/index.js' %}?v=module-split"></script>
 {% endblock %}

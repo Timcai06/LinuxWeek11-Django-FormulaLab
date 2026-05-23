@@ -10,7 +10,7 @@ from .project_views import (
     projects,
     review_formula_item,
 )
-from .system_views import health_api, system_page, warmup_api
+from .system_views import health_api, pause_queue_api, resume_queue_api, system_page, warmup_api
 from .workbench_views import create_job, landing, workbench
 
 __all__ = [
@@ -29,9 +29,11 @@ __all__ = [
     "mission_progress",
     "mission_report",
     "mission_status_api",
+    "pause_queue_api",
     "project_workspace",
     "projects",
     "review_formula_item",
+    "resume_queue_api",
     "retry_mission",
     "system_page",
     "warmup_api",

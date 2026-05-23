@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 
 import { EditorIsland } from "./components/EditorIsland";
+import "./styles/review-inbox.css";
 import "./styles/workspace-editor.css";
 import type { WorkspaceEditorConfig } from "./types";
 

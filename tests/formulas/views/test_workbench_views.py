@@ -71,6 +71,21 @@ class FormulaWorkbenchViewTests(FormulaViewTestCase):
         self.assertEqual(response["Location"], f"/missions/{job.id}/progress/")
         delay.assert_called_once_with(str(job.id))
 
+    def test_create_job_keeps_job_queued_when_recognition_queue_is_paused(self):
+        with (
+            patch("apps.formulas.views.workbench_views.is_recognition_queue_paused", return_value=True),
+            patch("apps.formulas.views.workbench_views.run_formula_job.delay") as delay,
+        ):
+            response = self.client.post("/jobs/", {"image": upload_file("formula.jpeg")})
+
+        self.assertEqual(response.status_code, 302)
+        job = FormulaJob.objects.get()
+        self.assertEqual(job.status, FormulaJob.Status.QUEUED)
+        self.assertEqual(job.stage_code, "QUEUE_PAUSED")
+        self.assertEqual(job.stage_label, "QUEUE PAUSED")
+        self.assertEqual(response["Location"], f"/missions/{job.id}/progress/")
+        delay.assert_not_called()
+
     def test_create_job_attaches_existing_project_and_creates_batch(self):
         project = PaperProject.objects.create(name="Existing paper")
 

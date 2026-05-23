@@ -5,6 +5,7 @@
     }
 
     system.setupWarmupForm();
+    system.setupQueueControlForm();
     system.renderInitialHealth();
     window.setTimeout(system.refreshHealth, 600);
 })();

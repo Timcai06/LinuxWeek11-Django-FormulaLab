@@ -1,0 +1,125 @@
+.workspace-review-inbox {
+    align-content: start;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.018);
+    display: grid;
+    gap: 8px;
+    max-height: 440px;
+    min-width: 220px;
+    padding: 12px;
+}
+
+.workspace-review-inbox button {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--on-night);
+    cursor: pointer;
+    padding: 9px 10px;
+    text-align: left;
+}
+
+.workspace-review-inbox button.is-active {
+    border-color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.workspace-review-inbox small {
+    color: var(--muted);
+    display: block;
+    font-size: 0.68rem;
+    margin-top: 3px;
+}
+
+.workspace-review-inbox-heading {
+    align-items: end;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.workspace-review-inbox-heading > div > span {
+    color: var(--muted);
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.workspace-review-inbox-heading strong {
+    color: var(--on-night);
+    display: block;
+    font-size: 0.92rem;
+    margin-top: 3px;
+}
+
+.workspace-review-inbox-filters {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workspace-review-inbox-filters button {
+    align-items: center;
+    display: flex;
+    font-size: 0.68rem;
+    gap: 6px;
+    justify-content: space-between;
+    min-height: 34px;
+    padding: 6px 8px;
+    text-align: left;
+}
+
+.workspace-review-inbox-filters span {
+    color: var(--muted);
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.workspace-review-inbox-list {
+    display: grid;
+    gap: 8px;
+    min-height: 0;
+    overflow: auto;
+    padding-right: 2px;
+}
+
+.workspace-review-inbox-list button {
+    display: grid;
+    gap: 7px;
+}
+
+.workspace-review-inbox-card-topline,
+.workspace-review-inbox-meta {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    min-width: 0;
+}
+
+.workspace-review-inbox-card-topline strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-review-inbox-card-topline em {
+    color: var(--muted);
+    font-size: 0.62rem;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.workspace-review-inbox code {
+    color: var(--on-night);
+    display: block;
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.7rem;
+    overflow-wrap: anywhere;
+}
+
+.workspace-review-inbox-list > p {
+    color: var(--muted);
+    font-size: 0.76rem;
+    margin: 0;
+}

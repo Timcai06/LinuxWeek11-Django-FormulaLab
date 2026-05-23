@@ -373,13 +373,6 @@
     opacity: 0.45;
 }
 
-.workspace-editor-item-list {
-    display: grid;
-    gap: 8px;
-    min-width: 180px;
-}
-
-.workspace-editor-item-list button,
 .workspace-editor-actions button {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 2px;
@@ -390,13 +383,11 @@
     text-align: left;
 }
 
-.workspace-editor-item-list button.is-active,
 .workspace-editor-actions button:not(:disabled):hover {
     border-color: rgba(255, 255, 255, 0.82);
     background: rgba(255, 255, 255, 0.035);
 }
 
-.workspace-editor-item-list small,
 .workspace-editor-version-list small {
     color: var(--muted);
     display: block;

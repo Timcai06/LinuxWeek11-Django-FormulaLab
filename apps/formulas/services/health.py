@@ -6,6 +6,7 @@ from django.db import connection
 
 from apps.formulas.models import FormulaJob
 from apps.formulas.services.model_state import classify_model_state, get_model_status, get_worker_heartbeat
+from apps.formulas.services.queue_control import is_recognition_queue_paused
 from apps.formulas.services.telemetry import get_redis_client
 
 
@@ -90,7 +91,8 @@ def _check_media():
         return {"ok": False, "root": str(settings.MEDIA_ROOT), "error": _error_message(exc)}
 
 
-def _queue_counts():
+def _queue_counts(redis_client=None):
+    paused = is_recognition_queue_paused(redis_client)
     try:
         return {
             "queued": FormulaJob.objects.filter(status=FormulaJob.Status.QUEUED).count(),
@@ -98,6 +100,7 @@ def _queue_counts():
             "succeeded": FormulaJob.objects.filter(status=FormulaJob.Status.SUCCEEDED).count(),
             "failed": FormulaJob.objects.filter(status=FormulaJob.Status.FAILED).count(),
             "total": FormulaJob.objects.count(),
+            "paused": paused,
         }
     except Exception as exc:
         return {
@@ -106,6 +109,7 @@ def _queue_counts():
             "succeeded": 0,
             "failed": 0,
             "total": 0,
+            "paused": paused,
             "error": _error_message(exc),
         }
 
@@ -149,6 +153,6 @@ def build_health_snapshot():
         "worker": _check_worker(redis_client),
         "model": _check_model(redis_client),
         "media": _check_media(),
-        "queues": _queue_counts(),
+        "queues": _queue_counts(redis_client),
         "last_job": _last_job(),
     }

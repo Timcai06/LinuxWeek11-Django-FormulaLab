@@ -23,7 +23,7 @@ class FormulaSystemViewTests(FormulaViewTestCase):
             "worker": {"ok": False, "heartbeat_at": None},
             "model": {"status": "warming", "state": "warming", "message": "loading paddle model", "ok": False},
             "media": {"ok": True},
-            "queues": {"queued": 2, "running": 1, "succeeded": 8, "failed": 1, "total": 12},
+            "queues": {"queued": 2, "running": 1, "succeeded": 8, "failed": 1, "total": 12, "paused": True},
             "last_job": {"status": "running", "stage_label": "INFERENCE"},
         }
 
@@ -43,6 +43,10 @@ class FormulaSystemViewTests(FormulaViewTestCase):
         self.assertContains(response, "/static/formulas/js/system/health_render.js")
         self.assertContains(response, "/static/formulas/js/system/polling.js")
         self.assertContains(response, "/static/formulas/js/system/warmup.js")
+        self.assertContains(response, "/static/formulas/js/system/queue_control.js")
         self.assertContains(response, "/static/formulas/js/system/index.js")
+        self.assertContains(response, 'data-queue-pause-url="/api/system/queue/pause/"')
+        self.assertContains(response, 'data-queue-resume-url="/api/system/queue/resume/"')
+        self.assertContains(response, "RESUME RECOGNITION QUEUE")
         self.assertNotContains(response, "/static/formulas/js/system.js")
         self.assertNotContains(response, "system-dashboard")

@@ -49,6 +49,24 @@
         });
     }
 
+    function updateQueueControl(dom, payload) {
+        const paused = Boolean(payload.queues?.paused);
+        if (dom.queueControlCard) {
+            dom.queueControlCard.classList.toggle("is-paused", paused);
+        }
+        if (dom.queueControlState) {
+            dom.queueControlState.textContent = paused ? "PAUSED" : "ACTIVE";
+        }
+        if (dom.queueControlStatus) {
+            dom.queueControlStatus.textContent = paused
+                ? "New uploads will wait until resume."
+                : "New uploads dispatch to Celery immediately.";
+        }
+        if (dom.queueControlButton) {
+            dom.queueControlButton.textContent = paused ? "RESUME RECOGNITION QUEUE" : "PAUSE RECOGNITION QUEUE";
+        }
+    }
+
     function renderHealth(payload) {
         if (!payload) {
             return;
@@ -83,6 +101,7 @@
             node.textContent = payload.queues?.[node.dataset.queueCount] ?? 0;
         });
         updateQueueSegments(payload);
+        updateQueueControl(dom, payload);
         if (dom.lastJobStatus) {
             dom.lastJobStatus.textContent = String(payload.last_job?.status || "NONE").toUpperCase();
         }

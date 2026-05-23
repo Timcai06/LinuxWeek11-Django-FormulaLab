@@ -14,7 +14,7 @@ import {
   saveFormulaItem,
 } from "../api";
 import type { FormulaItem, FormulaItemVersion, PaperDocument, PaperFile, WorkspaceEditorConfig } from "../types";
-import { FormulaItemList } from "./FormulaItemList";
+import { FormulaReviewInbox } from "./FormulaReviewInbox";
 import { FormulaSourceEditor } from "./FormulaSourceEditor";
 import { PaperDeleteDialog } from "./PaperDeleteDialog";
 import { PaperFileDialog, type PaperFileTemplateKey } from "./PaperFileDialog";
@@ -400,7 +400,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
         </header>
 
         <div className="workspace-editor-grid">
-          <FormulaItemList activeItemId={activeItem?.id} items={items} onSelect={selectItem} />
+          <FormulaReviewInbox activeItemId={activeItem?.id} items={items} onSelect={selectItem} />
 
           <FormulaSourceEditor
             canInsertIntoPaper={canInsertFormulaIntoPaper}

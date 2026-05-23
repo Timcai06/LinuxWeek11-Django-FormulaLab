@@ -11,6 +11,7 @@ from django.utils import timezone
 from apps.formulas.models import BatchMission, FormulaItem, FormulaItemVersion, FormulaJob
 from apps.formulas.services.latex_formats import correct_latex_result
 from apps.formulas.services.model_state import WORKER_HEARTBEAT_KEY, set_model_status
+from apps.formulas.services.queue_control import is_recognition_queue_paused
 from apps.formulas.services.recognizer import prepare_formula_image
 from apps.formulas.services.recognition_clients import get_recognition_client
 from apps.formulas.services.telemetry import get_redis_client
@@ -24,6 +25,7 @@ ERROR_DETAIL_MAX_LENGTH = 4000
 ERROR_MESSAGE_MAX_LENGTH = 255
 
 STAGES = {
+    "QUEUE_PAUSED": ("QUEUE PAUSED", "识别队列已暂停，任务会在恢复后继续", 15),
     "QUEUED": ("QUEUED", "任务已进入识别队列", 25),
     "MODEL_WARMUP": ("MODEL WARMUP", "正在确认公式识别模型可用", 40),
     "IMAGE_PREPROCESS": ("IMAGE PREPROCESS", "正在预处理公式图片", 60),
@@ -104,6 +106,10 @@ def run_formula_job(job_id: str) -> None:
         job = FormulaJob.objects.select_for_update().get(id=job_id)
         if job.status != FormulaJob.Status.QUEUED:
             logger.info("Skipping formula job %s because status is %s", job_id, job.status)
+            return None
+        if is_recognition_queue_paused():
+            _mark_stage(job, "QUEUE_PAUSED")
+            logger.info("Holding formula job %s because recognition queue is paused", job_id)
             return None
         job.status = FormulaJob.Status.RUNNING
         job.started_at = timezone.now()

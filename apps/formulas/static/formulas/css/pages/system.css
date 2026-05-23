@@ -228,6 +228,30 @@
     color: var(--dim);
 }
 
+.queue-control-card {
+    min-height: 150px;
+}
+
+.queue-control-card strong {
+    color: var(--status-ready);
+}
+
+.queue-control-card.is-paused {
+    border-color: rgba(246, 200, 95, 0.28);
+}
+
+.queue-control-card.is-paused strong {
+    color: var(--status-warming);
+}
+
+.queue-control-button {
+    width: fit-content;
+    min-height: 38px;
+    padding: 10px 16px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
 .queue-card {
     align-content: start;
 }

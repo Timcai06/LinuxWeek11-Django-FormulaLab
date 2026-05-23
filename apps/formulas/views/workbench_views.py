@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 
 from apps.formulas.forms import FormulaUploadForm
 from apps.formulas.models import BatchMission, FormulaJob, PaperProject
+from apps.formulas.services.queue_control import is_recognition_queue_paused
 from apps.formulas.tasks import run_formula_job
 
 from .shared import mark_dispatch_failed
@@ -44,6 +45,10 @@ def create_job(request):
     project = _resolve_upload_project(form)
     batch = _create_upload_batch(project, image.name) if project else None
     job = FormulaJob.objects.create(original_image=image, project=project, batch=batch)
+    if is_recognition_queue_paused():
+        job.mark_stage("QUEUE_PAUSED", "QUEUE PAUSED", "识别队列已暂停，任务会在恢复后继续", 15)
+        return redirect("mission-progress", job_id=job.id)
+
     try:
         run_formula_job.delay(str(job.id))
     except Exception:
