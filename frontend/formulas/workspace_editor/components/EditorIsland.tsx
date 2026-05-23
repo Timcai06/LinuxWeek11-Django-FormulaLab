@@ -239,10 +239,10 @@ export function EditorIsland({ config }: EditorIslandProps) {
       data-initial-item-id={config.initialItemId}
       data-project-id={config.projectId}
     >
-      <section className="workspace-editor-panel" aria-label="Formula editor island">
-        <header className="workspace-editor-header">
+      <section className="workspace-editor-panel workspace-panel" aria-label="Formula editor island">
+        <header className="workspace-editor-header panel-heading">
           <div>
-            <span>PROJECT PAPER WORKSPACE</span>
+            <p>PROJECT PAPER WORKSPACE</p>
             <h2>{activePaperFile?.path ?? "No Paper File Selected"}</h2>
           </div>
           <div className="workspace-editor-status" data-save-state={paperSaveState}>
@@ -267,9 +267,9 @@ export function EditorIsland({ config }: EditorIslandProps) {
           onSelectFile={selectPaperFile}
         />
 
-        <header className="workspace-editor-header workspace-formula-header">
+        <header className="workspace-editor-header workspace-formula-header panel-heading">
           <div>
-            <span>FORMULA MATERIALS</span>
+            <p>FORMULA MATERIALS</p>
             <h2>{activeItem?.formula_code ?? "No Formula Selected"}</h2>
           </div>
           <div className="workspace-editor-status" data-save-state={saveState}>

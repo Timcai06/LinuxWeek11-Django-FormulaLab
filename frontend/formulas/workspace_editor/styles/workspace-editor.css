@@ -4,10 +4,7 @@
 }
 
 .workspace-editor-panel {
-    border: 1px solid var(--hairline-on-dark);
-    background: rgba(8, 8, 8, 0.72);
     color: var(--on-night);
-    padding: 18px;
 }
 
 .workspace-editor-header,
@@ -20,15 +17,14 @@
 .workspace-editor-header {
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .workspace-formula-header {
-    border-top: 1px solid var(--hairline-on-dark);
-    margin-top: 18px;
-    padding-top: 16px;
+    margin-top: 20px;
 }
 
+.workspace-editor-header p,
 .workspace-editor-header span,
 .workspace-paper-file-tree > span,
 .workspace-paper-preview > span,
@@ -40,16 +36,19 @@
     display: block;
     font-size: 0.72rem;
     letter-spacing: 0;
+    margin: 0;
     text-transform: uppercase;
 }
 
 .workspace-editor-header h2 {
-    font-size: 1rem;
+    font-size: 1.05rem;
     margin: 4px 0 0;
+    text-align: left;
 }
 
 .workspace-editor-status {
     border: 1px solid var(--hairline-on-dark);
+    border-radius: 2px;
     color: var(--muted);
     font-size: 0.72rem;
     padding: 6px 10px;
@@ -72,7 +71,9 @@
 }
 
 .workspace-paper-file-tree {
-    border: 1px solid var(--hairline-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.018);
     display: grid;
     gap: 12px;
     padding: 12px;
@@ -112,7 +113,8 @@
 
 .workspace-paper-file-tree button,
 .workspace-paper-source button {
-    border: 1px solid var(--hairline-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
     background: transparent;
     color: var(--on-night);
     cursor: pointer;
@@ -136,7 +138,8 @@
 .workspace-paper-file-tree button.is-active,
 .workspace-paper-file-tree button:hover,
 .workspace-paper-source button:not(:disabled):hover {
-    border-color: var(--on-night);
+    border-color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.035);
 }
 
 .workspace-paper-source {
@@ -145,36 +148,48 @@
 }
 
 .workspace-code-editor {
-    border: 1px solid var(--hairline-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
     background: #050505;
-    display: grid;
-    grid-template-columns: 42px 1fr;
     min-height: 300px;
-}
-
-.workspace-code-editor-gutter {
-    border-right: 1px solid var(--hairline-on-dark);
-    color: var(--muted);
-    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-    font-size: 0.78rem;
-    line-height: 1.55;
-    margin: 0;
     overflow: hidden;
-    padding: 12px 8px;
-    text-align: right;
-    user-select: none;
 }
 
-.workspace-code-editor textarea {
+.workspace-code-editor .cm-editor {
     background: #050505;
-    border: 0;
     color: var(--on-night);
-    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-    line-height: 1.55;
     min-height: 300px;
-    padding: 12px;
-    resize: vertical;
-    width: 100%;
+}
+
+.workspace-code-editor .cm-scroller {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+.workspace-code-editor .cm-content {
+    caret-color: var(--on-night);
+    padding: 12px 0;
+}
+
+.workspace-code-editor .cm-gutters {
+    background: #050505;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+    padding-left: 4px;
+}
+
+.workspace-code-editor .cm-activeLine,
+.workspace-code-editor .cm-activeLineGutter {
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.workspace-code-editor .cm-focused {
+    outline: 0;
+}
+
+.workspace-code-editor:focus-within {
+    border-color: rgba(255, 255, 255, 0.26);
 }
 
 .workspace-paper-source > div {
@@ -188,7 +203,8 @@
 }
 
 .workspace-paper-preview {
-    border: 1px solid var(--hairline-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.02);
     display: grid;
     grid-template-rows: auto 1fr;
@@ -213,7 +229,8 @@
 
 .workspace-editor-item-list button,
 .workspace-editor-actions button {
-    border: 1px solid var(--hairline-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
     background: transparent;
     color: var(--on-night);
     cursor: pointer;
@@ -223,7 +240,8 @@
 
 .workspace-editor-item-list button.is-active,
 .workspace-editor-actions button:not(:disabled):hover {
-    border-color: var(--on-night);
+    border-color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.035);
 }
 
 .workspace-editor-item-list small,
@@ -245,7 +263,8 @@
 }
 
 .workspace-editor-form textarea {
-    border: 1px solid var(--hairline-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
     background: #050505;
     color: var(--on-night);
     font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;

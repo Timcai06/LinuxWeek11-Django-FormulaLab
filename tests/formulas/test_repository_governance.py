@@ -51,6 +51,8 @@ class RepositoryGovernanceTests(SimpleTestCase):
         dev_dependencies = package_json["devDependencies"]
         scripts = package_json["scripts"]
 
+        self.assertIn("@codemirror/state", dependencies)
+        self.assertIn("@codemirror/view", dependencies)
         self.assertIn("react", dependencies)
         self.assertIn("react-dom", dependencies)
         self.assertIn("@vitejs/plugin-react", dev_dependencies)
@@ -96,6 +98,11 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn("/api/projects/${projectId}/documents/", api_source)
         self.assertIn("/api/documents/${documentId}/files/", api_source)
         self.assertIn("/api/document-files/${fileId}/", api_source)
+        self.assertIn("EditorView", component_sources)
+        self.assertIn("lineNumbers()", component_sources)
+        self.assertIn('data-editor-engine="codemirror"', component_sources)
+        self.assertIn("workspace-panel", component_sources)
+        self.assertIn("panel-heading", component_sources)
         self.assertIn("workspace-code-editor", component_sources)
         self.assertIn("workspace-paper-file-actions", component_sources)
         self.assertIn("workspace-paper-shell", component_sources)
