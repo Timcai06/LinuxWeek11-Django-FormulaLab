@@ -310,6 +310,7 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 当前实现说明：
 
 - B 阶段的 React 编辑器岛已经完成“能编辑论文文件、能管理文件、能插入公式”的第一版。
+- React 编辑器岛已经完成第一轮架构拆分：`EditorIsland.tsx` 只组合 UI，`usePaperDocuments.ts` 保留论文文件主状态，文件弹窗、删除副作用和内容生成分别拆到独立 hook / lib。
 - 下一步不应该继续盲目堆编辑器按钮，而应该把 Formula Materials 升级成 Formula Review Inbox。
 - Pretext 第二阶段会在 Inbox 中承担稳定长列表、复杂公式卡片、富文本批注和批处理队列的布局智能。
 - 这仍然属于 B 阶段之后的前端产品化，不改变 Django + React island 的架构边界。
