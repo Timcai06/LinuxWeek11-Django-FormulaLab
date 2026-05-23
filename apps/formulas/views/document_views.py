@@ -2,7 +2,7 @@ import json
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 
@@ -50,9 +50,15 @@ def api_document_files(request, document_id):
     return JsonResponse(paper_file_payload(file), status=201)
 
 
-@require_http_methods(["GET", "PATCH"])
+@require_http_methods(["DELETE", "GET", "PATCH"])
 def api_document_file_detail(request, file_id):
     file = get_object_or_404(PaperFile.objects.select_related("document", "document__project"), id=file_id)
+    if request.method == "DELETE":
+        if file.path == file.document.root_file_path or file.document.files.count() <= 1:
+            return JsonResponse({"error": "Root paper file cannot be deleted."}, status=400)
+        file.delete()
+        return HttpResponse(status=204)
+
     if request.method == "PATCH":
         payload = _json_payload(request)
         path = str(payload["path"]).strip() if "path" in payload else None

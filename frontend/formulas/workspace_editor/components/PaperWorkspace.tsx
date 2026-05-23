@@ -12,6 +12,7 @@ type PaperWorkspaceProps = {
   isSaving: boolean;
   onDraftChange: (content: string) => void;
   onCreateFile: (document: PaperDocument) => void;
+  onDeleteFile: (file: PaperFile) => void;
   onRenameFile: (file: PaperFile) => void;
   onSave: () => void;
   onSelectFile: (file: PaperFile) => void;
@@ -26,6 +27,7 @@ export function PaperWorkspace({
   isSaving,
   onDraftChange,
   onCreateFile,
+  onDeleteFile,
   onRenameFile,
   onSave,
   onSelectFile,
@@ -37,6 +39,7 @@ export function PaperWorkspace({
         documents={documents}
         isMutating={isFileMutating}
         onCreateFile={onCreateFile}
+        onDeleteFile={onDeleteFile}
         onRenameFile={onRenameFile}
         onSelectFile={onSelectFile}
       />

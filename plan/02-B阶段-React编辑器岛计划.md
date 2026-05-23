@@ -279,10 +279,13 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - [x] React 论文区复用 Project Workspace 的 `workspace-panel`、`panel-heading`、细线面板和 hover 风格，减少与其他页面的视觉割裂。
 - [x] 新增 `PaperFileDialog`，用项目内 modal 取代浏览器 prompt 处理新建/重命名。
 - [x] Vite 将 CodeMirror 相关依赖拆为 `codemirror` 独立 chunk，避免主 editor bundle 过大。
+- [x] 新增 `DELETE /api/document-files/<file_id>/`，允许删除非根文件，保护 `root_file_path` 和最后一个文件。
+- [x] React 新增 `PaperDeleteDialog`，用项目内确认弹窗处理删除操作，不使用浏览器原生 confirm。
+- [x] 新建文件支持 Section、Blank、Bibliography 三种模板，减少空文件后的第一步手工输入。
 
 当前实现说明：
 
 - 这一片仍然是单人编辑器，不处理多人冲突、锁定和 OT/CRDT。
-- 新建/重命名已经进入项目内 modal，但仍是单字段路径编辑；后续可升级为文件模板、路径校验提示和删除/移动操作。
+- 新建、重命名、删除已经形成项目内 modal 闭环；删除操作保护根文件，避免把论文项目删成不可启动状态。
 - CodeMirror 目前只接管论文源码区，下方 Formula Materials 仍维持轻量 textarea，避免一次性改动两个工作流。
-- 下一片应继续收敛 Project Workspace 的视觉密度，并补 PDF 编译入口或公式插入论文的动作。
+- 下一片应继续收敛 Project Workspace 的视觉密度，并补公式插入论文、PDF 编译入口或文件拖拽排序。

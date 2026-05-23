@@ -102,3 +102,25 @@ class PaperDocumentApiViewTests(FormulaViewTestCase):
         file.refresh_from_db()
         self.assertEqual(response.status_code, 400)
         self.assertEqual(file.path, "draft.tex")
+
+    def test_api_document_file_delete_removes_non_root_file(self):
+        project = PaperProject.objects.create(name="API file delete")
+        document = PaperDocument.objects.create(project=project, title="Main", root_file_path="main.tex")
+        PaperFile.objects.create(document=document, path="main.tex", content="root")
+        file = PaperFile.objects.create(document=document, path="sections/draft.tex", content="draft")
+
+        response = self.client.delete(f"/api/document-files/{file.id}/")
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(document.files.filter(path="sections/draft.tex").exists())
+
+    def test_api_document_file_delete_rejects_root_file(self):
+        project = PaperProject.objects.create(name="API root delete")
+        document = PaperDocument.objects.create(project=project, title="Main", root_file_path="main.tex")
+        file = PaperFile.objects.create(document=document, path="main.tex", content="root")
+        PaperFile.objects.create(document=document, path="sections/method.tex", content="method")
+
+        response = self.client.delete(f"/api/document-files/{file.id}/")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(document.files.filter(path="main.tex").exists())

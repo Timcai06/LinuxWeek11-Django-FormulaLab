@@ -192,3 +192,17 @@ export async function renamePaperFile(fileId: string, path: string, csrfToken: s
 
   return response.json() as Promise<PaperFile>;
 }
+
+export async function deletePaperFile(fileId: string, csrfToken: string): Promise<void> {
+  const response = await fetch(`/api/document-files/${fileId}/`, {
+    headers: {
+      Accept: "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to delete paper file: ${response.status}`);
+  }
+}

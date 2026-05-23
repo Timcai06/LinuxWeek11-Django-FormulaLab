@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   createPaperFile,
   createProjectDocument,
+  deletePaperFile,
   fetchFormulaItem,
   fetchFormulaItemVersions,
   fetchProjectItems,
@@ -15,7 +16,8 @@ import {
 import type { FormulaItem, FormulaItemVersion, PaperDocument, PaperFile, WorkspaceEditorConfig } from "../types";
 import { FormulaItemList } from "./FormulaItemList";
 import { FormulaSourceEditor } from "./FormulaSourceEditor";
-import { PaperFileDialog } from "./PaperFileDialog";
+import { PaperDeleteDialog } from "./PaperDeleteDialog";
+import { PaperFileDialog, type PaperFileTemplateKey } from "./PaperFileDialog";
 import { PaperWorkspace } from "./PaperWorkspace";
 import { VersionTimeline } from "./VersionTimeline";
 
@@ -44,6 +46,8 @@ export function EditorIsland({ config }: EditorIslandProps) {
   const [draftLatex, setDraftLatex] = useState("");
   const [draftPaperContent, setDraftPaperContent] = useState("");
   const [documents, setDocuments] = useState<PaperDocument[]>([]);
+  const [deleteDialogFile, setDeleteDialogFile] = useState<PaperFile | null>(null);
+  const [deleteDialogError, setDeleteDialogError] = useState("");
   const [fileDialog, setFileDialog] = useState<PaperFileDialogState | null>(null);
   const [fileDialogError, setFileDialogError] = useState("");
   const [fileMutationState, setFileMutationState] = useState<SaveState>("idle");
@@ -173,7 +177,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
     setFileMutationState("idle");
   }
 
-  async function submitPaperFileDialog(path: string) {
+  async function submitPaperFileDialog(path: string, template: PaperFileTemplateKey) {
     if (!fileDialog) {
       return;
     }
@@ -190,7 +194,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
         const file = await createPaperFile(
           fileDialog.document.id,
           normalizedPath,
-          defaultPaperFileContent(normalizedPath),
+          defaultPaperFileContent(normalizedPath, template),
           readCsrfToken(),
         );
         setDocuments((currentDocuments) =>
@@ -214,6 +218,30 @@ export function EditorIsland({ config }: EditorIslandProps) {
     }
   }
 
+  function openDeletePaperFileDialog(file: PaperFile) {
+    setDeleteDialogFile(file);
+    setDeleteDialogError("");
+    setFileMutationState("idle");
+  }
+
+  async function confirmDeletePaperFile() {
+    if (!deleteDialogFile) {
+      return;
+    }
+
+    setFileMutationState("saving");
+    try {
+      await deletePaperFile(deleteDialogFile.id, readCsrfToken());
+      removePaperFile(deleteDialogFile);
+      setDeleteDialogFile(null);
+      setDeleteDialogError("");
+      setFileMutationState("saved");
+    } catch {
+      setFileMutationState("error");
+      setDeleteDialogError("Unable to delete this file. Root files are protected.");
+    }
+  }
+
   function selectPaperFile(file: PaperFile) {
     setActivePaperFile(file);
     setDraftPaperContent(file.content);
@@ -229,6 +257,26 @@ export function EditorIsland({ config }: EditorIslandProps) {
         files: document.files.map((file) => (file.id === updatedFile.id ? updatedFile : file)),
       })),
     );
+  }
+
+  function removePaperFile(deletedFile: PaperFile) {
+    const sourceDocument = documents.find((document) => document.id === deletedFile.document_id);
+    const remainingFiles = sourceDocument?.files.filter((file) => file.id !== deletedFile.id) ?? [];
+    const fallbackFile =
+      remainingFiles.find((file) => file.path === sourceDocument?.root_file_path) ?? remainingFiles[0] ?? null;
+
+    setDocuments((currentDocuments) =>
+      currentDocuments.map((document) => {
+        const files = document.files.filter((file) => file.id !== deletedFile.id);
+        return { ...document, files };
+      }),
+    );
+
+    if (activePaperFile?.id === deletedFile.id) {
+      setActivePaperFile(fallbackFile);
+      setDraftPaperContent(fallbackFile?.content ?? "");
+      setPaperSaveState("idle");
+    }
   }
 
   async function restoreVersion(versionId: number) {
@@ -287,6 +335,7 @@ export function EditorIsland({ config }: EditorIslandProps) {
           isFileMutating={fileMutationState === "saving"}
           isSaving={paperSaveState === "saving"}
           onCreateFile={openCreatePaperFileDialog}
+          onDeleteFile={openDeletePaperFileDialog}
           onDraftChange={(content) => {
             setDraftPaperContent(content);
             setPaperSaveState("idle");
@@ -307,6 +356,19 @@ export function EditorIsland({ config }: EditorIslandProps) {
               setFileDialogError("");
             }}
             onSubmit={submitPaperFileDialog}
+          />
+        ) : null}
+
+        {deleteDialogFile ? (
+          <PaperDeleteDialog
+            error={deleteDialogError}
+            file={deleteDialogFile}
+            isDeleting={fileMutationState === "saving"}
+            onClose={() => {
+              setDeleteDialogFile(null);
+              setDeleteDialogError("");
+            }}
+            onConfirm={confirmDeletePaperFile}
           />
         ) : null}
 
@@ -366,9 +428,17 @@ function suggestedFilePath(document: PaperDocument): string {
   return `sections/section-${document.files.length + 1}.tex`;
 }
 
-function defaultPaperFileContent(path: string): string {
-  if (path.endsWith(".bib")) {
+function defaultPaperFileContent(path: string, template: PaperFileTemplateKey): string {
+  if (template === "bibliography" || path.endsWith(".bib")) {
+    return "% Bibliography entries\n";
+  }
+  if (template === "blank") {
     return "";
   }
-  return "% New manuscript file\n";
+  const title = path
+    .split("/")
+    .pop()
+    ?.replace(/\.[^.]+$/, "")
+    .replace(/[-_]/g, " ");
+  return `\\section{${title || "New Section"}}\n\n`;
 }

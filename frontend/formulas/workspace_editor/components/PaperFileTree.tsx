@@ -5,6 +5,7 @@ type PaperFileTreeProps = {
   documents: PaperDocument[];
   isMutating: boolean;
   onCreateFile: (document: PaperDocument) => void;
+  onDeleteFile: (file: PaperFile) => void;
   onRenameFile: (file: PaperFile) => void;
   onSelectFile: (file: PaperFile) => void;
 };
@@ -14,6 +15,7 @@ export function PaperFileTree({
   documents,
   isMutating,
   onCreateFile,
+  onDeleteFile,
   onRenameFile,
   onSelectFile,
 }: PaperFileTreeProps) {
@@ -44,6 +46,13 @@ export function PaperFileTree({
                   <span className="workspace-paper-file-actions">
                     <button disabled={isMutating} onClick={() => onRenameFile(file)} type="button">
                       RENAME
+                    </button>
+                    <button
+                      disabled={isMutating || file.path === document.root_file_path || document.files.length <= 1}
+                      onClick={() => onDeleteFile(file)}
+                      type="button"
+                    >
+                      DELETE
                     </button>
                   </span>
                 ) : null}
