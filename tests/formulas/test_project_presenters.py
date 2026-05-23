@@ -33,7 +33,7 @@ class ProjectWorkspacePresenterTests(TestCase):
             quality_score=42,
             sort_order=1,
         )
-        confirmed = FormulaItem.objects.create(
+        FormulaItem.objects.create(
             project=project,
             batch=batch,
             latex_current=r"\beta",
@@ -62,13 +62,32 @@ class ProjectWorkspacePresenterTests(TestCase):
         )
 
         self.assertEqual(context["project"], project)
-        self.assertEqual(context["active_item_status"], FormulaItem.Status.CONFIRMED)
-        self.assertEqual([item.id for item in context["formula_items"]], [confirmed.id])
         self.assertEqual(context["overview"]["total_formulas"], 3)
         self.assertEqual(context["overview"]["needs_review"], 1)
         self.assertEqual(context["overview"]["ready_to_export"], 2)
         self.assertEqual(context["overview"]["completion_rate"], 66)
-        self.assertEqual(context["paper_preview_items"][0]["latex"], r"\beta")
-        self.assertEqual(context["review_items"][0]["id"], str(confirmed.id))
-        self.assertTrue(any(link["url"] == f"/projects/{project.id}/" for link in context["status_filter_links"]))
-        self.assertTrue(any(link["url"] == "?status=needs_review" for link in context["status_filter_links"]))
+        self.assertEqual([item["latex"] for item in context["paper_preview_items"]], [r"\alpha", r"\beta", r"\gamma"])
+        self.assertNotIn("formula_items", context)
+        self.assertNotIn("review_items", context)
+        self.assertNotIn("active_item_status", context)
+        self.assertNotIn("status_filter_links", context)
+
+    def test_build_project_workspace_context_does_not_emit_legacy_review_queue_state(self):
+        project = PaperProject.objects.create(name="React-owned review workspace")
+        batch = BatchMission.objects.create(project=project, title="Formula screenshots")
+        FormulaItem.objects.create(project=project, batch=batch, latex_current=r"\alpha")
+
+        context = build_project_workspace_context(
+            project,
+            query_params=QueryDict("status=needs_review&page=2"),
+            request_path=f"/projects/{project.id}/",
+        )
+
+        self.assertNotIn("formula_items", context)
+        self.assertNotIn("review_items", context)
+        self.assertNotIn("active_item_status", context)
+        self.assertNotIn("status_filter_links", context)
+        self.assertNotIn("item_page_obj", context)
+        self.assertNotIn("next_item_querystring", context)
+        self.assertNotIn("previous_item_querystring", context)
+        self.assertEqual(context["paper_preview_items"][0]["latex"], r"\alpha")

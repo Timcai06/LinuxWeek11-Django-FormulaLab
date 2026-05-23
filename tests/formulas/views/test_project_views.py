@@ -91,13 +91,12 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, r"E=mc^2")
         self.assertEqual(response.context["project"], project)
         self.assertEqual(
-            [item.latex_current for item in response.context["formula_items"]],
-            [r"\alpha+\beta", r"E=mc^2"],
-        )
-        self.assertEqual(
             [item["latex"] for item in response.context["paper_preview_items"]],
             [r"\alpha+\beta", r"E=mc^2"],
         )
+        self.assertNotIn("formula_items", response.context)
+        self.assertNotIn("review_items", response.context)
+        self.assertNotIn("status_filter_links", response.context)
         self.assertEqual(response.context["overview"]["total_formulas"], 2)
         self.assertEqual(response.context["overview"]["needs_review"], 1)
         self.assertEqual(response.context["overview"]["ready_to_export"], 1)
@@ -198,7 +197,7 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         self.assertContains(response, "/static/formulas/css/generated/workspace-editor.css")
         self.assertNotContains(response, "/static/formulas/js/project_workspace.js")
 
-    def test_project_workspace_paginates_formula_items_without_truncating_project(self):
+    def test_project_workspace_limits_server_paper_preview_without_owning_review_pagination(self):
         project = PaperProject.objects.create(name="Large paper")
         batch = BatchMission.objects.create(project=project, title="Full chapter")
         for index in range(25):
@@ -214,16 +213,18 @@ class FormulaProjectViewTests(FormulaViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["overview"]["total_formulas"], 25)
-        self.assertEqual(len(response.context["formula_items"]), 12)
-        self.assertEqual(response.context["item_page_obj"].number, 1)
-        self.assertEqual(response.context["item_page_obj"].paginator.num_pages, 3)
+        self.assertEqual(len(response.context["paper_preview_items"]), 12)
+        self.assertNotIn("formula_items", response.context)
+        self.assertNotIn("item_page_obj", response.context)
+        self.assertNotIn("next_item_querystring", response.context)
+        self.assertNotIn("previous_item_querystring", response.context)
         self.assertContains(response, 'data-project-items-url="/api/projects/')
         self.assertContains(response, "paper-preview-data")
         self.assertNotContains(response, "PAGE 1 OF 3")
         self.assertNotContains(response, "?page=2")
         self.assertNotContains(response, "data-workspace-item")
 
-    def test_project_workspace_filters_formula_items_by_status(self):
+    def test_project_workspace_ignores_legacy_status_filter_for_server_preview(self):
         project = PaperProject.objects.create(name="Filtered paper")
         batch = BatchMission.objects.create(project=project, title="Mixed formulas")
         FormulaItem.objects.create(
@@ -244,11 +245,12 @@ class FormulaProjectViewTests(FormulaViewTestCase):
         response = self.client.get(f"/projects/{project.id}/?status=needs_review")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["active_item_status"], FormulaItem.Status.NEEDS_REVIEW)
         self.assertEqual(response.context["overview"]["total_formulas"], 2)
-        self.assertEqual(len(response.context["formula_items"]), 1)
+        self.assertNotIn("active_item_status", response.context)
+        self.assertNotIn("status_filter_links", response.context)
+        self.assertEqual([item["latex"] for item in response.context["paper_preview_items"]], [r"\alpha", r"\beta"])
         self.assertContains(response, r"\alpha")
-        self.assertNotContains(response, r"\beta")
+        self.assertContains(response, r"\beta")
         self.assertContains(response, "NEEDS REVIEW")
         self.assertContains(response, 'data-project-items-url="/api/projects/')
         self.assertNotContains(response, "?status=confirmed")

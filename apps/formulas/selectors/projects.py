@@ -34,13 +34,6 @@ def list_projects_for_index() -> list[PaperProject]:
     )
 
 
-def get_project_formula_queryset(project: PaperProject, active_item_status: str = ""):
-    queryset = project.formula_items.select_related("batch", "recognition_job")
-    if active_item_status:
-        return queryset.filter(status=active_item_status)
-    return queryset
-
-
 def project_workspace_overview(project: PaperProject) -> dict:
     total_formulas = project.formula_items.count()
     needs_review = project.formula_items.filter(status=FormulaItem.Status.NEEDS_REVIEW).count()
