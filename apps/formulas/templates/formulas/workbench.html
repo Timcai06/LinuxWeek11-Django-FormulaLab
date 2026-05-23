@@ -82,7 +82,6 @@
                         <a href="{% url 'mission-progress' job.id %}">{{ job.mission_code }}</a>
                         <div class="recent-meta">
                             <span class="status-badge status-{{ job.status|lower }}">{{ job.status|upper }}</span>
-                            <span class="stage-badge">{{ job.stage_label }}</span>
                         </div>
                     </li>
                 {% empty %}

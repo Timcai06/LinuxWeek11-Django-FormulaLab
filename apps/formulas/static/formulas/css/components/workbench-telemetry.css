@@ -102,9 +102,10 @@
 }
 
 .recent-list li {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(78px, auto);
     align-items: center;
+    gap: 8px;
     padding: 10px 14px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -140,6 +141,7 @@
 }
 
 .recent-list a {
+    min-width: 0;
     overflow-wrap: anywhere;
     color: var(--text);
     font-family: var(--font-mono);
@@ -155,10 +157,12 @@
 .recent-meta {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: flex-end;
 }
 
 .recent-list .status-badge {
+    justify-self: end;
+    min-width: 78px;
     font-family: var(--font-mono);
     font-size: 0.6rem;
     font-weight: 700;
@@ -187,14 +191,10 @@
     border-color: rgba(246, 200, 95, 0.15);
 }
 
-.recent-list .stage-badge {
-    color: rgba(255, 255, 255, 0.85);
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.02em;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.08);
+.recent-list .status-badge.status-queued {
+    color: var(--status-warming);
+    background: rgba(246, 200, 95, 0.04);
+    border-color: rgba(246, 200, 95, 0.12);
 }
 
 @media (max-width: 900px) {
