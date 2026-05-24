@@ -13,6 +13,10 @@ assert.match(storySource, /scrollProgressRef/, "Scroll progress should be stored
 assert.match(storySource, /--hero-opacity/, "Landing story should fade hero text away as the manuscript takes focus.");
 assert.match(storySource, /--text-disperse/, "Landing text should disperse away instead of simply blurring.");
 assert.match(storySource, /--shutdown-opacity/, "Landing HUD should shut down as the paper takes focus.");
+assert.match(storySource, /ScrollDirector/, "Landing should use a scroll director module.");
+assert.match(storySource, /FormulaConstellationField/, "Landing should keep formulas in a dedicated constellation module.");
+assert.match(storySource, /WorkspaceRevealOverlay/, "Landing should keep workspace reveal markup in a dedicated module.");
+assert.match(styleSource, /--cta-opacity/, "Landing should expose a final CTA phase variable.");
 assert.match(canvasSource, /FormulaStarfield/, "Landing should use a Three.js formula particle starfield.");
 assert.match(storySource, /converge/, "Landing story should have a manuscript-centering phase before scan/decode.");
 assert.match(storySource, /phaseOpacity\(progress, 0\.5, 0\.62, 0\.74\)/, "Scan should begin after the paper moves to center.");
@@ -26,6 +30,11 @@ assert.match(canvasSource, /<FormulaStarfield scrollProgressRef=\{scrollProgress
 assert.match(storySource, /workspace-reveal/, "After scanning, the landing should reveal a product workspace silhouette.");
 assert.match(storySource, /--workspace-opacity/, "The product workspace reveal should be controlled by scroll progress.");
 assert.match(styleSource, /\.workspace-reveal/, "The product workspace reveal should have a dedicated visual layer.");
+assert.doesNotMatch(
+  storySource,
+  /ScrollTrigger\.create/,
+  "LandingScrollStory should compose modules instead of owning ScrollTrigger directly.",
+);
 assert.doesNotMatch(
   storySource,
   /decode-field|DECODE_FORMULAS|renderDecodeFormula/,
