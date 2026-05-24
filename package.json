@@ -5,9 +5,11 @@
     "vendor:katex": "node scripts/copy_katex_assets.mjs",
     "build:layout": "esbuild frontend/formulas/layout_intelligence.js --bundle --format=iife --global-name=FormulaLayoutBundle --outfile=apps/formulas/static/formulas/js/generated/layout-intelligence.js",
     "build:editor": "vite build --config vite.workspace-editor.config.ts",
-    "build": "npm run vendor:katex && npm run build:layout && npm run build:editor",
+    "build:landing": "vite build --config vite.landing.config.ts",
+    "build": "npm run vendor:katex && npm run build:layout && npm run build:editor && npm run build:landing",
     "check:editor": "tsc --noEmit -p tsconfig.workspace-editor.json",
-    "check:frontend": "npm run check:editor && npm run build && node tests/frontend/history_layout_guard.mjs && node tests/frontend/review_inbox_layout_guard.mjs && node tests/frontend/workbench_recent_missions_guard.mjs && node --check frontend/formulas/layout_intelligence.js && node --check apps/formulas/static/formulas/js/shared/katex_preview.js && node --check apps/formulas/static/formulas/js/shared/format_tabs.js && node --check apps/formulas/static/formulas/js/result/core.js && node --check apps/formulas/static/formulas/js/result/preview.js && node --check apps/formulas/static/formulas/js/result/paper_fit.js && node --check apps/formulas/static/formulas/js/result/format_controls.js && node --check apps/formulas/static/formulas/js/result/theme.js && node --check apps/formulas/static/formulas/js/result/copy.js && node --check apps/formulas/static/formulas/js/result/image_viewport.js && node --check apps/formulas/static/formulas/js/result/index.js && node --check apps/formulas/static/formulas/js/system/core.js && node --check apps/formulas/static/formulas/js/system/service_entries.js && node --check apps/formulas/static/formulas/js/system/health_render.js && node --check apps/formulas/static/formulas/js/system/polling.js && node --check apps/formulas/static/formulas/js/system/warmup.js && node --check apps/formulas/static/formulas/js/system/queue_control.js && node --check apps/formulas/static/formulas/js/system/index.js && node --check apps/formulas/static/formulas/js/project_workspace/core.js && node --check apps/formulas/static/formulas/js/project_workspace/preview.js && node --check apps/formulas/static/formulas/js/project_workspace/paper_fit.js && node --check apps/formulas/static/formulas/js/project_workspace/index.js && node --check scripts/copy_katex_assets.mjs",
+    "check:landing": "tsc --noEmit -p tsconfig.landing.json",
+    "check:frontend": "npm run check:editor && npm run check:landing && npm run build && node tests/frontend/history_layout_guard.mjs && node tests/frontend/review_inbox_layout_guard.mjs && node tests/frontend/workbench_recent_missions_guard.mjs && node tests/frontend/landing_formula_render_guard.mjs && node tests/frontend/landing_background_single_asset_guard.mjs && node tests/frontend/landing_light_treatment_guard.mjs && node tests/frontend/landing_scroll_story_guard.mjs && node --check frontend/formulas/layout_intelligence.js && node --check apps/formulas/static/formulas/js/shared/katex_preview.js && node --check apps/formulas/static/formulas/js/shared/format_tabs.js && node --check apps/formulas/static/formulas/js/result/core.js && node --check apps/formulas/static/formulas/js/result/preview.js && node --check apps/formulas/static/formulas/js/result/paper_fit.js && node --check apps/formulas/static/formulas/js/result/format_controls.js && node --check apps/formulas/static/formulas/js/result/theme.js && node --check apps/formulas/static/formulas/js/result/copy.js && node --check apps/formulas/static/formulas/js/result/image_viewport.js && node --check apps/formulas/static/formulas/js/result/index.js && node --check apps/formulas/static/formulas/js/system/core.js && node --check apps/formulas/static/formulas/js/system/service_entries.js && node --check apps/formulas/static/formulas/js/system/health_render.js && node --check apps/formulas/static/formulas/js/system/polling.js && node --check apps/formulas/static/formulas/js/system/warmup.js && node --check apps/formulas/static/formulas/js/system/queue_control.js && node --check apps/formulas/static/formulas/js/system/index.js && node --check apps/formulas/static/formulas/js/project_workspace/core.js && node --check apps/formulas/static/formulas/js/project_workspace/preview.js && node --check apps/formulas/static/formulas/js/project_workspace/paper_fit.js && node --check apps/formulas/static/formulas/js/project_workspace/index.js && node --check scripts/copy_katex_assets.mjs",
     "e2e": "playwright test"
   },
   "dependencies": {
@@ -18,14 +20,18 @@
     "@codemirror/search": "^6.7.0",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.43.0",
+    "@react-three/fiber": "^9.6.1",
+    "gsap": "^3.15.0",
     "katex": "^0.16.47",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^4.7.0",
     "esbuild": "^0.25.0",
     "typescript": "^5.9.3",

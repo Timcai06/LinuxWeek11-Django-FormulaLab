@@ -1,0 +1,206 @@
+import { useEffect, useMemo, useRef } from "react";
+import type { MutableRefObject } from "react";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import * as THREE from "three";
+
+const MANUSCRIPT_TEXTURE = "/static/formulas/visuals/manuscript_texture_alpha.png";
+const IDLE_SCROLL_PROGRESS = { current: 0 };
+
+type ManuscriptCanvasProps = {
+  scrollProgressRef?: MutableRefObject<number>;
+};
+
+function easedRange(progress: number, start: number, end: number): number {
+  const value = THREE.MathUtils.clamp((progress - start) / (end - start), 0, 1);
+  return value * value * (3 - 2 * value);
+}
+
+function createStarfieldGeometry() {
+  const count = 720;
+  const basePositions = new Float32Array(count * 3);
+  const targetPositions = new Float32Array(count * 3);
+  const positions = new Float32Array(count * 3);
+
+  for (let index = 0; index < count; index += 1) {
+    const angle = index * 2.399963229728653;
+    const band = index % 9;
+    const radius = 1.8 + (index % 37) * 0.12;
+    const row = Math.floor(index / 37) % 7;
+    const baseOffset = index * 3;
+
+    basePositions[baseOffset] = Math.cos(angle) * radius + (band - 4) * 0.58;
+    basePositions[baseOffset + 1] = Math.sin(angle * 0.72) * 2.7 + (row - 3) * 0.42;
+    basePositions[baseOffset + 2] = -3.4 + ((index * 13) % 80) / 80;
+
+    const targetAngle = angle + (index % 5) * 0.34;
+    const targetRadius = 0.3 + (index % 31) * 0.018;
+    targetPositions[baseOffset] = -0.18 + Math.cos(targetAngle) * targetRadius;
+    targetPositions[baseOffset + 1] = -0.04 + Math.sin(targetAngle) * targetRadius * 0.56;
+    targetPositions[baseOffset + 2] = -0.48 + ((index % 17) - 8) * 0.006;
+
+    positions[baseOffset] = basePositions[baseOffset]!;
+    positions[baseOffset + 1] = basePositions[baseOffset + 1]!;
+    positions[baseOffset + 2] = basePositions[baseOffset + 2]!;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  return { geometry, basePositions, targetPositions };
+}
+
+function FormulaStarfield({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanvasProps) {
+  const pointsRef = useRef<THREE.Points>(null);
+  const materialRef = useRef<THREE.PointsMaterial>(null);
+  const field = useMemo(() => createStarfieldGeometry(), []);
+
+  useEffect(() => {
+    return () => field.geometry.dispose();
+  }, [field.geometry]);
+
+  useFrame((state) => {
+    const positionAttribute = field.geometry.getAttribute("position") as THREE.BufferAttribute;
+    const positions = positionAttribute.array as Float32Array;
+    const progress = scrollProgressRef.current;
+    const absorbProgress = easedRange(progress, 0.18, 0.55);
+    const orbitProgress = easedRange(progress, 0.55, 0.88);
+    const time = state.clock.getElapsedTime();
+
+    for (let index = 0; index < positions.length; index += 3) {
+      const pointIndex = index / 3;
+      const angle = pointIndex * 0.081 + time * (0.1 + orbitProgress * 0.24);
+      const orbitRadius = orbitProgress * (0.12 + (pointIndex % 19) * 0.006);
+      const pull = absorbProgress;
+
+      positions[index] = THREE.MathUtils.lerp(field.basePositions[index]!, field.targetPositions[index]!, pull) + Math.cos(angle) * orbitRadius;
+      positions[index + 1] = THREE.MathUtils.lerp(field.basePositions[index + 1]!, field.targetPositions[index + 1]!, pull) + Math.sin(angle) * orbitRadius * 0.6;
+      positions[index + 2] = THREE.MathUtils.lerp(field.basePositions[index + 2]!, field.targetPositions[index + 2]!, pull) + orbitProgress * 0.05;
+    }
+
+    positionAttribute.needsUpdate = true;
+    if (materialRef.current) {
+      materialRef.current.opacity = THREE.MathUtils.lerp(0.34, 0.72, absorbProgress) * (1 - orbitProgress * 0.28);
+      materialRef.current.size = THREE.MathUtils.lerp(0.018, 0.031, absorbProgress);
+    }
+
+    if (pointsRef.current) {
+      pointsRef.current.rotation.z = Math.sin(time * 0.12) * 0.025;
+      pointsRef.current.rotation.y = -0.08 + absorbProgress * 0.16;
+    }
+  });
+
+  return (
+    <points ref={pointsRef} geometry={field.geometry}>
+      <pointsMaterial
+        ref={materialRef}
+        color={0xffffff}
+        size={0.018}
+        sizeAttenuation
+        transparent
+        opacity={0.34}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+}
+
+function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanvasProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const geomRef = useRef<THREE.PlaneGeometry>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const loadedTexture = useLoader(THREE.TextureLoader, MANUSCRIPT_TEXTURE);
+  const texture = useMemo(() => {
+    const clone = loadedTexture.clone();
+    clone.colorSpace = THREE.SRGBColorSpace;
+    clone.needsUpdate = true;
+    return clone;
+  }, [loadedTexture]);
+
+  useEffect(() => {
+    return () => texture.dispose();
+  }, [texture]);
+
+  useFrame((state) => {
+    if (!geomRef.current || !meshRef.current) {
+      return;
+    }
+
+    const time = state.clock.getElapsedTime();
+    const progress = scrollProgressRef.current;
+    const centerProgress = easedRange(progress, 0.18, 0.48);
+    const scanProgress = easedRange(progress, 0.5, 0.68);
+    const decodeProgress = easedRange(progress, 0.66, 0.88);
+    const floatAmount = 1 - centerProgress * 0.72;
+
+    const x = THREE.MathUtils.lerp(3.4, -0.18, centerProgress);
+    const y = THREE.MathUtils.lerp(-1.35, -0.04, centerProgress) + Math.sin(time * 0.5) * 0.28 * floatAmount;
+    const z = THREE.MathUtils.lerp(-2, -0.54, centerProgress) - decodeProgress * 0.16;
+    const scale = 1 + centerProgress * 0.36 + scanProgress * 0.05 - decodeProgress * 0.1;
+
+    meshRef.current.position.set(x, y, z);
+    meshRef.current.scale.setScalar(scale);
+    meshRef.current.rotation.y = Math.sin(time * 0.2) * 0.15 * floatAmount - centerProgress * 0.18 + decodeProgress * 0.08;
+    meshRef.current.rotation.x = Math.cos(time * 0.3) * 0.1 * floatAmount - 0.1 + centerProgress * 0.14 + scanProgress * 0.04;
+    meshRef.current.rotation.z = -centerProgress * 0.035 + decodeProgress * 0.035;
+
+    if (materialRef.current) {
+      materialRef.current.opacity = THREE.MathUtils.lerp(1, 0.9, decodeProgress);
+    }
+
+    const positionAttribute = geomRef.current.getAttribute("position") as THREE.BufferAttribute | undefined;
+    if (!positionAttribute) {
+      return;
+    }
+    const waveAmount = THREE.MathUtils.lerp(0.12, 0.04, centerProgress) + scanProgress * 0.02 + decodeProgress * 0.035;
+    for (let index = 0; index < positionAttribute.count; index += 1) {
+      const x = positionAttribute.getX(index);
+      const y = positionAttribute.getY(index);
+      const waveX = Math.sin(x * 2 + time * 0.8 + progress * 2) * waveAmount;
+      const waveY = Math.cos(y * 1.5 + time * 0.8) * waveAmount;
+      positionAttribute.setZ(index, waveX + waveY);
+    }
+    positionAttribute.needsUpdate = true;
+    geomRef.current.computeVertexNormals();
+  });
+
+  return (
+    <mesh ref={meshRef} position={[3.4, -1.35, -2]}>
+      <planeGeometry ref={geomRef} args={[7.9, 4.45, 48, 48]} />
+      <meshStandardMaterial
+        ref={materialRef}
+        map={texture}
+        roughness={0.88}
+        metalness={0.06}
+        side={THREE.DoubleSide}
+        transparent
+      />
+    </mesh>
+  );
+}
+
+function SceneLights() {
+  return (
+    <>
+      <ambientLight intensity={1.4} />
+      <directionalLight position={[-5, 5, 5]} intensity={1.8} color={0xffffff} />
+      <spotLight position={[5, 5, 5]} angle={Math.PI / 3} penumbra={0.8} intensity={22} color={0x5cffb0} />
+    </>
+  );
+}
+
+export function ManuscriptCanvas({ scrollProgressRef }: ManuscriptCanvasProps) {
+  return (
+    <div className="webgl-canvas-container" aria-hidden="true">
+      <Canvas
+        camera={{ position: [0, 0, 10], fov: 45 }}
+        dpr={[1, 1.5]}
+        gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+      >
+        <fog attach="fog" args={["#000000", 5, 20]} />
+        <SceneLights />
+        <FormulaStarfield scrollProgressRef={scrollProgressRef}/>
+        <PaperMesh scrollProgressRef={scrollProgressRef} />
+      </Canvas>
+    </div>
+  );
+}
