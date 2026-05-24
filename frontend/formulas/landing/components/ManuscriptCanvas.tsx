@@ -4,6 +4,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { easedRange } from "../three/motion";
+import { createManuscriptShaderMaterial, type ManuscriptShaderUniforms } from "../three/ManuscriptShaderMaterial";
 
 const MANUSCRIPT_TEXTURE = "/static/formulas/visuals/manuscript_texture_alpha.png";
 const IDLE_SCROLL_PROGRESS = { current: 0 };
@@ -104,7 +105,7 @@ function FormulaStarfield({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: Manuscri
 function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanvasProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const geomRef = useRef<THREE.PlaneGeometry>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const materialRef = useRef<THREE.ShaderMaterial & { uniforms: ManuscriptShaderUniforms }>(null);
   const loadedTexture = useLoader(THREE.TextureLoader, MANUSCRIPT_TEXTURE);
   const texture = useMemo(() => {
     const clone = loadedTexture.clone();
@@ -112,10 +113,14 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
     clone.needsUpdate = true;
     return clone;
   }, [loadedTexture]);
+  const shaderMaterial = useMemo(() => createManuscriptShaderMaterial(texture), [texture]);
 
   useEffect(() => {
-    return () => texture.dispose();
-  }, [texture]);
+    return () => {
+      texture.dispose();
+      shaderMaterial.dispose();
+    };
+  }, [texture, shaderMaterial]);
 
   useFrame((state) => {
     if (!geomRef.current || !meshRef.current) {
@@ -141,7 +146,11 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
     meshRef.current.rotation.z = -centerProgress * 0.035 + decodeProgress * 0.035;
 
     if (materialRef.current) {
-      materialRef.current.opacity = THREE.MathUtils.lerp(1, 0.9, decodeProgress);
+      const uniforms = materialRef.current.uniforms;
+      uniforms.uTime.value = time;
+      uniforms.uScanProgress.value = THREE.MathUtils.clamp((progress - 0.5) / 0.22, 0, 1);
+      uniforms.uDecodeProgress.value = decodeProgress;
+      uniforms.uOpacity.value = THREE.MathUtils.lerp(1, 0.9, decodeProgress);
     }
 
     const positionAttribute = geomRef.current.getAttribute("position") as THREE.BufferAttribute | undefined;
@@ -163,14 +172,7 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
   return (
     <mesh ref={meshRef} position={[3.4, -1.35, -2]}>
       <planeGeometry ref={geomRef} args={[7.9, 4.45, 48, 48]} />
-      <meshStandardMaterial
-        ref={materialRef}
-        map={texture}
-        roughness={0.88}
-        metalness={0.06}
-        side={THREE.DoubleSide}
-        transparent
-      />
+      <primitive ref={materialRef} object={shaderMaterial} attach="material" />
     </mesh>
   );
 }
@@ -180,7 +182,7 @@ function SceneLights() {
     <>
       <ambientLight intensity={1.4} />
       <directionalLight position={[-5, 5, 5]} intensity={1.8} color={0xffffff} />
-      <spotLight position={[5, 5, 5]} angle={Math.PI / 3} penumbra={0.8} intensity={22} color={0x5cffb0} />
+      <spotLight position={[4, 4, 4]} angle={Math.PI / 3} penumbra={0.8} intensity={14} color={0x5cffb0} />
     </>
   );
 }

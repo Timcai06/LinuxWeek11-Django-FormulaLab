@@ -1,0 +1,68 @@
+import * as THREE from "three";
+
+export type ManuscriptShaderUniforms = {
+  uTexture: { value: THREE.Texture | null };
+  uTime: { value: number };
+  uScanProgress: { value: number };
+  uDecodeProgress: { value: number };
+  uOpacity: { value: number };
+};
+
+export function manuscriptShaderUniforms(texture: THREE.Texture | null): ManuscriptShaderUniforms {
+  return {
+    uTexture: { value: texture },
+    uTime: { value: 0 },
+    uScanProgress: { value: 0 },
+    uDecodeProgress: { value: 0 },
+    uOpacity: { value: 1 },
+  };
+}
+
+const vertexShader = `
+  varying vec2 vUv;
+  varying vec3 vPosition;
+
+  void main() {
+    vUv = uv;
+    vPosition = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const fragmentShader = `
+  uniform sampler2D uTexture;
+  uniform float uTime;
+  uniform float uScanProgress;
+  uniform float uDecodeProgress;
+  uniform float uOpacity;
+
+  varying vec2 vUv;
+  varying vec3 vPosition;
+
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+  }
+
+  void main() {
+    vec4 paper = texture2D(uTexture, vUv);
+    float scanLine = smoothstep(0.025, 0.0, abs(vUv.x - uScanProgress));
+    float scanWake = smoothstep(0.18, 0.0, abs(vUv.x - uScanProgress));
+    float grain = hash(vUv * 180.0 + uTime * 0.08);
+    vec3 scanColor = vec3(0.36, 1.0, 0.72);
+    vec3 decodedInk = mix(paper.rgb, vec3(0.92), uDecodeProgress * scanWake * 0.18);
+    vec3 litPaper = decodedInk + scanColor * scanLine * 0.42 + scanColor * scanWake * 0.08;
+    litPaper += (grain - 0.5) * 0.035;
+    gl_FragColor = vec4(litPaper, paper.a * uOpacity);
+  }
+`;
+
+export function createManuscriptShaderMaterial(texture: THREE.Texture) {
+  return new THREE.ShaderMaterial({
+    uniforms: manuscriptShaderUniforms(texture),
+    vertexShader,
+    fragmentShader,
+    transparent: true,
+    side: THREE.DoubleSide,
+    depthWrite: true,
+  });
+}
