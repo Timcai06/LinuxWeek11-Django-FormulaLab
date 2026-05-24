@@ -1,4 +1,4 @@
-from apps.formulas.models import PaperDocument, PaperFile, PaperProject
+from apps.formulas.models import PaperDocument, PaperFile, PaperFileVersion, PaperProject
 
 
 def paper_file_payload(file: PaperFile) -> dict:
@@ -11,6 +11,26 @@ def paper_file_payload(file: PaperFile) -> dict:
         "sort_order": file.sort_order,
         "created_at": file.created_at.isoformat(),
         "updated_at": file.updated_at.isoformat(),
+    }
+
+
+def paper_file_version_payload(version: PaperFileVersion) -> dict:
+    return {
+        "id": str(version.id),
+        "file_id": str(version.file_id),
+        "version_number": version.version_number,
+        "content": version.content,
+        "source": version.source,
+        "created_by_label": version.created_by_label,
+        "note": version.note,
+        "created_at": version.created_at.isoformat(),
+    }
+
+
+def paper_file_versions_payload(file: PaperFile, versions) -> dict:
+    return {
+        "file_id": str(file.id),
+        "versions": [paper_file_version_payload(version) for version in versions],
     }
 
 

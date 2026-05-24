@@ -81,6 +81,25 @@ def update_document_file(
     return file
 
 
+def restore_document_file_version(
+    file: PaperFile,
+    version: PaperFileVersion,
+    *,
+    created_by_label: str = "",
+) -> tuple[PaperFile, PaperFileVersion]:
+    with transaction.atomic():
+        file.content = version.content
+        file.save(update_fields=["content", "updated_at"])
+        file.refresh_from_db()
+        restored_version = record_paper_file_version(
+            file,
+            source=PaperFileVersion.Source.RESTORE,
+            created_by_label=created_by_label,
+            note=f"Restored from version {version.version_number}.",
+        )
+    return file, restored_version
+
+
 def record_paper_file_version(
     file: PaperFile,
     *,

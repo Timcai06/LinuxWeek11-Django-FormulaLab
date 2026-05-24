@@ -6,13 +6,20 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 
-from apps.formulas.models import PaperDocument, PaperFile, PaperProject
+from apps.formulas.models import PaperDocument, PaperFile, PaperFileVersion, PaperProject
 from apps.formulas.presenters.document_api import (
     paper_document_payload,
     paper_file_payload,
+    paper_file_version_payload,
+    paper_file_versions_payload,
     project_documents_payload,
 )
-from apps.formulas.services.documents import create_default_document, create_document_file, update_document_file
+from apps.formulas.services.documents import (
+    create_default_document,
+    create_document_file,
+    restore_document_file_version,
+    update_document_file,
+)
 
 
 @require_http_methods(["GET", "POST"])
@@ -75,6 +82,26 @@ def api_document_file_detail(request, file_id):
         except (IntegrityError, ValidationError) as error:
             return JsonResponse({"error": _validation_error_message(error)}, status=400)
     return JsonResponse(paper_file_payload(file))
+
+
+@require_http_methods(["GET"])
+def api_document_file_versions(request, file_id):
+    file = get_object_or_404(PaperFile, id=file_id)
+    versions = file.versions.all()
+    return JsonResponse(paper_file_versions_payload(file, versions))
+
+
+@require_http_methods(["POST"])
+def api_document_file_version_restore(request, file_id, version_id):
+    file = get_object_or_404(PaperFile.objects.select_related("document", "document__project"), id=file_id)
+    version = get_object_or_404(PaperFileVersion, id=version_id, file=file)
+    file, restored_version = restore_document_file_version(file, version, created_by_label="api")
+    return JsonResponse(
+        {
+            "file": paper_file_payload(file),
+            "version": paper_file_version_payload(restored_version),
+        }
+    )
 
 
 def _document_queryset():

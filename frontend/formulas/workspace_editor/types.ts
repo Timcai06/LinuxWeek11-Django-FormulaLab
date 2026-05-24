@@ -21,6 +21,17 @@ export type PaperFile = {
   updated_at: string;
 };
 
+export type PaperFileVersion = {
+  id: string;
+  file_id: string;
+  version_number: number;
+  content: string;
+  source: string;
+  created_by_label: string;
+  note: string;
+  created_at: string;
+};
+
 export type PaperDocument = {
   id: string;
   document_code: string;
@@ -44,6 +55,16 @@ export type ProjectDocumentsResponse = {
 export type ProjectDocumentCreateResponse = {
   document: Omit<PaperDocument, "files">;
   files: PaperFile[];
+};
+
+export type PaperFileVersionRestoreResponse = {
+  file: PaperFile;
+  version: PaperFileVersion;
+};
+
+export type PaperFileVersionsResponse = {
+  file_id: string;
+  versions: PaperFileVersion[];
 };
 
 export type FormulaItemVersion = {

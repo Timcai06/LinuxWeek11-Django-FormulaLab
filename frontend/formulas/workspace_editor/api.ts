@@ -3,6 +3,8 @@ import type {
   FormulaItemVersionRestoreResponse,
   FormulaItemVersionsResponse,
   PaperFile,
+  PaperFileVersionRestoreResponse,
+  PaperFileVersionsResponse,
   ProjectDocumentCreateResponse,
   ProjectDocumentsResponse,
   ProjectItemsResponse,
@@ -173,6 +175,44 @@ export async function savePaperFile(fileId: string, content: string, csrfToken: 
   }
 
   return response.json() as Promise<PaperFile>;
+}
+
+export async function fetchPaperFileVersions(
+  fileId: string,
+  signal?: AbortSignal,
+): Promise<PaperFileVersionsResponse> {
+  const response = await fetch(`/api/document-files/${fileId}/versions/`, {
+    headers: {
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to load paper file versions: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaperFileVersionsResponse>;
+}
+
+export async function restorePaperFileVersion(
+  fileId: string,
+  versionId: string,
+  csrfToken: string,
+): Promise<PaperFileVersionRestoreResponse> {
+  const response = await fetch(`/api/document-files/${fileId}/versions/${versionId}/restore/`, {
+    headers: {
+      Accept: "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to restore paper file version: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaperFileVersionRestoreResponse>;
 }
 
 export async function renamePaperFile(fileId: string, path: string, csrfToken: string): Promise<PaperFile> {

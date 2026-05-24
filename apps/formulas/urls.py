@@ -20,6 +20,16 @@ urlpatterns = [
     path("api/projects/<uuid:project_id>/documents/", views.api_project_documents, name="api-project-documents"),
     path("api/projects/<uuid:project_id>/items/", views.api_project_items, name="api-project-items"),
     path("api/document-files/<uuid:file_id>/", views.api_document_file_detail, name="api-document-file-detail"),
+    path(
+        "api/document-files/<uuid:file_id>/versions/",
+        views.api_document_file_versions,
+        name="api-document-file-versions",
+    ),
+    path(
+        "api/document-files/<uuid:file_id>/versions/<uuid:version_id>/restore/",
+        views.api_document_file_version_restore,
+        name="api-document-file-version-restore",
+    ),
     path("api/formula-items/<uuid:item_id>/", views.api_formula_item_detail, name="api-formula-item-detail"),
     path(
         "api/formula-items/<uuid:item_id>/versions/",
