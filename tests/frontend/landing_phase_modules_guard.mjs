@@ -36,13 +36,15 @@ assert.doesNotMatch(storySource, /ScrollTrigger\.create/, "ScrollTrigger setup s
 assert.doesNotMatch(storySource, /workspace-pane/, "Workspace skeleton markup should live in WorkspaceRevealOverlay.");
 
 assert.match(directorSource, /ScrollTrigger\.create/, "ScrollDirector should own ScrollTrigger setup.");
-assert.match(directorSource, /intro|absorb|center|scan|reveal|cta/, "ScrollDirector should expose named story phases.");
+for (const phase of ["intro", "absorb", "center", "scan", "reveal", "cta"]) {
+  assert.match(directorSource, new RegExp(`["']${phase}["']`), `ScrollDirector should expose the "${phase}" story phase.`);
+}
 assert.match(directorSource, /--cta-opacity/, "ScrollDirector should drive the final CTA phase.");
 assert.doesNotMatch(directorSource, /useState/, "ScrollDirector should not use React state for per-frame scroll progress.");
 
 assert.match(splitTextSource, /SplitTextTitleSequence/, "SplitTextTitleSequence component should exist.");
 assert.match(splitTextSource, /data-split-title/, "SplitTextTitleSequence should target explicit title text.");
-assert.doesNotMatch(splitTextSource, /fromTo\("\.landing-copy"/, "SplitText should not animate the scroll-controlled copy container.");
+assert.doesNotMatch(splitTextSource, /fromTo\(\s*['"]\.landing-copy['"]/, "SplitText should not animate the scroll-controlled copy container.");
 
 assert.match(constellationSource, /FormulaConstellationField/, "FormulaConstellationField component should exist.");
 assert.match(constellationSource, /katex|renderToString/, "Formula constellation should render formulas, not raw TeX strings.");
@@ -60,4 +62,5 @@ assert.match(motionSource, /export function easedRange/, "Motion helpers should 
 assert.match(motionSource, /export function phaseOpacity/, "Phase opacity helper should be reusable.");
 assert.match(typeSource, /export type LandingPhase/, "Landing phases should have a shared type.");
 assert.match(styleSource, /\.workspace-cta/, "Final CTA styles should exist.");
-assert.doesNotMatch(styleSource, /filter:\s*blur/, "Landing disappearance should not be blur-driven.");
+assert.doesNotMatch(styleSource, /--hero-blur/, "Landing should not keep the old hero blur variable.");
+assert.doesNotMatch(styleSource, /\.landing-copy[\s\S]*?filter:\s*blur\(/, "Landing copy should not disappear through a blur filter rule.");

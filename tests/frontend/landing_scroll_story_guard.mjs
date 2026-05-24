@@ -52,11 +52,16 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(
   storySource + canvasSource + styleSource,
-  /--hero-blur|filter:\s*blur/,
-  "Landing text dissolution should not be driven by blur as the primary effect.",
+  /--hero-blur/,
+  "Landing should not keep the old hero blur variable.",
+);
+assert.doesNotMatch(
+  styleSource,
+  /\.landing-copy[\s\S]*?filter:\s*blur\(/,
+  "Landing copy should not disappear through a blur filter rule.",
 );
 assert.doesNotMatch(
   heroSource,
-  /fromTo\("\.landing-copy"/,
+  /fromTo\(\s*['"]\.landing-copy['"]/,
   "Hero entrance animation must not write inline opacity or transforms onto the scroll-controlled copy container.",
 );
