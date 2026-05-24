@@ -1,8 +1,10 @@
 from .document_views import (
     api_document_file_detail,
+    api_document_file_annotations,
     api_document_file_version_restore,
     api_document_file_versions,
     api_document_files,
+    api_paper_annotation_detail,
     api_project_documents,
 )
 from .mission_views import history, mission_progress, mission_report, mission_status_api, retry_mission
@@ -25,9 +27,11 @@ __all__ = [
     "api_formula_item_version_restore",
     "api_formula_item_versions",
     "api_document_file_detail",
+    "api_document_file_annotations",
     "api_document_file_version_restore",
     "api_document_file_versions",
     "api_document_files",
+    "api_paper_annotation_detail",
     "api_project_documents",
     "api_project_items",
     "export_project",

@@ -2,6 +2,8 @@ import type {
   FormulaItem,
   FormulaItemVersionRestoreResponse,
   FormulaItemVersionsResponse,
+  PaperAnnotation,
+  PaperAnnotationsResponse,
   PaperFile,
   PaperFileVersionRestoreResponse,
   PaperFileVersionsResponse,
@@ -213,6 +215,75 @@ export async function restorePaperFileVersion(
   }
 
   return response.json() as Promise<PaperFileVersionRestoreResponse>;
+}
+
+export async function fetchPaperAnnotations(fileId: string, signal?: AbortSignal): Promise<PaperAnnotationsResponse> {
+  const response = await fetch(`/api/document-files/${fileId}/annotations/`, {
+    headers: {
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to load paper annotations: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaperAnnotationsResponse>;
+}
+
+export async function createPaperAnnotation(
+  fileId: string,
+  annotation: {
+    body: string;
+    char_end?: number;
+    char_start?: number;
+    line_end: number;
+    line_start: number;
+    quoted_text?: string;
+  },
+  csrfToken: string,
+): Promise<PaperAnnotation> {
+  const response = await fetch(`/api/document-files/${fileId}/annotations/`, {
+    body: JSON.stringify(annotation),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to create paper annotation: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaperAnnotation>;
+}
+
+export async function updatePaperAnnotation(
+  annotationId: string,
+  updates: {
+    body?: string;
+    status?: PaperAnnotation["status"];
+  },
+  csrfToken: string,
+): Promise<PaperAnnotation> {
+  const response = await fetch(`/api/paper-annotations/${annotationId}/`, {
+    body: JSON.stringify(updates),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    method: "PATCH",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to update paper annotation: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaperAnnotation>;
 }
 
 export async function renamePaperFile(fileId: string, path: string, csrfToken: string): Promise<PaperFile> {

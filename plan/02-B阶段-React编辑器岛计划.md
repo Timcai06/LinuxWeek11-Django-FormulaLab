@@ -344,5 +344,6 @@ Formula Review Inbox
 - `PaperChangeSuggestion`：锚定到源码范围的建议修改。
 - `PaperFile` 保存服务：创建默认文档、新建文件、保存内容都会写入 `PaperFileVersion`，重命名不产生内容版本。
 - `PaperFile` 版本 API：已提供文件版本时间线读取和历史版本恢复，恢复操作会生成新的 `source=restore` 审计版本。
+- `PaperAnnotation` API：已提供按文件读取批注、创建源码行列锚点批注、更新批注正文和状态流转。
 
-下一步不直接做实时协同，而是在版本保存与恢复链路之上继续补批注 API、建议接受/拒绝服务和权限 API，保证所有修改都可审计。
+下一步不直接做实时协同，而是在版本保存、恢复与批注链路之上继续补建议接受/拒绝服务、权限 API 和前端 review room UI，保证所有修改都可审计。

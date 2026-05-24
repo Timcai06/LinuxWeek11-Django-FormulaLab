@@ -30,6 +30,16 @@ urlpatterns = [
         views.api_document_file_version_restore,
         name="api-document-file-version-restore",
     ),
+    path(
+        "api/document-files/<uuid:file_id>/annotations/",
+        views.api_document_file_annotations,
+        name="api-document-file-annotations",
+    ),
+    path(
+        "api/paper-annotations/<uuid:annotation_id>/",
+        views.api_paper_annotation_detail,
+        name="api-paper-annotation-detail",
+    ),
     path("api/formula-items/<uuid:item_id>/", views.api_formula_item_detail, name="api-formula-item-detail"),
     path(
         "api/formula-items/<uuid:item_id>/versions/",

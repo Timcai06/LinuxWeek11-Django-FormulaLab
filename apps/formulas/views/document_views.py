@@ -6,14 +6,17 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 
-from apps.formulas.models import PaperDocument, PaperFile, PaperFileVersion, PaperProject
+from apps.formulas.models import PaperAnnotation, PaperDocument, PaperFile, PaperFileVersion, PaperProject
 from apps.formulas.presenters.document_api import (
+    paper_annotation_payload,
+    paper_annotations_payload,
     paper_document_payload,
     paper_file_payload,
     paper_file_version_payload,
     paper_file_versions_payload,
     project_documents_payload,
 )
+from apps.formulas.services.annotations import create_paper_annotation, update_paper_annotation
 from apps.formulas.services.documents import (
     create_default_document,
     create_document_file,
@@ -104,6 +107,47 @@ def api_document_file_version_restore(request, file_id, version_id):
     )
 
 
+@require_http_methods(["GET", "POST"])
+def api_document_file_annotations(request, file_id):
+    file = get_object_or_404(PaperFile.objects.select_related("document", "document__project"), id=file_id)
+    if request.method == "POST":
+        payload = _json_payload(request)
+        body = str(payload.get("body", "")).strip()
+        if not body:
+            return JsonResponse({"error": "body is required"}, status=400)
+        try:
+            annotation = create_paper_annotation(
+                file,
+                line_start=_payload_int(payload, "line_start"),
+                line_end=_payload_int(payload, "line_end"),
+                char_start=_payload_int(payload, "char_start", default=0),
+                char_end=_payload_int(payload, "char_end", default=0),
+                quoted_text=str(payload.get("quoted_text", "")),
+                body=body,
+                created_by_label="api",
+            )
+        except (TypeError, ValueError, ValidationError) as error:
+            return JsonResponse({"error": _validation_error_message(error)}, status=400)
+        return JsonResponse(paper_annotation_payload(annotation), status=201)
+
+    return JsonResponse(paper_annotations_payload(file, file.annotations.all()))
+
+
+@require_http_methods(["PATCH"])
+def api_paper_annotation_detail(request, annotation_id):
+    annotation = get_object_or_404(PaperAnnotation.objects.select_related("file"), id=annotation_id)
+    payload = _json_payload(request)
+    body = str(payload["body"]).strip() if "body" in payload else None
+    status = str(payload["status"]).strip() if "status" in payload else None
+    if body is None and status is None:
+        return JsonResponse({"error": "body or status is required"}, status=400)
+    try:
+        annotation = update_paper_annotation(annotation, body=body, status=status)
+    except ValidationError as error:
+        return JsonResponse({"error": _validation_error_message(error)}, status=400)
+    return JsonResponse(paper_annotation_payload(annotation))
+
+
 def _document_queryset():
     return PaperDocument.objects.select_related("project").prefetch_related("files")
 
@@ -123,4 +167,14 @@ def _validation_error_message(error: IntegrityError | ValidationError) -> str:
         messages = getattr(error, "messages", None)
         if messages:
             return " ".join(messages)
+    if isinstance(error, (TypeError, ValueError)):
+        return str(error)
     return "Paper file path must be unique and safe."
+
+
+def _payload_int(payload: dict, key: str, *, default: int | None = None) -> int:
+    if key not in payload:
+        if default is None:
+            raise ValueError(f"{key} is required")
+        return default
+    return int(payload[key])

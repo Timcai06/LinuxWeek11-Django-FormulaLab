@@ -32,6 +32,22 @@ export type PaperFileVersion = {
   created_at: string;
 };
 
+export type PaperAnnotation = {
+  id: string;
+  file_id: string;
+  line_start: number;
+  line_end: number;
+  char_start: number;
+  char_end: number;
+  quoted_text: string;
+  body: string;
+  status: "open" | "resolved" | "archived";
+  created_by_label: string;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PaperDocument = {
   id: string;
   document_code: string;
@@ -65,6 +81,11 @@ export type PaperFileVersionRestoreResponse = {
 export type PaperFileVersionsResponse = {
   file_id: string;
   versions: PaperFileVersion[];
+};
+
+export type PaperAnnotationsResponse = {
+  file_id: string;
+  annotations: PaperAnnotation[];
 };
 
 export type FormulaItemVersion = {

@@ -1,4 +1,4 @@
-from apps.formulas.models import PaperDocument, PaperFile, PaperFileVersion, PaperProject
+from apps.formulas.models import PaperAnnotation, PaperDocument, PaperFile, PaperFileVersion, PaperProject
 
 
 def paper_file_payload(file: PaperFile) -> dict:
@@ -31,6 +31,31 @@ def paper_file_versions_payload(file: PaperFile, versions) -> dict:
     return {
         "file_id": str(file.id),
         "versions": [paper_file_version_payload(version) for version in versions],
+    }
+
+
+def paper_annotation_payload(annotation: PaperAnnotation) -> dict:
+    return {
+        "id": str(annotation.id),
+        "file_id": str(annotation.file_id),
+        "line_start": annotation.line_start,
+        "line_end": annotation.line_end,
+        "char_start": annotation.char_start,
+        "char_end": annotation.char_end,
+        "quoted_text": annotation.quoted_text,
+        "body": annotation.body,
+        "status": annotation.status,
+        "created_by_label": annotation.created_by_label,
+        "resolved_at": annotation.resolved_at.isoformat() if annotation.resolved_at else None,
+        "created_at": annotation.created_at.isoformat(),
+        "updated_at": annotation.updated_at.isoformat(),
+    }
+
+
+def paper_annotations_payload(file: PaperFile, annotations) -> dict:
+    return {
+        "file_id": str(file.id),
+        "annotations": [paper_annotation_payload(annotation) for annotation in annotations],
     }
 
 

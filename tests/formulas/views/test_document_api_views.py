@@ -1,4 +1,4 @@
-from apps.formulas.models import PaperDocument, PaperFile, PaperFileVersion, PaperProject
+from apps.formulas.models import PaperAnnotation, PaperDocument, PaperFile, PaperFileVersion, PaperProject
 from tests.formulas.views.base import FormulaViewTestCase
 
 
@@ -132,6 +132,125 @@ class PaperDocumentApiViewTests(FormulaViewTestCase):
         file.refresh_from_db()
         self.assertEqual(response.status_code, 404)
         self.assertEqual(file.content, "current")
+
+    def test_api_document_file_annotations_returns_file_annotations(self):
+        project = PaperProject.objects.create(name="API annotations list")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        file = PaperFile.objects.create(document=document, path="main.tex", content="alpha")
+        other_file = PaperFile.objects.create(document=document, path="sections/other.tex", content="beta")
+        annotation = PaperAnnotation.objects.create(
+            file=file,
+            line_start=2,
+            line_end=2,
+            char_start=4,
+            char_end=9,
+            quoted_text="alpha",
+            body="Check symbol definition.",
+            created_by_label="reviewer",
+        )
+        PaperAnnotation.objects.create(
+            file=other_file,
+            line_start=1,
+            line_end=1,
+            body="Other file note.",
+        )
+
+        response = self.client.get(f"/api/document-files/{file.id}/annotations/")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["file_id"], str(file.id))
+        self.assertEqual(len(payload["annotations"]), 1)
+        self.assertEqual(payload["annotations"][0]["id"], str(annotation.id))
+        self.assertEqual(payload["annotations"][0]["body"], "Check symbol definition.")
+        self.assertEqual(payload["annotations"][0]["status"], PaperAnnotation.Status.OPEN)
+        self.assertEqual(payload["annotations"][0]["created_by_label"], "reviewer")
+
+    def test_api_document_file_annotations_post_creates_annotation(self):
+        project = PaperProject.objects.create(name="API annotations create")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        file = PaperFile.objects.create(document=document, path="main.tex", content="alpha")
+
+        response = self.client.post(
+            f"/api/document-files/{file.id}/annotations/",
+            data=(
+                '{"line_start": 3, "line_end": 4, "char_start": 2, "char_end": 8, '
+                '"quoted_text": "alpha", "body": "Clarify the derivation."}'
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        annotation = file.annotations.get()
+        self.assertEqual(annotation.line_start, 3)
+        self.assertEqual(annotation.line_end, 4)
+        self.assertEqual(annotation.char_start, 2)
+        self.assertEqual(annotation.char_end, 8)
+        self.assertEqual(annotation.quoted_text, "alpha")
+        self.assertEqual(annotation.body, "Clarify the derivation.")
+        self.assertEqual(annotation.created_by_label, "api")
+        self.assertEqual(response.json()["id"], str(annotation.id))
+
+    def test_api_document_file_annotations_post_rejects_invalid_anchor(self):
+        project = PaperProject.objects.create(name="API annotations invalid")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        file = PaperFile.objects.create(document=document, path="main.tex", content="alpha")
+
+        response = self.client.post(
+            f"/api/document-files/{file.id}/annotations/",
+            data='{"line_start": 4, "line_end": 3, "body": "Bad anchor."}',
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(file.annotations.count(), 0)
+
+    def test_api_paper_annotation_patch_updates_status_and_resolved_at(self):
+        project = PaperProject.objects.create(name="API annotation patch")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        file = PaperFile.objects.create(document=document, path="main.tex", content="alpha")
+        annotation = PaperAnnotation.objects.create(
+            file=file,
+            line_start=1,
+            line_end=1,
+            body="Resolve me.",
+        )
+
+        response = self.client.generic(
+            "PATCH",
+            f"/api/paper-annotations/{annotation.id}/",
+            data='{"status": "resolved", "body": "Resolved after rewrite."}',
+            content_type="application/json",
+        )
+
+        annotation.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(annotation.status, PaperAnnotation.Status.RESOLVED)
+        self.assertEqual(annotation.body, "Resolved after rewrite.")
+        self.assertIsNotNone(annotation.resolved_at)
+        self.assertEqual(response.json()["resolved_at"], annotation.resolved_at.isoformat())
+
+    def test_api_paper_annotation_patch_rejects_invalid_status(self):
+        project = PaperProject.objects.create(name="API annotation invalid status")
+        document = PaperDocument.objects.create(project=project, title="Main")
+        file = PaperFile.objects.create(document=document, path="main.tex", content="alpha")
+        annotation = PaperAnnotation.objects.create(
+            file=file,
+            line_start=1,
+            line_end=1,
+            body="Keep me open.",
+        )
+
+        response = self.client.generic(
+            "PATCH",
+            f"/api/paper-annotations/{annotation.id}/",
+            data='{"status": "done"}',
+            content_type="application/json",
+        )
+
+        annotation.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(annotation.status, PaperAnnotation.Status.OPEN)
 
     def test_api_document_files_post_creates_project_file(self):
         project = PaperProject.objects.create(name="API file create")
