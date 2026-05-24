@@ -3,17 +3,14 @@ import type { MutableRefObject } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 
+import { easedRange } from "../three/motion";
+
 const MANUSCRIPT_TEXTURE = "/static/formulas/visuals/manuscript_texture_alpha.png";
 const IDLE_SCROLL_PROGRESS = { current: 0 };
 
 type ManuscriptCanvasProps = {
   scrollProgressRef?: MutableRefObject<number>;
 };
-
-function easedRange(progress: number, start: number, end: number): number {
-  const value = THREE.MathUtils.clamp((progress - start) / (end - start), 0, 1);
-  return value * value * (3 - 2 * value);
-}
 
 function createStarfieldGeometry() {
   const count = 720;
