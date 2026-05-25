@@ -105,6 +105,12 @@ assert.match(shaderSource, /ShaderMaterial/, "Manuscript scan should be implemen
 assert.match(motionSource, /export function easedRange/, "Motion helpers should be reusable.");
 assert.match(motionSource, /export function phaseOpacity/, "Phase opacity helper should be reusable.");
 assert.match(typeSource, /export type LandingPhase/, "Landing phases should have a shared type.");
+assert.match(
+  typeSource,
+  /export type LandingPhase = "intro" \| "absorb" \| "center" \| "decode" \| "workspace" \| "collab" \| "cta"/,
+  "LandingPhase should match the fifth-stage top-level phase contract.",
+);
+assert.doesNotMatch(typeSource, /"scan"|"reveal"/, "Scan and reveal should not remain top-level landing phases.");
 assert.match(styleSource, /\.workbench-gate-cta/, "Final CTA styles should exist.");
 assert.doesNotMatch(styleSource, /--hero-blur/, "Landing should not keep the old hero blur variable.");
 assert.doesNotMatch(styleSource, /\.landing-copy[\s\S]*?filter:\s*blur\(/, "Landing copy should not disappear through a blur filter rule.");
