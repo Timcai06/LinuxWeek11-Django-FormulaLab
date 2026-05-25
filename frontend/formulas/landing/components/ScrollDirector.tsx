@@ -16,7 +16,7 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   const scanOpacity = phaseOpacity(progress, 0.46, 0.56, 0.66);
   const decodeChamberOpacity = phaseOpacity(progress, 0.5, 0.58, 0.7);
   const workspaceGhostOpacity = phaseOpacity(progress, 0.66, 0.74, 0.86);
-  const collabSignalOpacity = phaseOpacity(progress, 0.82, 0.87, 0.94);
+  const collabSignalOpacity = phaseOpacity(progress, 0.82, 0.87, 0.91);
   const gateProgress = progressBetween(progress, 0.92, 0.99);
   const gateAuraOpacity = gateProgress * 0.24;
   const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.74, 0.99) * 0.38;

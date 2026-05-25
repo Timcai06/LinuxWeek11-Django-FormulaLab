@@ -129,3 +129,42 @@ assert.doesNotMatch(
   /fromTo\(\s*['"]\.landing-copy['"]/,
   "Hero entrance animation must not write inline opacity or transforms onto the scroll-controlled copy container.",
 );
+assert.doesNotMatch(
+  heroSource,
+  /OPTICAL FORMULA RECOGNITION|MISSION CONTROL FOR LATEX RECOGNITION|SCAN GRID ACTIVE|LATEX TELEMETRY ONLINE|IMAGE INPUT READY/,
+  "The landing hero should open on paper-workspace product language, not the old OCR telemetry story.",
+);
+assert.match(heroSource, /PAPER WORKSPACE FOR LATEX AUTHORS/, "The landing hero should introduce the paper workspace audience.");
+assert.match(heroSource, /REVIEW INBOX PRIMED/, "The landing hero should preview the review workflow.");
+assert.match(heroSource, /COLLABORATION LAYER READY/, "The landing hero should preview the collaboration layer.");
+assert.match(
+  directorSource,
+  /const collabSignalOpacity = phaseOpacity\(progress, 0\.82, 0\.87, 0\.91\)/,
+  "Collaboration signals should fully resolve before the CTA phase begins.",
+);
+assert.doesNotMatch(
+  styleSource,
+  /\[data-story-phase="cta"\]\s+\.collaboration-signal-field/,
+  "Collaboration signal cards should not remain visible in the final CTA phase.",
+);
+assert.match(styleSource, /\.cinematic-overlay[\s\S]*?pointer-events:\s*none/, "Cinematic overlays should not steal clicks from the final CTA.");
+assert.match(
+  styleSource,
+  /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.decode-chamber,\s*[\s\S]*?\.paper-workspace-ghost,\s*[\s\S]*?\.collaboration-signal-field[\s\S]*?display:\s*none/,
+  "Reduced-motion mode should hide cinematic overlays.",
+);
+assert.match(
+  styleSource,
+  /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.workbench-gate[\s\S]*?visibility:\s*visible/,
+  "Reduced-motion mode should expose the Workbench Gate without scroll.",
+);
+assert.match(
+  styleSource,
+  /@media \(max-width: 720px\)[\s\S]*?\.decode-chamber,\s*[\s\S]*?\.collaboration-signal-field[\s\S]*?width:\s*calc\(100vw - 36px\)/,
+  "Mobile cinematic overlays should be constrained to the viewport width.",
+);
+assert.match(
+  styleSource,
+  /@media \(max-width: 720px\)[\s\S]*?\.collaboration-signal-field[\s\S]*?inset:\s*auto 18px 88px auto/,
+  "Mobile collaboration signals should use the explicit mobile inset instead of inheriting desktop placement.",
+);

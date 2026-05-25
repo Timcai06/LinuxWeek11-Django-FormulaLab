@@ -357,8 +357,7 @@ body.landing-shell {
   transform: translate3d(0, var(--collab-signal-y), 0);
 }
 
-[data-story-phase="collab"] .collaboration-signal-field,
-[data-story-phase="cta"] .collaboration-signal-field {
+[data-story-phase="collab"] .collaboration-signal-field {
   visibility: visible;
 }
 

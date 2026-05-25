@@ -68,12 +68,12 @@ export function Hero() {
         <div className="landing-copy">
           <SplitTextTitleSequence />
           <div className="hud-corners" aria-hidden="true" />
-          <p className="mission-kicker">OPTICAL FORMULA RECOGNITION</p>
+          <p className="mission-kicker">PAPER WORKSPACE FOR LATEX AUTHORS</p>
           <h1 className="glitch-title" data-split-title="headline">
             FORMULA LAB
           </h1>
           <p className="mission-subtitle" data-split-title="subtitle">
-            MISSION CONTROL FOR LATEX RECOGNITION
+            Turn rough formulas into reviewable papers
           </p>
           <div className="mission-actions">
             <a className="button button-primary" href="/workbench/">
@@ -85,9 +85,9 @@ export function Hero() {
           </div>
         </div>
         <div className="landing-readout" aria-label="System readout">
-          <span className="readout-line">SCAN GRID ACTIVE</span>
-          <span className="readout-line">LATEX TELEMETRY ONLINE</span>
-          <span className="readout-line">IMAGE INPUT READY</span>
+          <span className="readout-line">MANUSCRIPT GRAVITY ONLINE</span>
+          <span className="readout-line">REVIEW INBOX PRIMED</span>
+          <span className="readout-line">COLLABORATION LAYER READY</span>
         </div>
       </section>
     </>

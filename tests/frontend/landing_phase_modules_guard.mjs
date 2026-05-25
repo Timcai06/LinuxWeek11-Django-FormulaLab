@@ -112,5 +112,22 @@ assert.match(
 );
 assert.doesNotMatch(typeSource, /"scan"|"reveal"/, "Scan and reveal should not remain top-level landing phases.");
 assert.match(styleSource, /\.workbench-gate-cta/, "Final CTA styles should exist.");
+assert.match(styleSource, /\.cinematic-overlay[\s\S]*?pointer-events:\s*none/, "Cinematic overlays should not intercept CTA clicks.");
+assert.doesNotMatch(styleSource, /\[data-story-phase="cta"\]\s+\.collaboration-signal-field/, "Collaboration signals should not be visible during the final CTA phase.");
+assert.match(
+  styleSource,
+  /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.decode-chamber,\s*[\s\S]*?\.paper-workspace-ghost,\s*[\s\S]*?\.collaboration-signal-field[\s\S]*?display:\s*none/,
+  "Reduced-motion mode should hide cinematic overlays.",
+);
+assert.match(
+  styleSource,
+  /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.workbench-gate[\s\S]*?visibility:\s*visible/,
+  "Reduced-motion mode should expose the Workbench Gate.",
+);
+assert.match(
+  styleSource,
+  /@media \(max-width: 720px\)[\s\S]*?\.decode-chamber,\s*[\s\S]*?\.collaboration-signal-field[\s\S]*?width:\s*calc\(100vw - 36px\)/,
+  "Mobile overlays should stay within the viewport.",
+);
 assert.doesNotMatch(styleSource, /--hero-blur/, "Landing should not keep the old hero blur variable.");
 assert.doesNotMatch(styleSource, /\.landing-copy[\s\S]*?filter:\s*blur\(/, "Landing copy should not disappear through a blur filter rule.");
