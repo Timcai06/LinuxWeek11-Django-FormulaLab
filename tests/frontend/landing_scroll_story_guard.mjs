@@ -6,6 +6,7 @@ const storySource = readFileSync("frontend/formulas/landing/components/LandingSc
 const directorSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
 const canvasSource = readFileSync("frontend/formulas/landing/components/ManuscriptCanvas.tsx", "utf8");
 const heroSource = readFileSync("frontend/formulas/landing/components/Hero.tsx", "utf8");
+const splitTextSource = readFileSync("frontend/formulas/landing/components/SplitTextTitleSequence.tsx", "utf8");
 const styleSource = readFileSync("frontend/formulas/landing/styles/landing.css", "utf8");
 
 assert.match(appSource, /LandingScrollStory/, "Landing should wrap the hero in a scroll story controller.");
@@ -48,6 +49,10 @@ assert.match(
   /materialRef\.current\.opacity = THREE\.MathUtils\.lerp\(0\.34, 0\.72, absorbProgress\) \* \(1 - orbitProgress \* 0\.2\) \* \(1 - releaseProgress \* 0\.72\)/,
   "The starfield release should fade particles without increasing particle count.",
 );
+assert.match(splitTextSource, /type:\s*"lines,words,chars"/, "SplitText should request line, word, and character wrappers.");
+assert.match(splitTextSource, /charsClass:\s*"split-title-char"/, "SplitText should expose character hook classes.");
+assert.match(splitTextSource, /wordsClass:\s*"split-title-word"/, "SplitText should expose word hook classes.");
+assert.match(splitTextSource, /linesClass:\s*"split-title-line"/, "SplitText should expose line hook classes.");
 assert.match(styleSource, /\.split-title-line[\s\S]*?display:\s*block/, "SplitText line wrappers should keep block flow.");
 assert.match(styleSource, /\.split-title-word[\s\S]*?display:\s*inline-block/, "SplitText word wrappers should stay inline-block without scroll transform.");
 assert.match(styleSource, /\.split-title-char[\s\S]*?transform:\s*translate3d\(calc\(var\(--text-disperse\) \* 0\.16\), 0, 0\)/, "SplitText scroll exit should move only character wrappers.");
