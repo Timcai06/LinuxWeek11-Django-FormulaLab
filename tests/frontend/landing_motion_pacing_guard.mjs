@@ -6,6 +6,7 @@ const storySource = readFileSync("frontend/formulas/landing/components/LandingSc
 const directorSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
 const tickerSource = readFileSync("frontend/formulas/landing/components/HorizontalTicker.tsx", "utf8");
 const curtainSource = readFileSync("frontend/formulas/landing/components/MorphCurtain.tsx", "utf8");
+const copyStageSource = readFileSync("frontend/formulas/landing/components/CurtainCopyStage.tsx", "utf8");
 const styleSource = readFileSync("frontend/formulas/landing/styles/landing.css", "utf8");
 
 assert.doesNotMatch(
@@ -30,13 +31,13 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /snapTo\(value\)[\s\S]*if \(value >= 0\.74\)[\s\S]*return value/,
-  "Late-stage liquid, letter, and CTA chapters should not be skipped by hard snap.",
+  /snapTo\(value\)[\s\S]*if \(value >= 0\.62\)[\s\S]*return value/,
+  "Late-stage curtain, text, letter, and CTA chapters should not be skipped by hard snap.",
 );
 assert.match(
   directorSource,
-  /phaseOpacityHold\(progress,\s*0\.86,\s*0\.88,\s*0\.965,\s*0\.99\)/,
-  "The letter-wave chapter should arrive after the liquid transition and hold until just before the final CTA.",
+  /phaseOpacityHold\(progress,\s*0\.94,\s*0\.95,\s*0\.98,\s*0\.992\)/,
+  "The letter storm should arrive after the black curtain and hold until just before the final CTA.",
 );
 assert.match(
   directorSource,
@@ -45,13 +46,13 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.76,\s*0\.86\)/,
-  "MorphCurtain should have its own transition chapter after the manuscript recedes and before the letters enter.",
+  /progressBetween\(progress,\s*0\.72,\s*0\.80\)/,
+  "MorphCurtain should have a first liquid transition into the green curtain.",
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.86,\s*0\.925\)/,
-  "MorphCurtain should fade as the letter chapter begins, not during the final CTA.",
+  /progressBetween\(progress,\s*0\.90,\s*0\.94\)/,
+  "MorphCurtain should have a second liquid transition from green into black.",
 );
 assert.doesNotMatch(
   curtainSource,
@@ -75,8 +76,8 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /const gateProgress = progressBetween\(progress,\s*0\.965,\s*0\.995\)/,
-  "The Workbench Gate should wait until the letter chapter has had time to resolve.",
+  /const gateProgress = progressBetween\(progress,\s*0\.985,\s*0\.998\)/,
+  "The Workbench Gate should wait until the black letter storm resolves.",
 );
 assert.match(
   directorSource,
@@ -85,6 +86,21 @@ assert.match(
 );
 assert.match(
   styleSource,
-  /\.landing-story[\s\S]*?min-height:\s*1600vh/,
-  "The cinematic landing story should be long enough for liquid and letter chapters to breathe.",
+  /\.landing-story[\s\S]*?min-height:\s*2600vh/,
+  "The cinematic landing story should be long enough for green copy, black curtain, and letters to breathe.",
+);
+assert.match(
+  copyStageSource,
+  /import \{ SplitText \} from "gsap\/SplitText"/,
+  "Green curtain copy should use GSAP SplitText directly.",
+);
+assert.match(
+  copyStageSource,
+  /mask:\s*"lines"[\s\S]*autoSplit:\s*true[\s\S]*onSplit/,
+  "Green curtain copy should use SplitText line masks with autoSplit and an onSplit animation callback.",
+);
+assert.match(
+  storySource,
+  /<CurtainCopyStage\s+scrollProgressRef=\{scrollProgressRef\}/,
+  "Landing story should render the green curtain SplitText copy stage inside the main timeline.",
 );

@@ -31,11 +31,14 @@ assert.match(styleSource, /var\(--workspace-ghost-opacity\)/, "Landing styles sh
 assert.match(styleSource, /var\(--collab-signal-opacity\)/, "Landing styles should consume Collaboration Signal opacity.");
 assert.match(canvasSource, /FormulaStarfield/, "Landing should use a Three.js formula particle starfield.");
 assert.match(directorSource, /center/, "Landing story should have a manuscript-centering phase before scan/decode.");
-assert.match(directorSource, /if \(progress >= 0\.965\)[\s\S]*return "cta"/, "CTA phase should begin only after the letter chapter resolves.");
-assert.match(directorSource, /if \(progress >= 0\.86\)[\s\S]*return "letters"/, "The letter chapter should follow the liquid transition.");
-assert.match(directorSource, /if \(progress >= 0\.76\)[\s\S]*return "transition"/, "The liquid transition should sit between collaboration and letters.");
-assert.match(directorSource, /if \(progress >= 0\.64\)[\s\S]*return "collab"/, "Collaboration phase should precede the liquid transition.");
-assert.match(directorSource, /if \(progress >= 0\.56\)[\s\S]*return "workspace"/, "Workspace ghost phase should follow decode before collaboration begins.");
+assert.match(directorSource, /if \(progress >= 0\.985\)[\s\S]*return "cta"/, "CTA phase should begin only after the black letter storm resolves.");
+assert.match(directorSource, /if \(progress >= 0\.94\)[\s\S]*return "letterStorm"/, "The letter storm should follow the black curtain.");
+assert.match(directorSource, /if \(progress >= 0\.90\)[\s\S]*return "blackCurtain"/, "The black curtain should follow the green SplitText copy.");
+assert.match(directorSource, /if \(progress >= 0\.80\)[\s\S]*return "greenCopy"/, "The green SplitText copy should follow the first liquid curtain.");
+assert.match(directorSource, /if \(progress >= 0\.72\)[\s\S]*return "greenCurtain"/, "The first liquid transition should enter the green curtain.");
+assert.match(directorSource, /if \(progress >= 0\.64\)[\s\S]*return "paperExit"/, "The manuscript should recede before the green curtain begins.");
+assert.match(directorSource, /if \(progress >= 0\.60\)[\s\S]*return "collab"/, "Collaboration phase should precede the manuscript exit.");
+assert.match(directorSource, /if \(progress >= 0\.54\)[\s\S]*return "workspace"/, "Workspace ghost phase should follow decode before collaboration begins.");
 assert.match(directorSource, /if \(progress >= 0\.5\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
 assert.doesNotMatch(directorSource, /return "reveal"/, "The old reveal phase should be replaced by explicit workspace/collaboration phases.");
 assert.doesNotMatch(directorSource, /return "scan"/, "Scan should be a visual sub-progress, not a top-level fifth-stage phase.");
@@ -66,8 +69,8 @@ assert.match(directorSource, /--gate-scale/, "The final Workbench Gate should se
 assert.match(directorSource, /--gate-aura-opacity/, "The final Workbench Gate should expose a subtle aura layer.");
 assert.match(
   directorSource,
-  /const gateProgress = progressBetween\(progress, 0\.965, 0\.995\)/,
-  "Workbench Gate motion should start only after the letter chapter resolves.",
+  /const gateProgress = progressBetween\(progress, 0\.985, 0\.998\)/,
+  "Workbench Gate motion should start only after the black letter storm resolves.",
 );
 assert.match(
   directorSource,
@@ -141,8 +144,8 @@ assert.match(heroSource, /REVIEW INBOX PRIMED/, "The landing hero should preview
 assert.match(heroSource, /COLLABORATION LAYER READY/, "The landing hero should preview the collaboration layer.");
 assert.match(
   directorSource,
-  /const collabSignalOpacity = phaseOpacity\(progress, 0\.64, 0\.69, 0\.76\)/,
-  "Collaboration signals should fully resolve before the liquid transition begins.",
+  /const collabSignalOpacity = phaseOpacity\(progress, 0\.60, 0\.64, 0\.70\)/,
+  "Collaboration signals should resolve before the manuscript exits into the curtain sequence.",
 );
 assert.doesNotMatch(
   styleSource,

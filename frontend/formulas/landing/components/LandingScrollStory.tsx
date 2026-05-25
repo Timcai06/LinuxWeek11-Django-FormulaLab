@@ -1,6 +1,7 @@
 import { useRef } from "react";
 
 import { CollaborationSignalField } from "./CollaborationSignalField";
+import { CurtainCopyStage } from "./CurtainCopyStage";
 import { DecodeChamberOverlay } from "./DecodeChamberOverlay";
 import { FormulaConstellationField } from "./FormulaConstellationField";
 import { FormulaVortex } from "./FormulaVortex";
@@ -26,6 +27,7 @@ export function LandingScrollStory() {
         <DecodeChamberOverlay />
         <PaperWorkspaceGhost />
         <CollaborationSignalField />
+        <CurtainCopyStage scrollProgressRef={scrollProgressRef} />
         <HorizontalTicker scrollProgressRef={scrollProgressRef} />
         <WorkbenchGateOverlay />
         <MorphCurtain scrollProgressRef={scrollProgressRef} />

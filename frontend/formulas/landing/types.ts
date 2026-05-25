@@ -7,8 +7,11 @@ export type LandingPhase =
   | "decode"
   | "workspace"
   | "collab"
-  | "transition"
-  | "letters"
+  | "paperExit"
+  | "greenCurtain"
+  | "greenCopy"
+  | "blackCurtain"
+  | "letterStorm"
   | "cta";
 
 export type ScrollProgressRef = MutableRefObject<number>;

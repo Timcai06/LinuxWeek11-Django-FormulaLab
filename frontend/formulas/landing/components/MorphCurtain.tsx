@@ -5,14 +5,13 @@ import { progressBetween } from "../three/motion";
 const NUM_POINTS = 10;
 const NUM_PATHS = 2;
 
-// Green cyber theme gradients with glowing leading edges and dark trailing bodies
-const GRADIENTS = [
+const GREEN_GRADIENTS = [
   {
     id: "morph-grad-1",
     stops: [
       ["0%", "#0e100f"],
       ["75%", "#0e100f"],
-      ["100%", "#1a3a2a"], // Dark green leading edge
+      ["100%", "#1a3a2a"],
     ],
   },
   {
@@ -20,7 +19,26 @@ const GRADIENTS = [
     stops: [
       ["0%", "#0e100f"],
       ["80%", "#0e100f"],
-      ["100%", "#5cffb0"], // Bright green leading edge
+      ["100%", "#5cffb0"],
+    ],
+  },
+];
+
+const BLACK_GRADIENTS = [
+  {
+    id: "morph-black-grad-1",
+    stops: [
+      ["0%", "#06130d"],
+      ["72%", "#06130d"],
+      ["100%", "#000000"],
+    ],
+  },
+  {
+    id: "morph-black-grad-2",
+    stops: [
+      ["0%", "#113222"],
+      ["74%", "#06130d"],
+      ["100%", "#000000"],
     ],
   },
 ];
@@ -64,10 +82,13 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       const progress = scrollProgressRef.current;
-      const curtainSweepProgress = progressBetween(progress, 0.76, 0.86);
-      const curtainProgress = curtainSweepProgress * curtainSweepProgress * (3 - 2 * curtainSweepProgress);
-      const curtainExitProgress = progressBetween(progress, 0.86, 0.925);
-      const visibleProgress = curtainProgress * (1 - curtainExitProgress);
+      const greenSweepProgress = progressBetween(progress, 0.72, 0.80);
+      const blackSweepProgress = progressBetween(progress, 0.90, 0.94);
+      const greenProgress = greenSweepProgress * greenSweepProgress * (3 - 2 * greenSweepProgress);
+      const blackProgress = blackSweepProgress * blackSweepProgress * (3 - 2 * blackSweepProgress);
+      const greenExitProgress = progressBetween(progress, 0.80, 0.86);
+      const blackExitProgress = progressBetween(progress, 0.94, 0.985);
+      const activeProgress = blackProgress > 0 ? blackProgress : greenProgress;
 
       // Update points: each point grows from 0 to 100 based on progress + delays
       const pts = allPoints.current;
@@ -77,7 +98,7 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
         const pathDelay = 0.08 * i; // Back path (i=0) starts first, front path (i=1) follows
         for (let j = 0; j < NUM_POINTS; j++) {
           const pointDelay = delays[j]! + pathDelay;
-          const pointProgress = Math.max(0, Math.min(1, (curtainProgress - pointDelay) / (1 - pointDelay - 0.05)));
+          const pointProgress = Math.max(0, Math.min(1, (activeProgress - pointDelay) / (1 - pointDelay - 0.05)));
           // Ease: power2.inOut approximation
           const eased = pointProgress < 0.5
             ? 2 * pointProgress * pointProgress
@@ -87,10 +108,10 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       // Render SVG paths
-      for (let i = 0; i < NUM_PATHS; i++) {
+      for (let i = 0; i < pathRefs.current.length; i++) {
         const pathEl = pathRefs.current[i];
         if (!pathEl) continue;
-        const points = pts[i]!;
+        const points = pts[i % NUM_PATHS]!;
 
         // Build the SVG path: curtain hangs from top, sweeping down
         let d = `M 0 0 V ${points[0]} C`;
@@ -103,7 +124,13 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
         pathEl.setAttribute("d", d);
       }
 
-      svg.style.opacity = (0.76 * visibleProgress).toFixed(3);
+      svg.dataset.curtainMode = blackProgress > 0 ? "black" : "green";
+      svg.style.setProperty("--green-curtain-svg-opacity", (0.76 * greenProgress * (1 - greenExitProgress)).toFixed(3));
+      svg.style.setProperty("--black-curtain-svg-opacity", (0.88 * blackProgress * (1 - blackExitProgress)).toFixed(3));
+      svg.style.opacity = Math.max(
+        0.76 * greenProgress * (1 - greenExitProgress),
+        0.88 * blackProgress * (1 - blackExitProgress),
+      ).toFixed(3);
 
       raf = requestAnimationFrame(update);
     };
@@ -121,7 +148,7 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       aria-hidden="true"
     >
       <defs>
-        {GRADIENTS.map((g) => (
+        {[...GREEN_GRADIENTS, ...BLACK_GRADIENTS].map((g) => (
           <linearGradient key={g.id} id={g.id} x1="0%" y1="0%" x2="0%" y2="100%">
             {g.stops.map(([offset, color]) => (
               <stop key={offset} offset={offset} stopColor={color} />
@@ -129,13 +156,24 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
           </linearGradient>
         ))}
       </defs>
-      {GRADIENTS.map((g, i) => (
-        <path
-          key={g.id}
-          ref={(el) => { pathRefs.current[i] = el; }}
-          fill={`url(#${g.id})`}
-        />
-      ))}
+      <g className="morph-curtain-green">
+        {GREEN_GRADIENTS.map((g, i) => (
+          <path
+            key={g.id}
+            ref={(el) => { pathRefs.current[i] = el; }}
+            fill={`url(#${g.id})`}
+          />
+        ))}
+      </g>
+      <g className="morph-curtain-black">
+        {BLACK_GRADIENTS.map((g, i) => (
+          <path
+            key={g.id}
+            ref={(el) => { pathRefs.current[i + NUM_PATHS] = el; }}
+            fill={`url(#${g.id})`}
+          />
+        ))}
+      </g>
     </svg>
   );
 }
