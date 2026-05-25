@@ -515,6 +515,23 @@ body.landing-shell {
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
+.split-title-char,
+.split-title-word,
+.split-title-line {
+  display: inline-block;
+  transform: translate3d(calc(var(--text-disperse) * 0.16), 0, 0);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.landing-story[data-story-phase="absorb"] .split-title-char,
+.landing-story[data-story-phase="center"] .split-title-char,
+.landing-story[data-story-phase="decode"] .split-title-char,
+.landing-story[data-story-phase="workspace"] .split-title-char,
+.landing-story[data-story-phase="collab"] .split-title-char,
+.landing-story[data-story-phase="cta"] .split-title-char {
+  opacity: var(--shutdown-opacity);
+}
+
 .landing-copy::before,
 .landing-copy::after,
 .landing-copy .hud-corners::before,

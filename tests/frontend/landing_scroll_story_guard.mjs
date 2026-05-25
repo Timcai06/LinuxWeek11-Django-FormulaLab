@@ -39,9 +39,9 @@ assert.doesNotMatch(directorSource, /return "scan"/, "Scan should be a visual su
 assert.match(directorSource, /phaseOpacity\(progress, 0\.46, 0\.56, 0\.66\)/, "Scan should begin after the paper moves to center.");
 assert.match(canvasSource, /scrollProgressRef/, "The manuscript canvas should receive scroll progress.");
 assert.match(canvasSource, /useFrame/, "The manuscript canvas should animate the paper per frame.");
-assert.match(canvasSource, /centerProgress/, "The paper should move to center before scan/decode handoff.");
-assert.match(canvasSource, /lerp\(3\.4,\s*-0\.18,\s*centerProgress\)/, "The paper should resolve close to the visual screen center.");
-assert.match(canvasSource, /lerp\(-1\.35,\s*-0\.04,\s*centerProgress\)/, "The paper should resolve close to the vertical screen center.");
+assert.match(canvasSource, /easedRange\(progress, 0\.16, 0\.46\)/, "The paper should move to center during the manuscript gravity phase.");
+assert.match(canvasSource, /easedRange\(progress, 0\.46, 0\.66\)/, "The paper scan should align with the decode chamber entrance.");
+assert.match(canvasSource, /easedRange\(progress, 0\.66, 0\.92\)/, "The paper should recede as the workspace ghost appears.");
 assert.match(canvasSource, /targetPositions\[baseOffset\]\s*=\s*-0\.18/, "The absorbed formula field should converge near the visually centered paper.");
 assert.match(canvasSource, /<FormulaStarfield scrollProgressRef=\{scrollProgressRef\}/, "The formula starfield should absorb into the paper scene.");
 assert.match(directorSource, /--gate-opacity/, "The final Workbench Gate should be controlled by scroll progress.");

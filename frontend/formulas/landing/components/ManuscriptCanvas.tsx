@@ -61,8 +61,9 @@ function FormulaStarfield({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: Manuscri
     const positionAttribute = field.geometry.getAttribute("position") as THREE.BufferAttribute;
     const positions = positionAttribute.array as Float32Array;
     const progress = scrollProgressRef.current;
-    const absorbProgress = easedRange(progress, 0.18, 0.55);
-    const orbitProgress = easedRange(progress, 0.55, 0.88);
+    const absorbProgress = easedRange(progress, 0.16, 0.5);
+    const orbitProgress = easedRange(progress, 0.5, 0.92);
+    const releaseProgress = easedRange(progress, 0.82, 0.99);
     const time = state.clock.getElapsedTime();
 
     for (let index = 0; index < positions.length; index += 3) {
@@ -78,7 +79,7 @@ function FormulaStarfield({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: Manuscri
 
     positionAttribute.needsUpdate = true;
     if (materialRef.current) {
-      materialRef.current.opacity = THREE.MathUtils.lerp(0.34, 0.72, absorbProgress) * (1 - orbitProgress * 0.28);
+      materialRef.current.opacity = THREE.MathUtils.lerp(0.34, 0.72, absorbProgress) * (1 - orbitProgress * 0.2) * (1 - releaseProgress * 0.72);
       materialRef.current.size = THREE.MathUtils.lerp(0.018, 0.031, absorbProgress);
     }
 
@@ -131,21 +132,22 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
 
     const time = state.clock.getElapsedTime();
     const progress = scrollProgressRef.current;
-    const centerProgress = easedRange(progress, 0.18, 0.48);
-    const scanProgress = easedRange(progress, 0.5, 0.68);
-    const decodeProgress = easedRange(progress, 0.66, 0.88);
+    const centerProgress = easedRange(progress, 0.16, 0.46);
+    const scanProgress = easedRange(progress, 0.46, 0.66);
+    const decodeProgress = easedRange(progress, 0.5, 0.82);
+    const workspaceProgress = easedRange(progress, 0.66, 0.92);
     const floatAmount = 1 - centerProgress * 0.72;
 
     const x = THREE.MathUtils.lerp(3.4, -0.18, centerProgress);
     const y = THREE.MathUtils.lerp(-1.35, -0.04, centerProgress) + Math.sin(time * 0.5) * 0.28 * floatAmount;
-    const z = THREE.MathUtils.lerp(-2, -0.54, centerProgress) - decodeProgress * 0.16;
-    const scale = 1 + centerProgress * 0.36 + scanProgress * 0.05 - decodeProgress * 0.1;
+    const z = THREE.MathUtils.lerp(-2, -0.54, centerProgress) - decodeProgress * 0.12 - workspaceProgress * 0.1;
+    const scale = 1 + centerProgress * 0.36 + scanProgress * 0.05 - workspaceProgress * 0.14;
 
     meshRef.current.position.set(x, y, z);
     meshRef.current.scale.setScalar(scale);
-    meshRef.current.rotation.y = Math.sin(time * 0.2) * 0.15 * floatAmount - centerProgress * 0.18 + decodeProgress * 0.08;
+    meshRef.current.rotation.y = Math.sin(time * 0.2) * 0.15 * floatAmount - centerProgress * 0.18 + decodeProgress * 0.08 - workspaceProgress * 0.04;
     meshRef.current.rotation.x = Math.cos(time * 0.3) * 0.1 * floatAmount - 0.1 + centerProgress * 0.14 + scanProgress * 0.04;
-    meshRef.current.rotation.z = -centerProgress * 0.035 + decodeProgress * 0.035;
+    meshRef.current.rotation.z = -centerProgress * 0.035 + decodeProgress * 0.035 - workspaceProgress * 0.018;
 
     if (materialRef.current) {
       const uniforms = materialRef.current.uniforms;
