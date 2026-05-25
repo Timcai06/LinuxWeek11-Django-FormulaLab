@@ -1,6 +1,15 @@
 import type { MutableRefObject, ReactNode } from "react";
 
-export type LandingPhase = "intro" | "absorb" | "center" | "decode" | "workspace" | "collab" | "cta";
+export type LandingPhase =
+  | "intro"
+  | "absorb"
+  | "center"
+  | "decode"
+  | "workspace"
+  | "collab"
+  | "transition"
+  | "letters"
+  | "cta";
 
 export type ScrollProgressRef = MutableRefObject<number>;
 

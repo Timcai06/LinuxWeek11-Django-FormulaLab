@@ -7,13 +7,13 @@ body.landing-shell {
 }
 
 .landing-fallback {
-  min-height: 1200vh;
+  min-height: 1600vh;
 }
 
 
 .landing-story {
   position: relative;
-  min-height: 1200vh;
+  min-height: 1600vh;
   --hero-opacity: 1;
   --hero-y: 0px;
   --text-disperse: 0px;
@@ -923,7 +923,7 @@ body.landing-shell {
   display: flex;
   width: max-content;
   white-space: nowrap;
-  padding-left: 100vw;
+  padding-left: 0;
   margin: 0;
   font-size: clamp(3rem, 12vw, 15rem);
   font-weight: 900;

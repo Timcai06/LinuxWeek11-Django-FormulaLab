@@ -62,8 +62,8 @@ function FormulaStarfield({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: Manuscri
     const positions = positionAttribute.array as Float32Array;
     const progress = scrollProgressRef.current;
     const absorbProgress = easedRange(progress, 0.16, 0.5);
-    const orbitProgress = easedRange(progress, 0.5, 0.92);
-    const releaseProgress = easedRange(progress, 0.82, 0.99);
+    const orbitProgress = easedRange(progress, 0.5, 0.76);
+    const releaseProgress = easedRange(progress, 0.64, 0.76);
     const time = state.clock.getElapsedTime();
 
     for (let index = 0; index < positions.length; index += 3) {
@@ -135,7 +135,7 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
     const centerProgress = easedRange(progress, 0.16, 0.46);
     const scanProgress = easedRange(progress, 0.46, 0.66);
     const decodeProgress = easedRange(progress, 0.5, 0.82);
-    const workspaceProgress = easedRange(progress, 0.66, 0.92);
+    const workspaceProgress = easedRange(progress, 0.64, 0.76);
     const floatAmount = 1 - centerProgress * 0.72;
 
     const x = THREE.MathUtils.lerp(3.4, -0.18, centerProgress);

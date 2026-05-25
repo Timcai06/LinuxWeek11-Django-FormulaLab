@@ -5,7 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { LandingPhase, ScrollDirectorProps } from "../types";
 import { phaseOpacity, phaseOpacityHold, progressBetween } from "../three/motion";
 
-const SNAP_LABELS = [0, 0.10, 0.25, 0.36, 0.50, 0.64, 0.76, 0.88, 0.96, 1];
+const SNAP_LABELS = [0, 0.10, 0.25, 0.36, 0.50, 0.64];
 
 function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: number) {
   const centerProgress = progressBetween(progress, 0.10, 0.50);
@@ -14,20 +14,19 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   const shutdownOpacity = Math.max(1 - heroExitProgress * 1.45, 0);
   const cosmosOpacity = Math.max(1 - heroExitProgress * 1.18, 0);
   
-  // Stretch out the component appearances and ADD HOLD DAMPING
   const scanOpacity = phaseOpacity(progress, 0.46, 0.56, 0.66);
   const decodeChamberOpacity = phaseOpacityHold(progress, 0.46, 0.50, 0.62, 0.66);
-  const workspaceGhostOpacity = phaseOpacityHold(progress, 0.66, 0.70, 0.78, 0.82);
-  const collabSignalOpacity = phaseOpacity(progress, 0.82, 0.87, 0.91);
-  const tickerOpacity = phaseOpacityHold(progress, 0.76, 0.80, 0.90, 0.94);
-  const tickerSweep = progressBetween(progress, 0.76, 0.94);
-  const tickerSettle = progressBetween(progress, 0.80, 0.90);
+  const workspaceGhostOpacity = phaseOpacityHold(progress, 0.56, 0.60, 0.68, 0.72);
+  const collabSignalOpacity = phaseOpacity(progress, 0.64, 0.69, 0.76);
+  const tickerOpacity = phaseOpacityHold(progress, 0.86, 0.88, 0.965, 0.99);
+  const tickerSweep = progressBetween(progress, 0.86, 0.985);
+  const tickerSettle = progressBetween(progress, 0.89, 0.94);
   const tickerChaos = Math.max(0, 1 - tickerSettle);
   
-  const gateProgress = progressBetween(progress, 0.92, 0.99);
+  const gateProgress = progressBetween(progress, 0.965, 0.995);
   const gateAuraOpacity = gateProgress * 0.24;
-  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.70, 0.95) * 0.38;
-  const ctaOpacity = progressBetween(progress, 0.88, 1.0);
+  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.64, 0.76) * 0.72;
+  const ctaOpacity = progressBetween(progress, 0.965, 1.0);
 
   storyElement.style.setProperty("--story-progress", progress.toFixed(4));
   storyElement.style.setProperty("--hero-opacity", heroOpacity.toFixed(4));
@@ -55,7 +54,7 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   storyElement.style.setProperty("--collab-signal-opacity", collabSignalOpacity.toFixed(4));
   storyElement.style.setProperty("--collab-signal-y", `${(24 * (1 - collabSignalOpacity)).toFixed(3)}px`);
   storyElement.style.setProperty("--ticker-opacity", tickerOpacity.toFixed(4));
-  storyElement.style.setProperty("--ticker-x", `${(34 - tickerSweep * 68).toFixed(3)}vw`);
+  storyElement.style.setProperty("--ticker-x", `${(42 - tickerSweep * 84).toFixed(3)}vw`);
   storyElement.style.setProperty("--ticker-y", `${(-4 + tickerSettle * 2).toFixed(3)}vh`);
   storyElement.style.setProperty("--ticker-chaos", tickerChaos.toFixed(4));
   storyElement.style.setProperty("--ticker-scale", (0.92 + tickerSettle * 0.08).toFixed(4));
@@ -74,13 +73,19 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
 }
 
 function phaseForProgress(progress: number): LandingPhase {
-  if (progress >= 0.92) {
+  if (progress >= 0.965) {
     return "cta";
   }
-  if (progress >= 0.82) {
+  if (progress >= 0.86) {
+    return "letters";
+  }
+  if (progress >= 0.76) {
+    return "transition";
+  }
+  if (progress >= 0.64) {
     return "collab";
   }
-  if (progress >= 0.66) {
+  if (progress >= 0.56) {
     return "workspace";
   }
   if (progress >= 0.5) {
@@ -123,7 +128,12 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
         end: "bottom bottom",
         scrub: 0.8,
         snap: {
-          snapTo: SNAP_LABELS,
+          snapTo(value) {
+            if (value >= 0.74) {
+              return value;
+            }
+            return gsap.utils.snap(SNAP_LABELS, value);
+          },
           duration: { min: 0.25, max: 0.55 },
           delay: 0.08,
           ease: "power2.out",

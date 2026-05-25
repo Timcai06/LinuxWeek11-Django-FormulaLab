@@ -48,7 +48,7 @@ assert.doesNotMatch(storySource, /ScrollTrigger\.create/, "ScrollTrigger setup s
 assert.doesNotMatch(storySource, /workspace-pane|product-preview-/, "Old product preview card markup should stay out of LandingScrollStory.");
 
 assert.match(directorSource, /ScrollTrigger\.create/, "ScrollDirector should own ScrollTrigger setup.");
-for (const phase of ["intro", "absorb", "center", "decode", "workspace", "collab", "cta"]) {
+for (const phase of ["intro", "absorb", "center", "decode", "workspace", "collab", "transition", "letters", "cta"]) {
   assert.match(directorSource, new RegExp(`["']${phase}["']`), `ScrollDirector should expose the "${phase}" story phase.`);
 }
 assert.match(directorSource, /--cta-opacity/, "ScrollDirector should drive the final CTA phase.");
@@ -107,8 +107,8 @@ assert.match(motionSource, /export function phaseOpacity/, "Phase opacity helper
 assert.match(typeSource, /export type LandingPhase/, "Landing phases should have a shared type.");
 assert.match(
   typeSource,
-  /export type LandingPhase = "intro" \| "absorb" \| "center" \| "decode" \| "workspace" \| "collab" \| "cta"/,
-  "LandingPhase should match the fifth-stage top-level phase contract.",
+  /export type LandingPhase =[\s\S]*\| "intro"[\s\S]*\| "absorb"[\s\S]*\| "center"[\s\S]*\| "decode"[\s\S]*\| "workspace"[\s\S]*\| "collab"[\s\S]*\| "transition"[\s\S]*\| "letters"[\s\S]*\| "cta"/,
+  "LandingPhase should match the staged cinematic landing phase contract.",
 );
 assert.doesNotMatch(typeSource, /"scan"|"reveal"/, "Scan and reveal should not remain top-level landing phases.");
 assert.match(styleSource, /\.workbench-gate-cta/, "Final CTA styles should exist.");

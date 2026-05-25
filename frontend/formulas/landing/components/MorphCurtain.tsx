@@ -64,9 +64,9 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       const progress = scrollProgressRef.current;
-      const curtainSweepProgress = progressBetween(progress, 0.80, 0.94);
+      const curtainSweepProgress = progressBetween(progress, 0.76, 0.86);
       const curtainProgress = curtainSweepProgress * curtainSweepProgress * (3 - 2 * curtainSweepProgress);
-      const curtainExitProgress = progressBetween(progress, 0.94, 0.99);
+      const curtainExitProgress = progressBetween(progress, 0.86, 0.925);
       const visibleProgress = curtainProgress * (1 - curtainExitProgress);
 
       // Update points: each point grows from 0 to 100 based on progress + delays
@@ -82,7 +82,7 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
           const eased = pointProgress < 0.5
             ? 2 * pointProgress * pointProgress
             : 1 - Math.pow(-2 * pointProgress + 2, 2) / 2;
-          pts[i]![j] = 82 * eased;
+          pts[i]![j] = 92 * eased;
         }
       }
 
@@ -103,7 +103,7 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
         pathEl.setAttribute("d", d);
       }
 
-      svg.style.opacity = (0.66 * visibleProgress).toFixed(3);
+      svg.style.opacity = (0.76 * visibleProgress).toFixed(3);
 
       raf = requestAnimationFrame(update);
     };

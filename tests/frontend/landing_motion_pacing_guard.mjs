@@ -30,13 +30,13 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /snap:\s*\{[\s\S]*snapTo:\s*SNAP_LABELS[\s\S]*duration:\s*\{\s*min:\s*0\.25,\s*max:\s*0\.55\s*\}[\s\S]*ease:\s*"power2\.out"/,
-  "Landing ScrollTrigger should gently snap to chapter anchors with a readable settle.",
+  /snapTo\(value\)[\s\S]*if \(value >= 0\.74\)[\s\S]*return value/,
+  "Late-stage liquid, letter, and CTA chapters should not be skipped by hard snap.",
 );
 assert.match(
   directorSource,
-  /phaseOpacityHold\(progress,\s*0\.76,\s*0\.80,\s*0\.90,\s*0\.94\)/,
-  "The letter-wave chapter should have a real hold window before the final CTA.",
+  /phaseOpacityHold\(progress,\s*0\.86,\s*0\.88,\s*0\.965,\s*0\.99\)/,
+  "The letter-wave chapter should arrive after the liquid transition and hold until just before the final CTA.",
 );
 assert.match(
   directorSource,
@@ -45,13 +45,13 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.80,\s*0\.94\)/,
-  "MorphCurtain should sweep across a longer transition window instead of snapping on late.",
+  /progressBetween\(progress,\s*0\.76,\s*0\.86\)/,
+  "MorphCurtain should have its own transition chapter after the manuscript recedes and before the letters enter.",
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.94,\s*0\.99\)/,
-  "MorphCurtain should fade away before the final Workbench Gate settles.",
+  /progressBetween\(progress,\s*0\.86,\s*0\.925\)/,
+  "MorphCurtain should fade as the letter chapter begins, not during the final CTA.",
 );
 assert.doesNotMatch(
   curtainSource,
@@ -63,8 +63,28 @@ assert.match(
   /\.ht-section[\s\S]*?position:\s*absolute/,
   "Ticker should be a story overlay layer, not a separate full-page scroll section.",
 );
+assert.doesNotMatch(
+  styleSource,
+  /\.ht-text[\s\S]*?padding-left:\s*100vw/,
+  "Letter chapter text should not begin a full viewport offscreen after the liquid transition.",
+);
 assert.match(
   styleSource,
   /\.workbench-gate[\s\S]*?z-index:\s*18/,
   "The final Workbench Gate should sit above the liquid transition layer.",
+);
+assert.match(
+  directorSource,
+  /const gateProgress = progressBetween\(progress,\s*0\.965,\s*0\.995\)/,
+  "The Workbench Gate should wait until the letter chapter has had time to resolve.",
+);
+assert.match(
+  directorSource,
+  /const manuscriptFinalOpacity = 1 - progressBetween\(progress,\s*0\.64,\s*0\.76\) \* 0\.72/,
+  "The manuscript should visibly recede before the liquid transition takes over.",
+);
+assert.match(
+  styleSource,
+  /\.landing-story[\s\S]*?min-height:\s*1600vh/,
+  "The cinematic landing story should be long enough for liquid and letter chapters to breathe.",
 );
