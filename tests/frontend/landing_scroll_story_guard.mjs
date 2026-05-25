@@ -30,6 +30,11 @@ assert.match(canvasSource, /targetPositions\[baseOffset\]\s*=\s*-0\.18/, "The ab
 assert.match(canvasSource, /<FormulaStarfield scrollProgressRef=\{scrollProgressRef\}/, "The formula starfield should absorb into the paper scene.");
 assert.match(storySource, /WorkspaceRevealOverlay/, "After scanning, the landing should reveal a product workspace silhouette.");
 assert.match(directorSource, /--workspace-opacity/, "The product workspace reveal should be controlled by scroll progress.");
+assert.match(directorSource, /--project-preview-opacity/, "Product preview project context should have a staged reveal variable.");
+assert.match(directorSource, /--paper-preview-opacity/, "Product preview paper workspace should have a staged reveal variable.");
+assert.match(directorSource, /--review-preview-opacity/, "Product preview formula review should have a staged reveal variable.");
+assert.match(directorSource, /--collab-preview-opacity/, "Product preview collaboration signals should have a staged reveal variable.");
+assert.match(directorSource, /--manuscript-final-opacity/, "ScrollDirector should lower manuscript dominance in the final product preview.");
 assert.match(styleSource, /\.workspace-reveal/, "The product workspace reveal should have a dedicated visual layer.");
 assert.doesNotMatch(
   storySource,

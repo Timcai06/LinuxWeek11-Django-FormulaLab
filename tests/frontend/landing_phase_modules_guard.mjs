@@ -50,8 +50,18 @@ assert.match(constellationSource, /FormulaConstellationField/, "FormulaConstella
 assert.match(constellationSource, /katex|renderToString/, "Formula constellation should render formulas, not raw TeX strings.");
 
 assert.match(workspaceSource, /WorkspaceRevealOverlay/, "WorkspaceRevealOverlay component should exist.");
-assert.match(workspaceSource, /workspace-pane-outline/, "Workspace reveal should preserve the paper outline pane.");
+assert.match(workspaceSource, /product-preview-shell/, "Workspace reveal should render a semantic product preview shell.");
+assert.match(workspaceSource, /product-preview-project/, "Product preview should include project context.");
+assert.match(workspaceSource, /product-preview-paper/, "Product preview should include a paper workspace.");
+assert.match(workspaceSource, /product-preview-review/, "Product preview should include formula review inbox.");
+assert.match(workspaceSource, /product-preview-collab/, "Product preview should include collaboration signals.");
+assert.match(workspaceSource, /main\.tex/, "Project context should expose a recognizable LaTeX project file.");
+assert.match(workspaceSource, /references\.bib/, "Project context should expose bibliography context.");
+assert.match(workspaceSource, /Accept|Edit/, "Formula review inbox should expose review actions.");
 assert.match(workspaceSource, /workspace-cta/, "Workspace reveal should expose final product CTAs.");
+assert.doesNotMatch(workspaceSource, /workspace-pane-outline/, "Product preview should not regress to the old decorative outline pane.");
+assert.doesNotMatch(workspaceSource, /workspace-pane-paper/, "Product preview should not regress to the old decorative paper pane.");
+assert.doesNotMatch(workspaceSource, /workspace-pane-review/, "Product preview should not regress to the old decorative review pane.");
 
 assert.match(manuscriptSource, /createManuscriptShaderMaterial|manuscriptShaderUniforms/, "ManuscriptCanvas should use the manuscript shader scan material.");
 assert.match(manuscriptSource, /STARFIELD_PARTICLE_COUNT\s*=\s*720/, "Particle count should remain capped for desktop performance.");
