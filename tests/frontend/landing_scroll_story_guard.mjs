@@ -42,6 +42,15 @@ assert.match(canvasSource, /useFrame/, "The manuscript canvas should animate the
 assert.match(canvasSource, /easedRange\(progress, 0\.16, 0\.46\)/, "The paper should move to center during the manuscript gravity phase.");
 assert.match(canvasSource, /easedRange\(progress, 0\.46, 0\.66\)/, "The paper scan should align with the decode chamber entrance.");
 assert.match(canvasSource, /easedRange\(progress, 0\.66, 0\.92\)/, "The paper should recede as the workspace ghost appears.");
+assert.match(canvasSource, /const releaseProgress = easedRange\(progress, 0\.82, 0\.99\)/, "The formula starfield should release as collaboration and gate layers appear.");
+assert.match(
+  canvasSource,
+  /materialRef\.current\.opacity = THREE\.MathUtils\.lerp\(0\.34, 0\.72, absorbProgress\) \* \(1 - orbitProgress \* 0\.2\) \* \(1 - releaseProgress \* 0\.72\)/,
+  "The starfield release should fade particles without increasing particle count.",
+);
+assert.match(styleSource, /\.split-title-line[\s\S]*?display:\s*block/, "SplitText line wrappers should keep block flow.");
+assert.match(styleSource, /\.split-title-word[\s\S]*?display:\s*inline-block/, "SplitText word wrappers should stay inline-block without scroll transform.");
+assert.match(styleSource, /\.split-title-char[\s\S]*?transform:\s*translate3d\(calc\(var\(--text-disperse\) \* 0\.16\), 0, 0\)/, "SplitText scroll exit should move only character wrappers.");
 assert.match(canvasSource, /targetPositions\[baseOffset\]\s*=\s*-0\.18/, "The absorbed formula field should converge near the visually centered paper.");
 assert.match(canvasSource, /<FormulaStarfield scrollProgressRef=\{scrollProgressRef\}/, "The formula starfield should absorb into the paper scene.");
 assert.match(directorSource, /--gate-opacity/, "The final Workbench Gate should be controlled by scroll progress.");

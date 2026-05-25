@@ -515,9 +515,15 @@ body.landing-shell {
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-.split-title-char,
-.split-title-word,
 .split-title-line {
+  display: block;
+}
+
+.split-title-word {
+  display: inline-block;
+}
+
+.split-title-char {
   display: inline-block;
   transform: translate3d(calc(var(--text-disperse) * 0.16), 0, 0);
   transition: opacity 0.18s ease, transform 0.18s ease;
