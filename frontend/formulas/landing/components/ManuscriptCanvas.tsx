@@ -177,16 +177,6 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
   );
 }
 
-function SceneLights() {
-  return (
-    <>
-      <ambientLight intensity={1.4} />
-      <directionalLight position={[-5, 5, 5]} intensity={1.8} color={0xffffff} />
-      <spotLight position={[4, 4, 4]} angle={Math.PI / 3} penumbra={0.8} intensity={14} color={0x5cffb0} />
-    </>
-  );
-}
-
 export function ManuscriptCanvas({ scrollProgressRef }: ManuscriptCanvasProps) {
   return (
     <div className="webgl-canvas-container" aria-hidden="true">
@@ -196,7 +186,6 @@ export function ManuscriptCanvas({ scrollProgressRef }: ManuscriptCanvasProps) {
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       >
         <fog attach="fog" args={["#000000", 5, 20]} />
-        <SceneLights />
         <FormulaStarfield scrollProgressRef={scrollProgressRef}/>
         <PaperMesh scrollProgressRef={scrollProgressRef} />
       </Canvas>

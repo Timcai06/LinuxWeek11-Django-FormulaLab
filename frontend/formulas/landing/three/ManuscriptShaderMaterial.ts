@@ -19,17 +19,24 @@ export function manuscriptShaderUniforms(texture: THREE.Texture | null): Manuscr
 }
 
 const vertexShader = `
+  #include <common>
+  #include <fog_pars_vertex>
+
   varying vec2 vUv;
-  varying vec3 vPosition;
 
   void main() {
     vUv = uv;
-    vPosition = position;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+    #include <fog_vertex>
   }
 `;
 
 const fragmentShader = `
+  #include <common>
+  #include <dithering_pars_fragment>
+  #include <fog_pars_fragment>
+
   uniform sampler2D uTexture;
   uniform float uTime;
   uniform float uScanProgress;
@@ -37,7 +44,6 @@ const fragmentShader = `
   uniform float uOpacity;
 
   varying vec2 vUv;
-  varying vec3 vPosition;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -53,14 +59,19 @@ const fragmentShader = `
     vec3 litPaper = decodedInk + scanColor * scanLine * 0.42 + scanColor * scanWake * 0.08;
     litPaper += (grain - 0.5) * 0.035;
     gl_FragColor = vec4(litPaper, paper.a * uOpacity);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+    #include <fog_fragment>
+    #include <dithering_fragment>
   }
 `;
 
 export function createManuscriptShaderMaterial(texture: THREE.Texture) {
   return new THREE.ShaderMaterial({
-    uniforms: manuscriptShaderUniforms(texture),
+    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, manuscriptShaderUniforms(texture)]),
     vertexShader,
     fragmentShader,
+    fog: true,
     transparent: true,
     side: THREE.DoubleSide,
     depthWrite: true,
