@@ -6,7 +6,7 @@ const files = {
   director: "frontend/formulas/landing/components/ScrollDirector.tsx",
   splitText: "frontend/formulas/landing/components/SplitTextTitleSequence.tsx",
   constellation: "frontend/formulas/landing/components/FormulaConstellationField.tsx",
-  workspace: "frontend/formulas/landing/components/WorkspaceRevealOverlay.tsx",
+  gate: "frontend/formulas/landing/components/WorkbenchGateOverlay.tsx",
   manuscript: "frontend/formulas/landing/components/ManuscriptCanvas.tsx",
   shader: "frontend/formulas/landing/three/ManuscriptShaderMaterial.ts",
   motion: "frontend/formulas/landing/three/motion.ts",
@@ -22,25 +22,21 @@ const storySource = readFileSync(files.story, "utf8");
 const directorSource = readFileSync(files.director, "utf8");
 const splitTextSource = readFileSync(files.splitText, "utf8");
 const constellationSource = readFileSync(files.constellation, "utf8");
-const workspaceSource = readFileSync(files.workspace, "utf8");
+const gateSource = readFileSync(files.gate, "utf8");
 const manuscriptSource = readFileSync(files.manuscript, "utf8");
 const shaderSource = readFileSync(files.shader, "utf8");
 const motionSource = readFileSync(files.motion, "utf8");
 const typeSource = readFileSync(files.types, "utf8");
 const styleSource = readFileSync(files.styles, "utf8");
-const shellIndex = workspaceSource.indexOf("product-preview-shell");
-const topbarIndex = workspaceSource.indexOf("product-preview-topbar");
-const ctaIndex = workspaceSource.indexOf("workspace-cta");
-const topbarBody =
-  topbarIndex === -1
-    ? ""
-    : workspaceSource.slice(topbarIndex, workspaceSource.indexOf("product-preview-grid", topbarIndex));
+const gateIndex = gateSource.indexOf("workbench-gate");
+const ctaIndex = gateSource.indexOf("workbench-gate-cta");
 
 assert.match(storySource, /<ScrollDirector/, "LandingScrollStory should delegate scroll orchestration.");
 assert.match(storySource, /<FormulaConstellationField/, "LandingScrollStory should render the formula constellation module.");
-assert.match(storySource, /<WorkspaceRevealOverlay/, "LandingScrollStory should render the workspace reveal module.");
+assert.match(storySource, /<WorkbenchGateOverlay/, "LandingScrollStory should render the Workbench Gate module.");
+assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "LandingScrollStory should not render the rejected Product Preview overlay.");
 assert.doesNotMatch(storySource, /ScrollTrigger\.create/, "ScrollTrigger setup should live in ScrollDirector.");
-assert.doesNotMatch(storySource, /workspace-pane/, "Workspace skeleton markup should live in WorkspaceRevealOverlay.");
+assert.doesNotMatch(storySource, /workspace-pane/, "Workspace skeleton markup should stay out of LandingScrollStory.");
 
 assert.match(directorSource, /ScrollTrigger\.create/, "ScrollDirector should own ScrollTrigger setup.");
 for (const phase of ["intro", "absorb", "center", "scan", "reveal", "cta"]) {
@@ -56,26 +52,19 @@ assert.doesNotMatch(splitTextSource, /fromTo\(\s*['"]\.landing-copy['"]/, "Split
 assert.match(constellationSource, /FormulaConstellationField/, "FormulaConstellationField component should exist.");
 assert.match(constellationSource, /katex|renderToString/, "Formula constellation should render formulas, not raw TeX strings.");
 
-assert.match(workspaceSource, /WorkspaceRevealOverlay/, "WorkspaceRevealOverlay component should exist.");
-assert.match(workspaceSource, /product-preview-shell/, "Workspace reveal should render a semantic product preview shell.");
-assert.match(workspaceSource, /product-preview-topbar/, "Product preview should keep CTA actions inside a semantic top bar.");
-assert.match(workspaceSource, /product-preview-project/, "Product preview should include project context.");
-assert.match(workspaceSource, /product-preview-paper/, "Product preview should include a paper workspace.");
-assert.match(workspaceSource, /product-preview-review/, "Product preview should include formula review inbox.");
-assert.match(workspaceSource, /product-preview-collab/, "Product preview should include collaboration signals.");
-assert.match(workspaceSource, /project-file/, "Project context should render semantic project file rows.");
-assert.match(workspaceSource, /review-card/, "Formula review inbox should render review cards.");
-assert.match(workspaceSource, /review-card-footer/, "Formula review cards should expose semantic action/status footer structure.");
-assert.match(workspaceSource, /workspace-cta/, "Workspace reveal should expose final product CTAs.");
-assert.notEqual(shellIndex, -1, "Workspace reveal should define a product preview shell index.");
-assert.notEqual(topbarIndex, -1, "Workspace reveal should define a product preview top bar index.");
-assert.notEqual(ctaIndex, -1, "Workspace reveal should define a workspace CTA index.");
-assert.ok(shellIndex < ctaIndex, "Workspace CTA should live inside the product preview structure, not as a detached ending.");
-assert.ok(topbarIndex < ctaIndex, "Workspace CTA should appear after the product preview top bar begins.");
-assert.match(topbarBody, /workspace-cta/, "Workspace CTA should be embedded in the product preview top bar.");
-assert.doesNotMatch(workspaceSource, /workspace-pane-outline/, "Product preview should not regress to the old decorative outline pane.");
-assert.doesNotMatch(workspaceSource, /workspace-pane-paper/, "Product preview should not regress to the old decorative paper pane.");
-assert.doesNotMatch(workspaceSource, /workspace-pane-review/, "Product preview should not regress to the old decorative review pane.");
+assert.match(gateSource, /WorkbenchGateOverlay/, "WorkbenchGateOverlay component should exist.");
+assert.match(gateSource, /workbench-gate/, "Workbench Gate should render a minimal terminal shell.");
+assert.match(gateSource, /workbench-gate-copy/, "Workbench Gate should keep one short product landing sentence.");
+assert.match(gateSource, /workbench-gate-cta/, "Workbench Gate should expose a final CTA.");
+assert.match(gateSource, /Enter Workbench/, "The final CTA label should be Enter Workbench.");
+assert.match(gateSource, /href="\/workbench\/"/, "The final CTA should navigate to the Workbench.");
+assert.doesNotMatch(gateSource, /Start Recognition/, "Workbench Gate should not keep a competing Start Recognition CTA.");
+assert.doesNotMatch(gateSource, /Open Workspace/, "Workbench Gate should not keep a competing Open Workspace CTA.");
+assert.doesNotMatch(gateSource, /product-preview-/, "Workbench Gate should not render Product Preview markup.");
+assert.doesNotMatch(gateSource, /Project|Formula Review|Suggested edit|references\.bib|main\.tex/, "Workbench Gate should not render product preview content.");
+assert.notEqual(gateIndex, -1, "Workbench Gate should define its terminal shell.");
+assert.notEqual(ctaIndex, -1, "Workbench Gate should define its CTA.");
+assert.ok(gateIndex < ctaIndex, "Workbench Gate CTA should live inside the terminal shell.");
 
 assert.match(manuscriptSource, /createManuscriptShaderMaterial|manuscriptShaderUniforms/, "ManuscriptCanvas should use the manuscript shader scan material.");
 assert.match(manuscriptSource, /STARFIELD_PARTICLE_COUNT\s*=\s*720/, "Particle count should remain capped for desktop performance.");

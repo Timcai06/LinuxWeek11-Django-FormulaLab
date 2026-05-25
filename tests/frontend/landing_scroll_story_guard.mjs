@@ -16,7 +16,8 @@ assert.match(directorSource, /--text-disperse/, "Landing text should disperse aw
 assert.match(directorSource, /--shutdown-opacity/, "Landing HUD should shut down as the paper takes focus.");
 assert.match(storySource, /ScrollDirector/, "Landing should use a scroll director module.");
 assert.match(storySource, /FormulaConstellationField/, "Landing should keep formulas in a dedicated constellation module.");
-assert.match(storySource, /WorkspaceRevealOverlay/, "Landing should keep workspace reveal markup in a dedicated module.");
+assert.match(storySource, /WorkbenchGateOverlay/, "Landing should keep the final Workbench Gate in a dedicated module.");
+assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "Landing should not keep the rejected Product Preview overlay.");
 assert.match(styleSource, /--cta-opacity/, "Landing should expose a final CTA phase variable.");
 assert.match(canvasSource, /FormulaStarfield/, "Landing should use a Three.js formula particle starfield.");
 assert.match(directorSource, /center/, "Landing story should have a manuscript-centering phase before scan/decode.");
@@ -28,19 +29,20 @@ assert.match(canvasSource, /lerp\(3\.4,\s*-0\.18,\s*centerProgress\)/, "The pape
 assert.match(canvasSource, /lerp\(-1\.35,\s*-0\.04,\s*centerProgress\)/, "The paper should resolve close to the vertical screen center.");
 assert.match(canvasSource, /targetPositions\[baseOffset\]\s*=\s*-0\.18/, "The absorbed formula field should converge near the visually centered paper.");
 assert.match(canvasSource, /<FormulaStarfield scrollProgressRef=\{scrollProgressRef\}/, "The formula starfield should absorb into the paper scene.");
-assert.match(storySource, /WorkspaceRevealOverlay/, "After scanning, the landing should reveal a product workspace silhouette.");
-assert.match(directorSource, /--workspace-opacity/, "The product workspace reveal should be controlled by scroll progress.");
-assert.match(directorSource, /--project-preview-opacity/, "Product preview project context should have a staged reveal variable.");
-assert.match(directorSource, /--paper-preview-opacity/, "Product preview paper workspace should have a staged reveal variable.");
-assert.match(directorSource, /--review-preview-opacity/, "Product preview formula review should have a staged reveal variable.");
-assert.match(directorSource, /--collab-preview-opacity/, "Product preview collaboration signals should have a staged reveal variable.");
-assert.match(directorSource, /--manuscript-final-opacity/, "ScrollDirector should lower manuscript dominance in the final product preview.");
-assert.match(styleSource, /\.workspace-reveal/, "The product workspace reveal should have a dedicated visual layer.");
-assert.match(styleSource, /--project-preview-opacity/, "Landing styles should declare a project preview reveal variable name.");
-assert.match(styleSource, /--paper-preview-opacity/, "Landing styles should declare a paper preview reveal variable name.");
-assert.match(styleSource, /--review-preview-opacity/, "Landing styles should declare a review preview reveal variable name.");
-assert.match(styleSource, /--collab-preview-opacity/, "Landing styles should declare a collaboration preview reveal variable name.");
+assert.match(directorSource, /--gate-opacity/, "The final Workbench Gate should be controlled by scroll progress.");
+assert.match(directorSource, /--gate-y/, "The final Workbench Gate should have a staged vertical entrance.");
+assert.match(directorSource, /--gate-scale/, "The final Workbench Gate should settle into place without a hard cut.");
+assert.match(directorSource, /--gate-aura-opacity/, "The final Workbench Gate should expose a subtle aura layer.");
+assert.match(directorSource, /--manuscript-final-opacity/, "ScrollDirector should lower manuscript dominance in the final gate.");
+assert.doesNotMatch(directorSource, /--project-preview-opacity/, "Landing should not keep Product Preview project reveal variables.");
+assert.doesNotMatch(directorSource, /--paper-preview-opacity/, "Landing should not keep Product Preview paper reveal variables.");
+assert.doesNotMatch(directorSource, /--review-preview-opacity/, "Landing should not keep Product Preview review reveal variables.");
+assert.doesNotMatch(directorSource, /--collab-preview-opacity/, "Landing should not keep Product Preview collaboration reveal variables.");
+assert.match(styleSource, /\.workbench-gate/, "The final Workbench Gate should have a dedicated visual layer.");
+assert.match(styleSource, /var\(--gate-opacity\)/, "Landing styles should consume the final gate opacity variable.");
+assert.match(styleSource, /var\(--gate-aura-opacity\)/, "Landing styles should consume the final gate aura variable.");
 assert.match(styleSource, /var\(--manuscript-final-opacity\)/, "Landing styles should consume the final manuscript fade variable.");
+assert.doesNotMatch(styleSource, /product-preview-/, "Landing styles should not keep Product Preview terminal styles.");
 assert.doesNotMatch(
   storySource,
   /ScrollTrigger\.create/,
