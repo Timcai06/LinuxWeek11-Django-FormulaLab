@@ -64,8 +64,10 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       const progress = scrollProgressRef.current;
-      // The curtain sweeps down from progress 0.88, fully covering by 0.96
-      const curtainProgress = progressBetween(progress, 0.88, 0.96);
+      const curtainSweepProgress = progressBetween(progress, 0.80, 0.94);
+      const curtainProgress = curtainSweepProgress * curtainSweepProgress * (3 - 2 * curtainSweepProgress);
+      const curtainExitProgress = progressBetween(progress, 0.94, 0.99);
+      const visibleProgress = curtainProgress * (1 - curtainExitProgress);
 
       // Update points: each point grows from 0 to 100 based on progress + delays
       const pts = allPoints.current;
@@ -75,13 +77,12 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
         const pathDelay = 0.08 * i; // Back path (i=0) starts first, front path (i=1) follows
         for (let j = 0; j < NUM_POINTS; j++) {
           const pointDelay = delays[j]! + pathDelay;
-          // Divisor is scaled to ensure all points reach 100 before curtainProgress = 1.0
           const pointProgress = Math.max(0, Math.min(1, (curtainProgress - pointDelay) / (1 - pointDelay - 0.05)));
           // Ease: power2.inOut approximation
           const eased = pointProgress < 0.5
             ? 2 * pointProgress * pointProgress
             : 1 - Math.pow(-2 * pointProgress + 2, 2) / 2;
-          pts[i]![j] = 100 * eased;
+          pts[i]![j] = 82 * eased;
         }
       }
 
@@ -102,8 +103,7 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
         pathEl.setAttribute("d", d);
       }
 
-      // Smoothly fade in the curtain opacity as it begins to sweep down
-      svg.style.opacity = Math.min(1, curtainProgress * 8).toFixed(3);
+      svg.style.opacity = (0.66 * visibleProgress).toFixed(3);
 
       raf = requestAnimationFrame(update);
     };

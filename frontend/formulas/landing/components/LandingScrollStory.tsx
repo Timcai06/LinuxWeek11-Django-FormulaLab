@@ -5,6 +5,7 @@ import { DecodeChamberOverlay } from "./DecodeChamberOverlay";
 import { FormulaConstellationField } from "./FormulaConstellationField";
 import { FormulaVortex } from "./FormulaVortex";
 import { Hero } from "./Hero";
+import { HorizontalTicker } from "./HorizontalTicker";
 import { ManuscriptCanvas } from "./ManuscriptCanvas";
 import { MorphCurtain } from "./MorphCurtain";
 import { PaperWorkspaceGhost } from "./PaperWorkspaceGhost";
@@ -25,6 +26,7 @@ export function LandingScrollStory() {
         <DecodeChamberOverlay />
         <PaperWorkspaceGhost />
         <CollaborationSignalField />
+        <HorizontalTicker scrollProgressRef={scrollProgressRef} />
         <WorkbenchGateOverlay />
         <MorphCurtain scrollProgressRef={scrollProgressRef} />
         <div className="story-rail" aria-hidden="true">

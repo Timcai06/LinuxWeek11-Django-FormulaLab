@@ -5,7 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { LandingPhase, ScrollDirectorProps } from "../types";
 import { phaseOpacity, phaseOpacityHold, progressBetween } from "../three/motion";
 
-const SNAP_LABELS = [0, 0.10, 0.20, 0.40, 0.60, 0.75, 0.85, 1];
+const SNAP_LABELS = [0, 0.10, 0.25, 0.36, 0.50, 0.64, 0.76, 0.88, 0.96, 1];
 
 function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: number) {
   const centerProgress = progressBetween(progress, 0.10, 0.50);
@@ -19,6 +19,10 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   const decodeChamberOpacity = phaseOpacityHold(progress, 0.46, 0.50, 0.62, 0.66);
   const workspaceGhostOpacity = phaseOpacityHold(progress, 0.66, 0.70, 0.78, 0.82);
   const collabSignalOpacity = phaseOpacity(progress, 0.82, 0.87, 0.91);
+  const tickerOpacity = phaseOpacityHold(progress, 0.76, 0.80, 0.90, 0.94);
+  const tickerSweep = progressBetween(progress, 0.76, 0.94);
+  const tickerSettle = progressBetween(progress, 0.80, 0.90);
+  const tickerChaos = Math.max(0, 1 - tickerSettle);
   
   const gateProgress = progressBetween(progress, 0.92, 0.99);
   const gateAuraOpacity = gateProgress * 0.24;
@@ -50,6 +54,11 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   
   storyElement.style.setProperty("--collab-signal-opacity", collabSignalOpacity.toFixed(4));
   storyElement.style.setProperty("--collab-signal-y", `${(24 * (1 - collabSignalOpacity)).toFixed(3)}px`);
+  storyElement.style.setProperty("--ticker-opacity", tickerOpacity.toFixed(4));
+  storyElement.style.setProperty("--ticker-x", `${(34 - tickerSweep * 68).toFixed(3)}vw`);
+  storyElement.style.setProperty("--ticker-y", `${(-4 + tickerSettle * 2).toFixed(3)}vh`);
+  storyElement.style.setProperty("--ticker-chaos", tickerChaos.toFixed(4));
+  storyElement.style.setProperty("--ticker-scale", (0.92 + tickerSettle * 0.08).toFixed(4));
   
   storyElement.style.setProperty("--gate-opacity", gateProgress.toFixed(4));
   storyElement.style.setProperty("--gate-y", `${(34 * (1 - gateProgress)).toFixed(3)}px`);
@@ -112,7 +121,13 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
         trigger: storyElement,
         start: "top top",
         end: "bottom bottom",
-        scrub: true,
+        scrub: 0.8,
+        snap: {
+          snapTo: SNAP_LABELS,
+          duration: { min: 0.25, max: 0.55 },
+          delay: 0.08,
+          ease: "power2.out",
+        },
         onUpdate(self) {
           const progress = self.progress;
           scrollProgressRef.current = progress;

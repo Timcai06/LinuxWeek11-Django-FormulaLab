@@ -40,6 +40,11 @@ body.landing-shell {
   --gate-scale: 0.985;
   --gate-aura-opacity: 0;
   --manuscript-final-opacity: 1;
+  --ticker-opacity: 0;
+  --ticker-x: 34vw;
+  --ticker-y: -4vh;
+  --ticker-chaos: 1;
+  --ticker-scale: 0.92;
   --story-progress: 0;
 }
 
@@ -432,7 +437,7 @@ body.landing-shell {
 .workbench-gate {
   position: absolute;
   inset: auto 50% clamp(42px, 9vh, 96px) auto;
-  z-index: 16;
+  z-index: 18;
   width: min(86vw, 760px);
   pointer-events: none;
   opacity: var(--gate-opacity);
@@ -897,15 +902,21 @@ body.landing-shell {
 /* ── Horizontal Ticker (Epilogue) ────────────────────────── */
 .ht-section {
   overflow: hidden;
+  position: absolute;
+  inset: 0;
+  z-index: 13;
   height: 100vh;
   display: flex;
   align-items: center;
-  background: #0e100f;
-  position: relative;
+  opacity: var(--ticker-opacity);
+  pointer-events: none;
 }
 
 .ht-track {
   width: 100%;
+  transform: translate3d(var(--ticker-x), var(--ticker-y), 0) scale(var(--ticker-scale));
+  transform-origin: center;
+  will-change: transform;
 }
 
 .ht-text {
@@ -921,10 +932,13 @@ body.landing-shell {
   color: rgba(255, 255, 255, 0.92);
   font-family: "D-DIN", "D-DIN Exp", "Arial Narrow", Arial, sans-serif;
   text-shadow: 0 0 60px rgba(255, 255, 255, 0.15);
+  transform: translate3d(0, 0, 0);
 }
 
 .ht-char {
   display: inline-block;
+  transform: translate3d(0, calc(var(--ticker-chaos) * var(--char-drift)), 0)
+    rotate(calc(var(--ticker-chaos) * var(--char-rotation)));
   will-change: transform;
 }
 
@@ -938,4 +952,3 @@ body.landing-shell {
   pointer-events: none;
   opacity: 0;
 }
-
