@@ -7,4 +7,5 @@ assert.match(constellationSource, /renderToString/, "Landing formula cosmos shou
 assert.doesNotMatch(constellationSource, /textContent\s*=\s*equation/, "Landing formula cosmos must not show raw TeX code.");
 assert.doesNotMatch(constellationSource, /:\s*formula\.source/, "Landing formula cosmos must not fall back to visible raw TeX.");
 assert.doesNotMatch(constellationSource, />\{formula\.source\}</, "Landing formula cosmos must not render formula.source as JSX text.");
+assert.doesNotMatch(constellationSource, /__html:\s*(?:formula\.)?source\b/, "Landing formula cosmos must not inject raw TeX through dangerouslySetInnerHTML.");
 assert.match(constellationSource, /dangerouslySetInnerHTML=\{markup\}/, "Landing formula cosmos should inject rendered KaTeX markup.");

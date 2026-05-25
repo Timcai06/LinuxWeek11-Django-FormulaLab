@@ -28,6 +28,9 @@ const shaderSource = readFileSync(files.shader, "utf8");
 const motionSource = readFileSync(files.motion, "utf8");
 const typeSource = readFileSync(files.types, "utf8");
 const styleSource = readFileSync(files.styles, "utf8");
+const shellIndex = workspaceSource.indexOf("product-preview-shell");
+const topbarIndex = workspaceSource.indexOf("product-preview-topbar");
+const ctaIndex = workspaceSource.indexOf("workspace-cta");
 
 assert.match(storySource, /<ScrollDirector/, "LandingScrollStory should delegate scroll orchestration.");
 assert.match(storySource, /<FormulaConstellationField/, "LandingScrollStory should render the formula constellation module.");
@@ -51,14 +54,20 @@ assert.match(constellationSource, /katex|renderToString/, "Formula constellation
 
 assert.match(workspaceSource, /WorkspaceRevealOverlay/, "WorkspaceRevealOverlay component should exist.");
 assert.match(workspaceSource, /product-preview-shell/, "Workspace reveal should render a semantic product preview shell.");
+assert.match(workspaceSource, /product-preview-topbar/, "Product preview should keep CTA actions inside a semantic top bar.");
 assert.match(workspaceSource, /product-preview-project/, "Product preview should include project context.");
 assert.match(workspaceSource, /product-preview-paper/, "Product preview should include a paper workspace.");
 assert.match(workspaceSource, /product-preview-review/, "Product preview should include formula review inbox.");
 assert.match(workspaceSource, /product-preview-collab/, "Product preview should include collaboration signals.");
-assert.match(workspaceSource, /main\.tex/, "Project context should expose a recognizable LaTeX project file.");
-assert.match(workspaceSource, /references\.bib/, "Project context should expose bibliography context.");
-assert.match(workspaceSource, /Accept|Edit/, "Formula review inbox should expose review actions.");
+assert.match(workspaceSource, /project-file/, "Project context should render semantic project file rows.");
+assert.match(workspaceSource, /review-card/, "Formula review inbox should render review cards.");
+assert.match(workspaceSource, /review-card-footer/, "Formula review cards should expose semantic action/status footer structure.");
 assert.match(workspaceSource, /workspace-cta/, "Workspace reveal should expose final product CTAs.");
+assert.notEqual(shellIndex, -1, "Workspace reveal should define a product preview shell index.");
+assert.notEqual(topbarIndex, -1, "Workspace reveal should define a product preview top bar index.");
+assert.notEqual(ctaIndex, -1, "Workspace reveal should define a workspace CTA index.");
+assert.ok(shellIndex < ctaIndex, "Workspace CTA should live inside the product preview structure, not as a detached ending.");
+assert.ok(topbarIndex < ctaIndex, "Workspace CTA should appear after the product preview top bar begins.");
 assert.doesNotMatch(workspaceSource, /workspace-pane-outline/, "Product preview should not regress to the old decorative outline pane.");
 assert.doesNotMatch(workspaceSource, /workspace-pane-paper/, "Product preview should not regress to the old decorative paper pane.");
 assert.doesNotMatch(workspaceSource, /workspace-pane-review/, "Product preview should not regress to the old decorative review pane.");
