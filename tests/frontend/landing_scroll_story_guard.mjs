@@ -19,8 +19,23 @@ assert.match(storySource, /FormulaConstellationField/, "Landing should keep form
 assert.match(storySource, /WorkbenchGateOverlay/, "Landing should keep the final Workbench Gate in a dedicated module.");
 assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "Landing should not keep the rejected Product Preview overlay.");
 assert.match(styleSource, /--cta-opacity/, "Landing should expose a final CTA phase variable.");
+assert.match(directorSource, /--decode-chamber-opacity/, "ScrollDirector should expose Decode Chamber opacity.");
+assert.match(directorSource, /--decode-chamber-y/, "ScrollDirector should expose Decode Chamber vertical motion.");
+assert.match(directorSource, /--workspace-ghost-opacity/, "ScrollDirector should expose Paper Workspace Ghost opacity.");
+assert.match(directorSource, /--workspace-ghost-y/, "ScrollDirector should expose Paper Workspace Ghost vertical motion.");
+assert.match(directorSource, /--collab-signal-opacity/, "ScrollDirector should expose Collaboration Signal opacity.");
+assert.match(directorSource, /--collab-signal-y/, "ScrollDirector should expose Collaboration Signal vertical motion.");
+assert.match(styleSource, /var\(--decode-chamber-opacity\)/, "Landing styles should consume Decode Chamber opacity.");
+assert.match(styleSource, /var\(--workspace-ghost-opacity\)/, "Landing styles should consume Paper Workspace Ghost opacity.");
+assert.match(styleSource, /var\(--collab-signal-opacity\)/, "Landing styles should consume Collaboration Signal opacity.");
 assert.match(canvasSource, /FormulaStarfield/, "Landing should use a Three.js formula particle starfield.");
 assert.match(directorSource, /center/, "Landing story should have a manuscript-centering phase before scan/decode.");
+assert.match(directorSource, /if \(progress >= 0\.92\)[\s\S]*return "cta"/, "CTA phase should begin at the final gate threshold.");
+assert.match(directorSource, /if \(progress >= 0\.82\)[\s\S]*return "collab"/, "Collaboration phase should precede the final gate.");
+assert.match(directorSource, /if \(progress >= 0\.66\)[\s\S]*return "workspace"/, "Workspace ghost phase should follow decode.");
+assert.match(directorSource, /if \(progress >= 0\.5\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
+assert.doesNotMatch(directorSource, /return "reveal"/, "The old reveal phase should be replaced by explicit workspace/collaboration phases.");
+assert.doesNotMatch(directorSource, /return "scan"/, "Scan should be a visual sub-progress, not a top-level fifth-stage phase.");
 assert.match(directorSource, /phaseOpacity\(progress, 0\.5, 0\.62, 0\.74\)/, "Scan should begin after the paper moves to center.");
 assert.match(canvasSource, /scrollProgressRef/, "The manuscript canvas should receive scroll progress.");
 assert.match(canvasSource, /useFrame/, "The manuscript canvas should animate the paper per frame.");
@@ -35,8 +50,8 @@ assert.match(directorSource, /--gate-scale/, "The final Workbench Gate should se
 assert.match(directorSource, /--gate-aura-opacity/, "The final Workbench Gate should expose a subtle aura layer.");
 assert.match(
   directorSource,
-  /const gateProgress = progressBetween\(progress, 0\.88, 0\.98\)/,
-  "Workbench Gate motion should start at the CTA threshold so the hidden reveal phase cannot cause a pop-in.",
+  /const gateProgress = progressBetween\(progress, 0\.92, 0\.99\)/,
+  "Workbench Gate motion should start only after the collaboration signal phase.",
 );
 assert.match(
   directorSource,

@@ -1,6 +1,6 @@
 import type { MutableRefObject, ReactNode } from "react";
 
-export type LandingPhase = "intro" | "absorb" | "center" | "scan" | "reveal" | "cta";
+export type LandingPhase = "intro" | "absorb" | "center" | "decode" | "workspace" | "collab" | "cta";
 
 export type ScrollProgressRef = MutableRefObject<number>;
 
@@ -15,7 +15,10 @@ export type StoryCssVars = {
   shutdownOpacity: number;
   cosmosOpacity: number;
   scanOpacity: number;
-  workspaceOpacity: number;
+  decodeChamberOpacity: number;
+  workspaceGhostOpacity: number;
+  collabSignalOpacity: number;
+  gateOpacity: number;
   ctaOpacity: number;
   phase: LandingPhase;
 };

@@ -6,6 +6,9 @@ const files = {
   director: "frontend/formulas/landing/components/ScrollDirector.tsx",
   splitText: "frontend/formulas/landing/components/SplitTextTitleSequence.tsx",
   constellation: "frontend/formulas/landing/components/FormulaConstellationField.tsx",
+  decode: "frontend/formulas/landing/components/DecodeChamberOverlay.tsx",
+  workspaceGhost: "frontend/formulas/landing/components/PaperWorkspaceGhost.tsx",
+  collaboration: "frontend/formulas/landing/components/CollaborationSignalField.tsx",
   gate: "frontend/formulas/landing/components/WorkbenchGateOverlay.tsx",
   manuscript: "frontend/formulas/landing/components/ManuscriptCanvas.tsx",
   shader: "frontend/formulas/landing/three/ManuscriptShaderMaterial.ts",
@@ -22,6 +25,9 @@ const storySource = readFileSync(files.story, "utf8");
 const directorSource = readFileSync(files.director, "utf8");
 const splitTextSource = readFileSync(files.splitText, "utf8");
 const constellationSource = readFileSync(files.constellation, "utf8");
+const decodeSource = readFileSync(files.decode, "utf8");
+const workspaceGhostSource = readFileSync(files.workspaceGhost, "utf8");
+const collaborationSource = readFileSync(files.collaboration, "utf8");
 const gateSource = readFileSync(files.gate, "utf8");
 const manuscriptSource = readFileSync(files.manuscript, "utf8");
 const shaderSource = readFileSync(files.shader, "utf8");
@@ -33,13 +39,16 @@ const ctaIndex = gateSource.indexOf("workbench-gate-cta");
 
 assert.match(storySource, /<ScrollDirector/, "LandingScrollStory should delegate scroll orchestration.");
 assert.match(storySource, /<FormulaConstellationField/, "LandingScrollStory should render the formula constellation module.");
+assert.match(storySource, /<DecodeChamberOverlay/, "LandingScrollStory should render the decode chamber module.");
+assert.match(storySource, /<PaperWorkspaceGhost/, "LandingScrollStory should render the paper workspace ghost module.");
+assert.match(storySource, /<CollaborationSignalField/, "LandingScrollStory should render the collaboration signal module.");
 assert.match(storySource, /<WorkbenchGateOverlay/, "LandingScrollStory should render the Workbench Gate module.");
 assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "LandingScrollStory should not render the rejected Product Preview overlay.");
 assert.doesNotMatch(storySource, /ScrollTrigger\.create/, "ScrollTrigger setup should live in ScrollDirector.");
-assert.doesNotMatch(storySource, /workspace-pane/, "Workspace skeleton markup should stay out of LandingScrollStory.");
+assert.doesNotMatch(storySource, /workspace-pane|product-preview-/, "Old product preview card markup should stay out of LandingScrollStory.");
 
 assert.match(directorSource, /ScrollTrigger\.create/, "ScrollDirector should own ScrollTrigger setup.");
-for (const phase of ["intro", "absorb", "center", "scan", "reveal", "cta"]) {
+for (const phase of ["intro", "absorb", "center", "decode", "workspace", "collab", "cta"]) {
   assert.match(directorSource, new RegExp(`["']${phase}["']`), `ScrollDirector should expose the "${phase}" story phase.`);
 }
 assert.match(directorSource, /--cta-opacity/, "ScrollDirector should drive the final CTA phase.");
@@ -51,6 +60,23 @@ assert.doesNotMatch(splitTextSource, /fromTo\(\s*['"]\.landing-copy['"]/, "Split
 
 assert.match(constellationSource, /FormulaConstellationField/, "FormulaConstellationField component should exist.");
 assert.match(constellationSource, /katex|renderToString/, "Formula constellation should render formulas, not raw TeX strings.");
+
+assert.match(decodeSource, /DecodeChamberOverlay/, "DecodeChamberOverlay component should exist.");
+assert.match(decodeSource, /decode-chamber/, "Decode Chamber should use a dedicated class namespace.");
+assert.match(decodeSource, /LaTeX candidate/, "Decode Chamber should show formula-recognition product language.");
+assert.match(decodeSource, /Confidence/, "Decode Chamber should show recognition confidence.");
+assert.doesNotMatch(decodeSource, /GPU|VRAM|TARGET LOCKED/, "Decode Chamber should avoid fake machine telemetry language.");
+
+assert.match(workspaceGhostSource, /PaperWorkspaceGhost/, "PaperWorkspaceGhost component should exist.");
+assert.match(workspaceGhostSource, /paper-workspace-ghost/, "Paper Workspace Ghost should use a dedicated class namespace.");
+assert.match(workspaceGhostSource, /main\.tex/, "Paper Workspace Ghost should show paper-editing context.");
+assert.match(workspaceGhostSource, /Review inbox/, "Paper Workspace Ghost should show review-inbox context.");
+assert.doesNotMatch(workspaceGhostSource, /product-preview-/, "Paper Workspace Ghost should not revive the old Product Preview namespace.");
+
+assert.match(collaborationSource, /CollaborationSignalField/, "CollaborationSignalField component should exist.");
+assert.match(collaborationSource, /collaboration-signal/, "Collaboration Signal Field should use a dedicated class namespace.");
+assert.match(collaborationSource, /Accept change|Comment|cursor/, "Collaboration Signal Field should show collaboration language.");
+assert.doesNotMatch(collaborationSource, /GPU|VRAM|TARGET LOCKED/, "Collaboration signals should avoid fake machine telemetry language.");
 
 assert.match(gateSource, /WorkbenchGateOverlay/, "WorkbenchGateOverlay component should exist.");
 assert.match(gateSource, /workbench-gate/, "Workbench Gate should render a minimal terminal shell.");
