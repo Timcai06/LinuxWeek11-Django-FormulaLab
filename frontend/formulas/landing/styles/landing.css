@@ -30,6 +30,11 @@ body.landing-shell {
   --scan-opacity: 0;
   --decode-opacity: 0;
   --workspace-opacity: 0;
+  --project-preview-opacity: 0;
+  --paper-preview-opacity: 0;
+  --review-preview-opacity: 0;
+  --collab-preview-opacity: 0;
+  --manuscript-final-opacity: 1;
   --workspace-scale: 0.96;
   --workspace-y: 28px;
   --story-progress: 0;
@@ -49,7 +54,9 @@ body.landing-shell {
   z-index: 1;
   width: 100vw;
   height: 100vh;
+  opacity: var(--manuscript-final-opacity);
   pointer-events: none;
+  transition: opacity 0.18s ease;
 }
 
 .webgl-canvas-container canvas {

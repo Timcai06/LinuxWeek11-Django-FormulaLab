@@ -15,6 +15,11 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   const scanOpacity = phaseOpacity(progress, 0.5, 0.62, 0.74);
   const decodeOpacity = phaseOpacity(progress, 0.66, 0.78, 0.94);
   const workspaceProgress = progressBetween(progress, 0.72, 0.92);
+  const projectPreviewOpacity = progressBetween(progress, 0.72, 0.82);
+  const paperPreviewOpacity = progressBetween(progress, 0.76, 0.88);
+  const reviewPreviewOpacity = progressBetween(progress, 0.8, 0.92);
+  const collabPreviewOpacity = progressBetween(progress, 0.86, 0.98);
+  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.76, 0.94) * 0.46;
   const ctaOpacity = progressBetween(progress, 0.88, 0.98);
 
   storyElement.style.setProperty("--story-progress", progress.toFixed(4));
@@ -34,6 +39,11 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   storyElement.style.setProperty("--scan-opacity", scanOpacity.toFixed(4));
   storyElement.style.setProperty("--decode-opacity", decodeOpacity.toFixed(4));
   storyElement.style.setProperty("--workspace-opacity", workspaceProgress.toFixed(4));
+  storyElement.style.setProperty("--project-preview-opacity", projectPreviewOpacity.toFixed(4));
+  storyElement.style.setProperty("--paper-preview-opacity", paperPreviewOpacity.toFixed(4));
+  storyElement.style.setProperty("--review-preview-opacity", reviewPreviewOpacity.toFixed(4));
+  storyElement.style.setProperty("--collab-preview-opacity", collabPreviewOpacity.toFixed(4));
+  storyElement.style.setProperty("--manuscript-final-opacity", manuscriptFinalOpacity.toFixed(4));
   storyElement.style.setProperty("--workspace-scale", (0.96 + workspaceProgress * 0.04).toFixed(4));
   storyElement.style.setProperty("--workspace-y", `${(28 * (1 - workspaceProgress)).toFixed(3)}px`);
   storyElement.style.setProperty("--cta-opacity", ctaOpacity.toFixed(4));
