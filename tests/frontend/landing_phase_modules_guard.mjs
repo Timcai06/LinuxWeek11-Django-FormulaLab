@@ -31,6 +31,10 @@ const styleSource = readFileSync(files.styles, "utf8");
 const shellIndex = workspaceSource.indexOf("product-preview-shell");
 const topbarIndex = workspaceSource.indexOf("product-preview-topbar");
 const ctaIndex = workspaceSource.indexOf("workspace-cta");
+const topbarBody =
+  topbarIndex === -1
+    ? ""
+    : workspaceSource.slice(topbarIndex, workspaceSource.indexOf("product-preview-grid", topbarIndex));
 
 assert.match(storySource, /<ScrollDirector/, "LandingScrollStory should delegate scroll orchestration.");
 assert.match(storySource, /<FormulaConstellationField/, "LandingScrollStory should render the formula constellation module.");
@@ -68,6 +72,7 @@ assert.notEqual(topbarIndex, -1, "Workspace reveal should define a product previ
 assert.notEqual(ctaIndex, -1, "Workspace reveal should define a workspace CTA index.");
 assert.ok(shellIndex < ctaIndex, "Workspace CTA should live inside the product preview structure, not as a detached ending.");
 assert.ok(topbarIndex < ctaIndex, "Workspace CTA should appear after the product preview top bar begins.");
+assert.match(topbarBody, /workspace-cta/, "Workspace CTA should be embedded in the product preview top bar.");
 assert.doesNotMatch(workspaceSource, /workspace-pane-outline/, "Product preview should not regress to the old decorative outline pane.");
 assert.doesNotMatch(workspaceSource, /workspace-pane-paper/, "Product preview should not regress to the old decorative paper pane.");
 assert.doesNotMatch(workspaceSource, /workspace-pane-review/, "Product preview should not regress to the old decorative review pane.");
