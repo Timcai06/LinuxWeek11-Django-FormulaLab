@@ -204,6 +204,7 @@ body.landing-shell {
   transform: translate3d(50%, var(--gate-y), 0) scale(var(--gate-scale));
   transform-origin: center bottom;
   transition: opacity 0.18s ease, transform 0.18s ease;
+  visibility: hidden;
 }
 
 .workbench-gate-aura {
@@ -269,7 +270,7 @@ body.landing-shell {
 }
 
 [data-story-phase="cta"] .workbench-gate {
-  opacity: 1;
+  visibility: visible;
 }
 
 [data-story-phase="cta"] .workbench-gate-cta {
