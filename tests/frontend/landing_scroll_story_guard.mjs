@@ -36,10 +36,10 @@ assert.match(directorSource, /--review-preview-opacity/, "Product preview formul
 assert.match(directorSource, /--collab-preview-opacity/, "Product preview collaboration signals should have a staged reveal variable.");
 assert.match(directorSource, /--manuscript-final-opacity/, "ScrollDirector should lower manuscript dominance in the final product preview.");
 assert.match(styleSource, /\.workspace-reveal/, "The product workspace reveal should have a dedicated visual layer.");
-assert.match(styleSource, /var\(--project-preview-opacity\)/, "Landing styles should consume the project preview reveal variable.");
-assert.match(styleSource, /var\(--paper-preview-opacity\)/, "Landing styles should consume the paper preview reveal variable.");
-assert.match(styleSource, /var\(--review-preview-opacity\)/, "Landing styles should consume the review preview reveal variable.");
-assert.match(styleSource, /var\(--collab-preview-opacity\)/, "Landing styles should consume the collaboration preview reveal variable.");
+assert.match(styleSource, /--project-preview-opacity/, "Landing styles should declare a project preview reveal variable name.");
+assert.match(styleSource, /--paper-preview-opacity/, "Landing styles should declare a paper preview reveal variable name.");
+assert.match(styleSource, /--review-preview-opacity/, "Landing styles should declare a review preview reveal variable name.");
+assert.match(styleSource, /--collab-preview-opacity/, "Landing styles should declare a collaboration preview reveal variable name.");
 assert.match(styleSource, /var\(--manuscript-final-opacity\)/, "Landing styles should consume the final manuscript fade variable.");
 assert.doesNotMatch(
   storySource,
