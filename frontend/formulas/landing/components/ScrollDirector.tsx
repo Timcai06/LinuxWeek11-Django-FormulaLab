@@ -3,24 +3,27 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import type { LandingPhase, ScrollDirectorProps } from "../types";
-import { phaseOpacity, progressBetween } from "../three/motion";
+import { phaseOpacity, phaseOpacityHold, progressBetween } from "../three/motion";
 
-const SNAP_LABELS = [0, 0.16, 0.34, 0.5, 0.66, 0.82, 0.92, 1];
+const SNAP_LABELS = [0, 0.10, 0.20, 0.40, 0.60, 0.75, 0.85, 1];
 
 function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: number) {
-  const centerProgress = progressBetween(progress, 0.16, 0.46);
-  const heroExitProgress = progressBetween(progress, 0.16, 0.42);
+  const centerProgress = progressBetween(progress, 0.10, 0.50);
+  const heroExitProgress = progressBetween(progress, 0.10, 0.35);
   const heroOpacity = Math.max(1 - heroExitProgress * 1.28, 0);
   const shutdownOpacity = Math.max(1 - heroExitProgress * 1.45, 0);
   const cosmosOpacity = Math.max(1 - heroExitProgress * 1.18, 0);
+  
+  // Stretch out the component appearances and ADD HOLD DAMPING
   const scanOpacity = phaseOpacity(progress, 0.46, 0.56, 0.66);
-  const decodeChamberOpacity = phaseOpacity(progress, 0.5, 0.58, 0.7);
-  const workspaceGhostOpacity = phaseOpacity(progress, 0.66, 0.74, 0.86);
+  const decodeChamberOpacity = phaseOpacityHold(progress, 0.46, 0.50, 0.62, 0.66);
+  const workspaceGhostOpacity = phaseOpacityHold(progress, 0.66, 0.70, 0.78, 0.82);
   const collabSignalOpacity = phaseOpacity(progress, 0.82, 0.87, 0.91);
+  
   const gateProgress = progressBetween(progress, 0.92, 0.99);
   const gateAuraOpacity = gateProgress * 0.24;
-  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.74, 0.99) * 0.38;
-  const ctaOpacity = gateProgress;
+  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.70, 0.95) * 0.38;
+  const ctaOpacity = progressBetween(progress, 0.88, 1.0);
 
   storyElement.style.setProperty("--story-progress", progress.toFixed(4));
   storyElement.style.setProperty("--hero-opacity", heroOpacity.toFixed(4));
@@ -35,19 +38,24 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   storyElement.style.setProperty("--cosmos-opacity", cosmosOpacity.toFixed(4));
   storyElement.style.setProperty("--stardust-opacity", (cosmosOpacity * 0.32).toFixed(4));
   storyElement.style.setProperty("--scanline-opacity", (0.2 + cosmosOpacity * 0.16).toFixed(4));
-  storyElement.style.setProperty("--rail-opacity", progressBetween(progress, 0.62, 0.72).toFixed(4));
+  storyElement.style.setProperty("--rail-opacity", progressBetween(progress, 0.55, 0.65).toFixed(4));
   storyElement.style.setProperty("--scan-opacity", scanOpacity.toFixed(4));
+  
   storyElement.style.setProperty("--decode-opacity", decodeChamberOpacity.toFixed(4));
   storyElement.style.setProperty("--decode-chamber-opacity", decodeChamberOpacity.toFixed(4));
   storyElement.style.setProperty("--decode-chamber-y", `${(26 * (1 - decodeChamberOpacity)).toFixed(3)}px`);
+  
   storyElement.style.setProperty("--workspace-ghost-opacity", workspaceGhostOpacity.toFixed(4));
   storyElement.style.setProperty("--workspace-ghost-y", `${(30 * (1 - workspaceGhostOpacity)).toFixed(3)}px`);
+  
   storyElement.style.setProperty("--collab-signal-opacity", collabSignalOpacity.toFixed(4));
   storyElement.style.setProperty("--collab-signal-y", `${(24 * (1 - collabSignalOpacity)).toFixed(3)}px`);
+  
   storyElement.style.setProperty("--gate-opacity", gateProgress.toFixed(4));
   storyElement.style.setProperty("--gate-y", `${(34 * (1 - gateProgress)).toFixed(3)}px`);
   storyElement.style.setProperty("--gate-scale", (0.985 + gateProgress * 0.015).toFixed(4));
   storyElement.style.setProperty("--gate-aura-opacity", gateAuraOpacity.toFixed(4));
+  
   storyElement.style.setProperty("--manuscript-final-opacity", manuscriptFinalOpacity.toFixed(4));
   storyElement.style.setProperty("--cta-opacity", ctaOpacity.toFixed(4));
   storyElement.style.setProperty("--cta-y", `${(18 * (1 - ctaOpacity)).toFixed(3)}px`);
@@ -69,10 +77,10 @@ function phaseForProgress(progress: number): LandingPhase {
   if (progress >= 0.5) {
     return "decode";
   }
-  if (progress >= 0.34) {
+  if (progress >= 0.20) {
     return "center";
   }
-  if (progress >= 0.16) {
+  if (progress >= 0.10) {
     return "absorb";
   }
   return "intro";
@@ -105,12 +113,6 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
         start: "top top",
         end: "bottom bottom",
         scrub: true,
-        snap: {
-          snapTo: SNAP_LABELS,
-          duration: { min: 0.08, max: 0.18 },
-          delay: 0.06,
-          ease: "power1.out",
-        },
         onUpdate(self) {
           const progress = self.progress;
           scrollProgressRef.current = progress;
