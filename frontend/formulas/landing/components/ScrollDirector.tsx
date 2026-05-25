@@ -86,6 +86,8 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduceMotion) {
+      scrollProgressRef.current = 1;
+      setStoryVars(storyElement, "cta", 1);
       return undefined;
     }
 

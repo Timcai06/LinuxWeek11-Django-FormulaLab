@@ -808,6 +808,26 @@ body.landing-shell {
   }
 }
 
+@media (max-width: 900px) {
+  .workspace-reveal {
+    width: min(92vw, 760px);
+  }
+
+  .product-preview-grid {
+    grid-template-columns: minmax(118px, 0.68fr) minmax(250px, 1.55fr) minmax(160px, 0.82fr);
+  }
+
+  .product-preview-project,
+  .product-preview-paper,
+  .product-preview-review {
+    min-height: clamp(224px, 30vh, 330px);
+  }
+
+  .product-preview-paper {
+    padding: 20px;
+  }
+}
+
 @media (max-width: 720px) {
   .landing-hero {
     min-height: 100vh;
