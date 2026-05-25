@@ -314,6 +314,7 @@ body.landing-shell {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 0.78rem;
   line-height: 1.45;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
@@ -331,6 +332,7 @@ body.landing-shell {
   font-weight: 800;
   border: 1px solid rgba(255, 255, 255, 0.09);
   background: rgba(255, 255, 255, 0.035);
+  overflow-wrap: anywhere;
 }
 
 .paper-workspace-ghost-preview {
@@ -769,6 +771,10 @@ body.landing-shell {
     right: 18px;
     bottom: 88px;
     width: calc(100vw - 36px);
+  }
+
+  .collaboration-signal-field {
+    inset: auto 18px 88px auto;
   }
 
   .paper-workspace-ghost {
