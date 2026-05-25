@@ -36,7 +36,7 @@ assert.match(directorSource, /if \(progress >= 0\.66\)[\s\S]*return "workspace"/
 assert.match(directorSource, /if \(progress >= 0\.5\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
 assert.doesNotMatch(directorSource, /return "reveal"/, "The old reveal phase should be replaced by explicit workspace/collaboration phases.");
 assert.doesNotMatch(directorSource, /return "scan"/, "Scan should be a visual sub-progress, not a top-level fifth-stage phase.");
-assert.match(directorSource, /phaseOpacity\(progress, 0\.5, 0\.62, 0\.74\)/, "Scan should begin after the paper moves to center.");
+assert.match(directorSource, /phaseOpacity\(progress, 0\.46, 0\.56, 0\.66\)/, "Scan should begin after the paper moves to center.");
 assert.match(canvasSource, /scrollProgressRef/, "The manuscript canvas should receive scroll progress.");
 assert.match(canvasSource, /useFrame/, "The manuscript canvas should animate the paper per frame.");
 assert.match(canvasSource, /centerProgress/, "The paper should move to center before scan/decode handoff.");

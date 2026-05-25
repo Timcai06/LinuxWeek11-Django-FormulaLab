@@ -8,12 +8,12 @@ body.landing-shell {
 
 .landing-fallback,
 #landing-root {
-  min-height: 320vh;
+  min-height: 420vh;
 }
 
 .landing-story {
   position: relative;
-  min-height: 320vh;
+  min-height: 420vh;
   --hero-opacity: 1;
   --hero-y: 0px;
   --text-disperse: 0px;
@@ -29,6 +29,12 @@ body.landing-shell {
   --rail-opacity: 0;
   --scan-opacity: 0;
   --decode-opacity: 0;
+  --decode-chamber-opacity: 0;
+  --decode-chamber-y: 26px;
+  --workspace-ghost-opacity: 0;
+  --workspace-ghost-y: 30px;
+  --collab-signal-opacity: 0;
+  --collab-signal-y: 24px;
   --gate-opacity: 0;
   --gate-y: 34px;
   --gate-scale: 0.985;
@@ -304,9 +310,10 @@ body.landing-shell {
 .landing-story[data-story-phase="intro"] .story-rail span:nth-child(1),
 .landing-story[data-story-phase="absorb"] .story-rail span:nth-child(1),
 .landing-story[data-story-phase="center"] .story-rail span:nth-child(2),
-.landing-story[data-story-phase="scan"] .story-rail span:nth-child(3),
-.landing-story[data-story-phase="reveal"] .story-rail span:nth-child(4),
-.landing-story[data-story-phase="cta"] .story-rail span:nth-child(4) {
+.landing-story[data-story-phase="decode"] .story-rail span:nth-child(3),
+.landing-story[data-story-phase="workspace"] .story-rail span:nth-child(4),
+.landing-story[data-story-phase="collab"] .story-rail span:nth-child(5),
+.landing-story[data-story-phase="cta"] .story-rail span:nth-child(5) {
   background: rgba(255, 255, 255, 0.76);
   box-shadow: 0 0 18px rgba(255, 255, 255, 0.22);
   transform: scaleY(1.18);

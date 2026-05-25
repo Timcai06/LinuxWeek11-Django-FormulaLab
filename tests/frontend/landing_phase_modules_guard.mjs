@@ -66,17 +66,20 @@ assert.match(decodeSource, /decode-chamber/, "Decode Chamber should use a dedica
 assert.match(decodeSource, /LaTeX candidate/, "Decode Chamber should show formula-recognition product language.");
 assert.match(decodeSource, /Confidence/, "Decode Chamber should show recognition confidence.");
 assert.doesNotMatch(decodeSource, /GPU|VRAM|TARGET LOCKED/, "Decode Chamber should avoid fake machine telemetry language.");
+assert.match(styleSource, /\.decode-chamber\b/, "Decode Chamber should have dedicated landing CSS styles.");
 
 assert.match(workspaceGhostSource, /PaperWorkspaceGhost/, "PaperWorkspaceGhost component should exist.");
 assert.match(workspaceGhostSource, /paper-workspace-ghost/, "Paper Workspace Ghost should use a dedicated class namespace.");
 assert.match(workspaceGhostSource, /main\.tex/, "Paper Workspace Ghost should show paper-editing context.");
 assert.match(workspaceGhostSource, /Review inbox/, "Paper Workspace Ghost should show review-inbox context.");
 assert.doesNotMatch(workspaceGhostSource, /product-preview-/, "Paper Workspace Ghost should not revive the old Product Preview namespace.");
+assert.match(styleSource, /\.paper-workspace-ghost\b/, "Paper Workspace Ghost should have dedicated landing CSS styles.");
 
 assert.match(collaborationSource, /CollaborationSignalField/, "CollaborationSignalField component should exist.");
 assert.match(collaborationSource, /collaboration-signal/, "Collaboration Signal Field should use a dedicated class namespace.");
 assert.match(collaborationSource, /Accept change|Comment|cursor/, "Collaboration Signal Field should show collaboration language.");
 assert.doesNotMatch(collaborationSource, /GPU|VRAM|TARGET LOCKED/, "Collaboration signals should avoid fake machine telemetry language.");
+assert.match(styleSource, /\.collaboration-signal-field\b/, "Collaboration Signal Field should have dedicated landing CSS styles.");
 
 assert.match(gateSource, /WorkbenchGateOverlay/, "WorkbenchGateOverlay component should exist.");
 assert.match(gateSource, /workbench-gate/, "Workbench Gate should render a minimal terminal shell.");
