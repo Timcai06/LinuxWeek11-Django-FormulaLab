@@ -33,6 +33,16 @@ assert.match(directorSource, /--gate-opacity/, "The final Workbench Gate should 
 assert.match(directorSource, /--gate-y/, "The final Workbench Gate should have a staged vertical entrance.");
 assert.match(directorSource, /--gate-scale/, "The final Workbench Gate should settle into place without a hard cut.");
 assert.match(directorSource, /--gate-aura-opacity/, "The final Workbench Gate should expose a subtle aura layer.");
+assert.match(
+  directorSource,
+  /const gateProgress = progressBetween\(progress, 0\.88, 0\.98\)/,
+  "Workbench Gate motion should start at the CTA threshold so the hidden reveal phase cannot cause a pop-in.",
+);
+assert.match(
+  directorSource,
+  /const gateAuraOpacity = gateProgress \* 0\.24/,
+  "Workbench Gate aura should follow the same final-stage progress as the shell.",
+);
 assert.match(directorSource, /--manuscript-final-opacity/, "ScrollDirector should lower manuscript dominance in the final gate.");
 assert.doesNotMatch(directorSource, /--project-preview-opacity/, "Landing should not keep Product Preview project reveal variables.");
 assert.doesNotMatch(directorSource, /--paper-preview-opacity/, "Landing should not keep Product Preview paper reveal variables.");
@@ -41,6 +51,13 @@ assert.doesNotMatch(directorSource, /--collab-preview-opacity/, "Landing should 
 assert.match(styleSource, /\.workbench-gate/, "The final Workbench Gate should have a dedicated visual layer.");
 assert.match(styleSource, /var\(--gate-opacity\)/, "Landing styles should consume the final gate opacity variable.");
 assert.match(styleSource, /var\(--gate-aura-opacity\)/, "Landing styles should consume the final gate aura variable.");
+assert.match(styleSource, /visibility:\s*hidden/, "Workbench Gate should stay hidden before the CTA phase.");
+assert.match(styleSource, /\[data-story-phase="cta"\]\s+\.workbench-gate/, "Workbench Gate should become visible only in the CTA phase.");
+assert.doesNotMatch(
+  styleSource,
+  /\[data-story-phase="reveal"\]\s+\.workbench-gate/,
+  "Workbench Gate should not become visible during the reveal phase.",
+);
 assert.match(styleSource, /var\(--manuscript-final-opacity\)/, "Landing styles should consume the final manuscript fade variable.");
 assert.doesNotMatch(styleSource, /product-preview-/, "Landing styles should not keep Product Preview terminal styles.");
 assert.doesNotMatch(
