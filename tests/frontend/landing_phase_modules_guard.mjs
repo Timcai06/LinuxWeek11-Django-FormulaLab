@@ -54,6 +54,8 @@ assert.match(workspaceSource, /workspace-pane-outline/, "Workspace reveal should
 assert.match(workspaceSource, /workspace-cta/, "Workspace reveal should expose final product CTAs.");
 
 assert.match(manuscriptSource, /createManuscriptShaderMaterial|manuscriptShaderUniforms/, "ManuscriptCanvas should use the manuscript shader scan material.");
+assert.match(manuscriptSource, /STARFIELD_PARTICLE_COUNT\s*=\s*720/, "Particle count should remain capped for desktop performance.");
+assert.match(manuscriptSource, /MAX_DPR:\s*\[number,\s*number\]\s*=\s*\[1,\s*1\.5\]/, "Canvas DPR should remain capped.");
 assert.match(shaderSource, /uScanProgress/, "Manuscript shader should expose scan progress uniform.");
 assert.match(shaderSource, /uTime/, "Manuscript shader should expose time uniform.");
 assert.match(shaderSource, /ShaderMaterial/, "Manuscript scan should be implemented as a Three.js shader material.");

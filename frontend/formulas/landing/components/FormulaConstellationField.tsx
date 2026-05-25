@@ -152,7 +152,7 @@ export function FormulaConstellationField() {
             key={`${formula.source}-${formula.left}-${formula.top}`}
             style={style}
           >
-            {markup ? <span dangerouslySetInnerHTML={markup} /> : formula.source}
+            {markup ? <span dangerouslySetInnerHTML={markup} /> : null}
           </span>
         );
       })}

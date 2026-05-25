@@ -8,13 +8,15 @@ import { createManuscriptShaderMaterial, type ManuscriptShaderUniforms } from ".
 
 const MANUSCRIPT_TEXTURE = "/static/formulas/visuals/manuscript_texture_alpha.png";
 const IDLE_SCROLL_PROGRESS = { current: 0 };
+const MAX_DPR: [number, number] = [1, 1.5];
+const STARFIELD_PARTICLE_COUNT = 720;
 
 type ManuscriptCanvasProps = {
   scrollProgressRef?: MutableRefObject<number>;
 };
 
 function createStarfieldGeometry() {
-  const count = 720;
+  const count = STARFIELD_PARTICLE_COUNT;
   const basePositions = new Float32Array(count * 3);
   const targetPositions = new Float32Array(count * 3);
   const positions = new Float32Array(count * 3);
@@ -182,7 +184,7 @@ export function ManuscriptCanvas({ scrollProgressRef }: ManuscriptCanvasProps) {
     <div className="webgl-canvas-container" aria-hidden="true">
       <Canvas
         camera={{ position: [0, 0, 10], fov: 45 }}
-        dpr={[1, 1.5]}
+        dpr={MAX_DPR}
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       >
         <fog attach="fog" args={["#000000", 5, 20]} />
