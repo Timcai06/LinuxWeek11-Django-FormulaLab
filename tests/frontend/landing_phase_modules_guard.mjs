@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
+import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const files = {
   story: "frontend/formulas/landing/components/LandingScrollStory.tsx",
@@ -38,7 +39,7 @@ const manuscriptSource = readFileSync(files.manuscript, "utf8");
 const shaderSource = readFileSync(files.shader, "utf8");
 const motionSource = readFileSync(files.motion, "utf8");
 const typeSource = readFileSync(files.types, "utf8");
-const styleSource = readFileSync(files.styles, "utf8");
+const styleSource = readLandingStyles(files.styles);
 const gateIndex = gateSource.indexOf("workbench-gate");
 const ctaIndex = gateSource.indexOf("workbench-gate-cta");
 

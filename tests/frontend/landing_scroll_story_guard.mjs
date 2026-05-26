@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const appSource = readFileSync("frontend/formulas/landing/LandingApp.tsx", "utf8");
 const storySource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
@@ -9,7 +10,7 @@ const directorSource = `${directorComponentSource}\n${timelineSource}`;
 const canvasSource = readFileSync("frontend/formulas/landing/components/ManuscriptCanvas.tsx", "utf8");
 const heroSource = readFileSync("frontend/formulas/landing/components/Hero.tsx", "utf8");
 const splitTextSource = readFileSync("frontend/formulas/landing/components/SplitTextTitleSequence.tsx", "utf8");
-const styleSource = readFileSync("frontend/formulas/landing/styles/landing.css", "utf8");
+const styleSource = readLandingStyles();
 
 assert.match(appSource, /LandingScrollStory/, "Landing should wrap the hero in a scroll story controller.");
 assert.match(directorSource, /ScrollTrigger/, "Landing scroll story should use GSAP ScrollTrigger.");

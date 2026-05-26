@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const appSource = readFileSync("frontend/formulas/landing/LandingApp.tsx", "utf8");
 const storySource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
@@ -9,7 +10,7 @@ const directorSource = `${directorComponentSource}\n${timelineSource}`;
 const tickerSource = readFileSync("frontend/formulas/landing/components/HorizontalTicker.tsx", "utf8");
 const curtainSource = readFileSync("frontend/formulas/landing/components/MorphCurtain.tsx", "utf8");
 const copyStageSource = readFileSync("frontend/formulas/landing/components/CurtainCopyStage.tsx", "utf8");
-const styleSource = readFileSync("frontend/formulas/landing/styles/landing.css", "utf8");
+const styleSource = readLandingStyles();
 
 assert.doesNotMatch(
   appSource,

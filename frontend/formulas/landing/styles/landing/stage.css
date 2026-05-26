@@ -1,0 +1,170 @@
+body.landing-shell {
+  background: var(--canvas-night, #000000);
+}
+
+.landing-shell .site-main {
+  padding-top: 0;
+}
+
+.landing-fallback {
+  min-height: 7800vh;
+}
+
+
+.landing-story {
+  position: relative;
+  min-height: 7800vh;
+  --hero-opacity: 1;
+  --hero-y: 0px;
+  --text-disperse: 0px;
+  --copy-x: 0px;
+  --kicker-x: 0px;
+  --actions-x: 0px;
+  --text-scale: 1;
+  --shutdown-opacity: 1;
+  --readout-x: 0px;
+  --cosmos-opacity: 1;
+  --stardust-opacity: 0.32;
+  --scanline-opacity: 0.36;
+  --rail-opacity: 0;
+  --scan-opacity: 0;
+  --decode-opacity: 0;
+  --decode-chamber-opacity: 0;
+  --decode-chamber-y: 26px;
+  --workspace-ghost-opacity: 0;
+  --workspace-ghost-y: 30px;
+  --collab-signal-opacity: 0;
+  --collab-signal-y: 24px;
+  --gate-opacity: 0;
+  --gate-y: 34px;
+  --gate-scale: 0.985;
+  --gate-aura-opacity: 0;
+  --manuscript-final-opacity: 1;
+  --paper-exit-progress: 0;
+  --green-stage-opacity: 0;
+  --green-copy-opacity: 0;
+  --green-copy-y: 30px;
+  --black-stage-opacity: 0;
+  --ticker-opacity: 0;
+  --ticker-x: 34vw;
+  --ticker-y: -4vh;
+  --ticker-chaos: 1;
+  --ticker-scale: 0.92;
+  --story-progress: 0;
+}
+
+.landing-story-stage {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.formula-vortex-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* Same as webgl but earlier in DOM, so it sits behind the 3D paper */
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.webgl-canvas-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  opacity: var(--manuscript-final-opacity);
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.webgl-canvas-container canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.grid-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.grid-bg-layer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background:
+    radial-gradient(circle 420px at var(--mouse-x, 68%) var(--mouse-y, 52%), rgba(255, 255, 255, 0.04), transparent 82%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.42) 48%, rgba(0, 0, 0, 0.08) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.34) 0%, transparent 42%);
+}
+
+.math-cosmos {
+  position: absolute;
+  inset: -8%;
+  z-index: 1;
+  overflow: hidden;
+  opacity: var(--cosmos-opacity);
+  transition: opacity 0.18s ease;
+}
+
+.formula-constellation {
+  perspective: 1600px;
+}
+
+.cosmos-item {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 700;
+  letter-spacing: 0;
+  white-space: nowrap;
+  will-change: transform;
+  mix-blend-mode: screen;
+}
+
+.cosmos-item .katex {
+  color: inherit;
+  font-size: 1em;
+}
+
+.cosmos-item .katex-html {
+  color: inherit;
+}
+
+.constellation-item {
+  max-width: min(42vw, 580px);
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.08);
+  transform: translate3d(0, 0, 0) rotate(var(--constellation-tilt, 0deg));
+  transform-origin: center;
+}
+
+.constellation-item > span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.constellation-item-far {
+  color: rgba(255, 255, 255, 0.34);
+  opacity: 0.16;
+}
+
+.constellation-item-mid {
+  color: rgba(255, 255, 255, 0.56);
+  opacity: 0.26;
+}
+
+.constellation-item-near {
+  color: rgba(255, 255, 255, 0.82);
+  opacity: 0.42;
+}
+

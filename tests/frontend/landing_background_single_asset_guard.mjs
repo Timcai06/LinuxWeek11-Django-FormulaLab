@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const canvasSource = readFileSync("frontend/formulas/landing/components/ManuscriptCanvas.tsx", "utf8");
-const landingStyles = readFileSync("frontend/formulas/landing/styles/landing.css", "utf8");
+const landingStyles = readLandingStyles();
 
 assert.doesNotMatch(
   landingStyles,
