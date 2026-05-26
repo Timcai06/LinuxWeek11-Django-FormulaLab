@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 const files = {
   story: "frontend/formulas/landing/components/LandingScrollStory.tsx",
   director: "frontend/formulas/landing/components/ScrollDirector.tsx",
+  timeline: "frontend/formulas/landing/storyTimeline.ts",
   curtainCopy: "frontend/formulas/landing/components/CurtainCopyStage.tsx",
   splitText: "frontend/formulas/landing/components/SplitTextTitleSequence.tsx",
   constellation: "frontend/formulas/landing/components/FormulaConstellationField.tsx",
@@ -23,7 +24,9 @@ for (const [name, file] of Object.entries(files)) {
 }
 
 const storySource = readFileSync(files.story, "utf8");
-const directorSource = readFileSync(files.director, "utf8");
+const directorComponentSource = readFileSync(files.director, "utf8");
+const timelineSource = readFileSync(files.timeline, "utf8");
+const directorSource = `${directorComponentSource}\n${timelineSource}`;
 const curtainCopySource = readFileSync(files.curtainCopy, "utf8");
 const splitTextSource = readFileSync(files.splitText, "utf8");
 const constellationSource = readFileSync(files.constellation, "utf8");

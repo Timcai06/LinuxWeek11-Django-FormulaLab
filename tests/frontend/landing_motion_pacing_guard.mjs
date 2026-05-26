@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 
 const appSource = readFileSync("frontend/formulas/landing/LandingApp.tsx", "utf8");
 const storySource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
-const directorSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
+const directorComponentSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
+const timelineSource = readFileSync("frontend/formulas/landing/storyTimeline.ts", "utf8");
+const directorSource = `${directorComponentSource}\n${timelineSource}`;
 const tickerSource = readFileSync("frontend/formulas/landing/components/HorizontalTicker.tsx", "utf8");
 const curtainSource = readFileSync("frontend/formulas/landing/components/MorphCurtain.tsx", "utf8");
 const copyStageSource = readFileSync("frontend/formulas/landing/components/CurtainCopyStage.tsx", "utf8");
