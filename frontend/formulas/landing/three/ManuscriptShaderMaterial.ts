@@ -6,6 +6,8 @@ export type ManuscriptShaderUniforms = {
   uScanProgress: { value: number };
   uDecodeProgress: { value: number };
   uOpacity: { value: number };
+  uWaveAmount: { value: number };
+  uWaveProgress: { value: number };
 };
 
 export function manuscriptShaderUniforms(texture: THREE.Texture | null): ManuscriptShaderUniforms {
@@ -15,6 +17,8 @@ export function manuscriptShaderUniforms(texture: THREE.Texture | null): Manuscr
     uScanProgress: { value: 0 },
     uDecodeProgress: { value: 0 },
     uOpacity: { value: 1 },
+    uWaveAmount: { value: 0.12 },
+    uWaveProgress: { value: 0 },
   };
 }
 
@@ -23,10 +27,18 @@ const vertexShader = `
   #include <fog_pars_vertex>
 
   varying vec2 vUv;
+  uniform float uTime;
+  uniform float uWaveAmount;
+  uniform float uWaveProgress;
 
   void main() {
     vUv = uv;
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vec3 transformed = position;
+    float waveX = sin(transformed.x * 2.0 + uTime * 0.8 + uWaveProgress * 2.0) * uWaveAmount;
+    float waveY = cos(transformed.y * 1.5 + uTime * 0.8) * uWaveAmount;
+    float wave = waveX + waveY;
+    transformed.z += wave;
+    vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
     gl_Position = projectionMatrix * mvPosition;
     #include <fog_vertex>
   }

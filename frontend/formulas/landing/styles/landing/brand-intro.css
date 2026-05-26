@@ -1,0 +1,132 @@
+body.landing-intro-scroll-lock {
+  overflow: hidden;
+}
+
+.title-line {
+  display: block;
+}
+
+.title-line-lab {
+  margin-top: -0.08em;
+}
+
+.brand-intro-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  background:
+    linear-gradient(108deg, rgba(0, 0, 0, 1) 0 38%, rgba(10, 14, 12, 0.96) 54%, rgba(41, 31, 21, 0.86) 72%, rgba(0, 0, 0, 0.94) 100%),
+    radial-gradient(circle at 58% 46%, rgba(255, 255, 255, 0.1), transparent 36%);
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.72);
+}
+
+.brand-intro-curtain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.32;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 16px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 11px);
+  mix-blend-mode: screen;
+}
+
+.brand-intro-frame,
+.brand-intro-beam {
+  position: absolute;
+  pointer-events: none;
+}
+
+.brand-intro-frame {
+  left: clamp(28px, 7vw, 96px);
+  right: clamp(28px, 7vw, 96px);
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
+  opacity: 0;
+}
+
+.brand-intro-frame::before,
+.brand-intro-frame::after {
+  content: "";
+  position: absolute;
+  top: -22px;
+  width: 1px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.brand-intro-frame::before {
+  left: 0;
+}
+
+.brand-intro-frame::after {
+  right: 0;
+}
+
+.brand-intro-beam {
+  inset: 0;
+  opacity: 0;
+  background:
+    linear-gradient(105deg, transparent 0 43%, rgba(92, 255, 176, 0.04) 47%, rgba(255, 255, 255, 0.24) 50%, rgba(92, 255, 176, 0.05) 53%, transparent 57% 100%);
+}
+
+.landing-intro-active .landing-copy {
+  z-index: 6;
+  opacity: 1;
+  transition: none;
+}
+
+.landing-intro-active .glitch-title,
+.landing-intro-active .title-line,
+.landing-intro-active .split-title-char,
+.landing-intro-active .mission-actions,
+.landing-intro-active .landing-readout {
+  will-change: transform, opacity;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.landing-intro-active .glitch-title {
+  color: #ffffff;
+  background: none;
+  text-shadow: none;
+  animation: none;
+  -webkit-text-fill-color: #ffffff;
+}
+
+.landing-intro-active .split-title-char {
+  backface-visibility: hidden;
+  transform-style: flat;
+}
+
+.landing-intro-active .grid-bg-layer,
+.landing-intro-active .math-cosmos,
+.landing-intro-active .formula-vortex-canvas,
+.landing-intro-active .webgl-canvas-container,
+.landing-intro-active .story-gallery-strip,
+.landing-intro-active .manuscript-scan-beam,
+.landing-intro-active .paper-system-transfer,
+.landing-intro-active .landing-tail-sequence {
+  opacity: 0;
+}
+
+.landing-intro-active .mission-actions,
+.landing-intro-active .landing-readout {
+  opacity: 0;
+}
+
+.landing-intro-active .landing-copy::before,
+.landing-intro-active .landing-copy::after,
+.landing-intro-active .landing-copy .hud-corners::before,
+.landing-intro-active .landing-copy .hud-corners::after {
+  opacity: 0;
+}
+
+.landing-intro-complete .brand-intro-curtain {
+  opacity: 0;
+  visibility: hidden;
+}

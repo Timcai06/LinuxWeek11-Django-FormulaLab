@@ -16,6 +16,13 @@ function assertHasAll(source, entries, context) {
 }
 
 const landing = read("apps/formulas/templates/formulas/landing.html");
+const base = read("apps/formulas/templates/formulas/base.html");
+assertHas(
+  base,
+  /<link rel="icon" type="image\/svg\+xml" href="\{% static 'formulas\/visuals\/favicon\.svg' %\}">/,
+  "Base template should declare a favicon so browsers do not request /favicon.ico.",
+);
+
 assertHasAll(landing, [
   [/<div id="landing-root">/, "the landing React island mount root"],
   [/<section class="landing-fallback" aria-label="Formula Lab landing">/, "the server-rendered fallback shell"],

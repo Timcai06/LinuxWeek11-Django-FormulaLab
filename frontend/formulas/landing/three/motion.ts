@@ -35,3 +35,22 @@ export function phaseOpacityHold(
   }
   return 1 - (progress - fadeOutStart) / (fadeOutEnd - fadeOutStart);
 }
+
+export function interpolateKeyframes(value: number, keyframes: { x: number; y: number }[]): number {
+  if (keyframes.length === 0) return 0;
+  const first = keyframes[0]!;
+  const last = keyframes[keyframes.length - 1]!;
+  if (value <= first.x) return first.y;
+  if (value >= last.x) return last.y;
+
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const k1 = keyframes[i]!;
+    const k2 = keyframes[i + 1]!;
+    if (value >= k1.x && value <= k2.x) {
+      const t = (value - k1.x) / (k2.x - k1.x);
+      const smooth = t * t * (3 - 2 * t); // easeInOut for smooth start/stop
+      return k1.y + (k2.y - k1.y) * smooth;
+    }
+  }
+  return 0;
+}

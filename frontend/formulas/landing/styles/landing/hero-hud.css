@@ -147,12 +147,12 @@
 }
 
 .landing-copy h1 {
-  margin: 10px 0;
+  margin: 8px 0 18px;
   padding: 0.1em 0;
   color: transparent;
   font-size: clamp(4rem, 12vw, 10rem);
   font-weight: 950;
-  line-height: 1;
+  line-height: 0.86;
   letter-spacing: 0;
   background: linear-gradient(110deg, #ffffff 0%, #555555 25%, #ffffff 50%, #555555 75%, #ffffff 100%);
   background-size: 200% auto;
@@ -284,4 +284,3 @@
     transform: translate3d(-360px, 220px, 0) rotate(-34deg);
   }
 }
-

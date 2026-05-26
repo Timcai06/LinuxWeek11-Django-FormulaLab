@@ -2,7 +2,6 @@
 .curtain-copy-stage {
   position: absolute;
   inset: 0;
-  z-index: 12;
   height: 100vh;
   overflow: hidden;
   pointer-events: none;
@@ -12,15 +11,16 @@
 .black-curtain-panel {
   position: absolute;
   inset: 0;
-  transition: opacity 0.18s ease;
+  z-index: 10;
+  transition: none;
 }
 
 .green-curtain-panel {
   opacity: var(--green-stage-opacity);
   background:
-    radial-gradient(circle at 70% 18%, rgba(190, 255, 216, 0.24), transparent 32%),
-    radial-gradient(circle at 22% 72%, rgba(92, 255, 176, 0.18), transparent 36%),
-    linear-gradient(135deg, rgba(92, 255, 176, 0.95), rgba(15, 72, 45, 0.96) 54%, rgba(3, 18, 12, 0.98));
+    radial-gradient(circle at 70% 18%, rgba(255, 255, 255, 0.6), transparent 32%),
+    radial-gradient(circle at 22% 72%, rgba(255, 255, 255, 0.3), transparent 36%),
+    linear-gradient(135deg, #5cffb0 0%, #17c873 100%);
 }
 
 .green-curtain-panel::after,
@@ -43,28 +43,44 @@
 
 .curtain-copy-content {
   position: relative;
-  z-index: 2;
+  z-index: 20;
   width: min(88vw, 1080px);
   min-height: 100vh;
   margin: 0 auto;
   opacity: var(--green-copy-opacity);
   transform: translate3d(0, var(--green-copy-y), 0);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: none;
+  display: grid;
+  place-items: center;
 }
 
 .curtain-copy-container {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  overflow: visible;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
+  will-change: opacity, transform;
+}
+
+.curtain-copy-eyebrow {
+  margin: 0 0 1.1rem;
+  color: rgba(0, 0, 0, 0.66);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: clamp(0.72rem, 0.9vw, 0.92rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .curtain-copy-container h2 {
   margin: 0;
   max-width: min(86vw, 1120px);
-  color: rgba(6, 16, 12, 0.92);
+  color: #000000;
   font-family: "D-DIN", "D-DIN Exp", "Arial Narrow", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: clamp(1.9rem, 4.9vw, 5.4rem);
   font-weight: 900;
@@ -72,7 +88,7 @@
   text-align: center;
   text-transform: uppercase;
   text-wrap: balance;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22);
+  text-shadow: none;
 }
 
 .curtain-copy-line-mask {
@@ -134,11 +150,11 @@
 
 /* ── Morph Curtain (Phase Gate Transition) ───────────────── */
 .morph-curtain {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 15; /* Above the story stage, below the nav (z-index: 20) */
+  width: 100vw;
+  height: 100vh;
+  z-index: 15;
   pointer-events: none;
   opacity: 0;
   --green-curtain-svg-opacity: 0;

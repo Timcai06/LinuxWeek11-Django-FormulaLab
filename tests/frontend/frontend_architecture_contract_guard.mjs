@@ -25,6 +25,7 @@ function assertRefs(templatePath, expected) {
 }
 
 assertRefs("apps/formulas/templates/formulas/base.html", [
+  "formulas/visuals/favicon.svg",
   "formulas/vendor/katex/katex.min.css",
   "formulas/vendor/katex/katex.min.js",
   "formulas/css/base.css",

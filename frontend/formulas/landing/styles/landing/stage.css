@@ -7,13 +7,13 @@ body.landing-shell {
 }
 
 .landing-fallback {
-  min-height: 3000vh;
+  min-height: 2800vh;
 }
 
 
 .landing-story {
   position: relative;
-  min-height: 3000vh;
+  min-height: 2800vh;
   --hero-opacity: 1;
   --hero-y: 0px;
   --text-disperse: 0px;
@@ -34,6 +34,7 @@ body.landing-shell {
   --workspace-ghost-opacity: 0;
   --workspace-ghost-y: 30px;
   --collab-signal-opacity: 0;
+  --collab-signal-x: 0px;
   --collab-signal-y: 24px;
   --gate-opacity: 0;
   --gate-y: 34px;
@@ -41,6 +42,9 @@ body.landing-shell {
   --gate-aura-opacity: 0;
   --manuscript-final-opacity: 1;
   --paper-exit-progress: 0;
+  --paper-transfer-opacity: 0;
+  --paper-transfer-scale: 0.92;
+  --paper-transfer-y: 26px;
   --green-stage-opacity: 0;
   --green-copy-opacity: 0;
   --green-copy-y: 30px;
@@ -80,12 +84,55 @@ body.landing-shell {
   height: 100vh;
   opacity: var(--manuscript-final-opacity);
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: none;
 }
 
 .webgl-canvas-container canvas {
   position: relative;
   z-index: 1;
+}
+
+.paper-system-transfer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: min(58vw, 760px);
+  aspect-ratio: 1.72;
+  pointer-events: none;
+  opacity: var(--paper-transfer-opacity);
+  transform: translate3d(-50%, calc(-50% + var(--paper-transfer-y)), 0) scale(var(--paper-transfer-scale));
+  transform-origin: center;
+  border: 1px solid rgba(92, 255, 176, 0.48);
+  background:
+    linear-gradient(90deg, rgba(92, 255, 176, 0.18) 1px, transparent 1px) 0 0 / 18px 100%,
+    linear-gradient(0deg, rgba(92, 255, 176, 0.12) 1px, transparent 1px) 0 0 / 100% 18px,
+    radial-gradient(circle at 50% 50%, rgba(92, 255, 176, 0.1), transparent 58%);
+  box-shadow:
+    0 0 32px rgba(92, 255, 176, 0.16),
+    inset 0 0 28px rgba(92, 255, 176, 0.12);
+}
+
+.paper-system-transfer::before {
+  content: "MANUSCRIPT -> WORKSPACE";
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  color: rgba(92, 255, 176, 0.78);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.paper-system-transfer::after {
+  content: "";
+  position: absolute;
+  inset: 18% 14%;
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  background:
+    linear-gradient(90deg, transparent 0 48%, rgba(255, 255, 255, 0.2) 49% 51%, transparent 52%),
+    linear-gradient(0deg, transparent 0 48%, rgba(255, 255, 255, 0.16) 49% 51%, transparent 52%);
 }
 
 .grid-bg-layer {
@@ -115,7 +162,7 @@ body.landing-shell {
   z-index: 1;
   overflow: hidden;
   opacity: var(--cosmos-opacity);
-  transition: opacity 0.18s ease;
+  transition: none;
 }
 
 .formula-constellation {

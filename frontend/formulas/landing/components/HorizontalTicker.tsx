@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { ScrollProgressRef } from "../types";
 
-const COPY = "FORMULA LAB • EXTRACTING INTELLIGENCE FROM HISTORY • COMPUTING THE FUTURE •";
+const COPY = "FORMULA LAB • PAPER WORKSPACE • REVIEW INBOX • COLLABORATION MEMORY •";
 
 export function HorizontalTicker({ scrollProgressRef: _scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   return (

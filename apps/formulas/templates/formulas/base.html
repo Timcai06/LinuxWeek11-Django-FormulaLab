@@ -4,8 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="view-transition" content="same-origin">
     <title>{% block title %}Formula Lab{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="{% static 'formulas/visuals/favicon.svg' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Oswald:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'formulas/vendor/katex/katex.min.css' %}">
     <script defer src="{% static 'formulas/vendor/katex/katex.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'formulas/css/base.css' %}">

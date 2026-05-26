@@ -6,16 +6,17 @@ function read(path) {
 }
 
 const timeline = read("frontend/formulas/landing/storyTimeline.ts");
+const choreography = read("frontend/formulas/landing/storyChoreography.ts");
 const director = read("frontend/formulas/landing/components/ScrollDirector.tsx");
 
 assert.match(
-  timeline,
-  /export const STORY_SNAP_POINTS = \[0, 0\.105, 0\.20, 0\.30, 0\.42, 0\.58, 0\.68, 0\.76, 0\.84, 0\.92, 0\.965, 0\.99\]/,
+  choreography,
+  /export const STORY_SNAP_POINTS = \[[\s\S]*PAPER_CENTER\[1\][\s\S]*GREEN_LIQUID\[1\][\s\S]*LETTER_STORM\[1\][\s\S]*WORKBENCH_GATE\[0\][\s\S]*1/,
   "Landing story snap points must remain stable during zero-visual architecture refactors.",
 );
 assert.match(
-  timeline,
-  /export const SOFT_SNAP_RADIUS = 0\.035/,
+  choreography,
+  /export const SOFT_SNAP_RADIUS = 0\.032;/,
   "Landing story snap radius must remain stable during zero-visual architecture refactors.",
 );
 

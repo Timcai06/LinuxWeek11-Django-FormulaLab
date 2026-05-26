@@ -12,8 +12,8 @@ assert.match(
 );
 assert.match(
   heroSource,
-  /document\.documentElement\.style\.setProperty\("--mouse-x"/,
-  "Landing light position should be written globally so the background layer can read it.",
+  /createRafThrottledPointerWriter\(\{[\s\S]*target:\s*document\.documentElement,[\s\S]*xVar:\s*"--mouse-x"[\s\S]*yVar:\s*"--mouse-y"/,
+  "Landing light position should be written globally through the shared rAF pointer writer so the background layer can read it.",
 );
 assert.doesNotMatch(
   heroSource,

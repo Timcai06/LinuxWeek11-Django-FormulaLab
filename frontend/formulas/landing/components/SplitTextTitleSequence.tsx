@@ -65,7 +65,11 @@ function splitSegments(split: SplitTextInstance): Element[] {
   return Array.from(split.lines ?? []);
 }
 
-export function SplitTextTitleSequence() {
+type SplitTextTitleSequenceProps = {
+  animateOnMount?: boolean;
+};
+
+export function SplitTextTitleSequence({ animateOnMount = true }: SplitTextTitleSequenceProps) {
   useEffect(() => {
     const targets = Array.from(document.querySelectorAll<HTMLElement>(".landing-hero [data-split-title]"));
     if (!targets.length) {
@@ -93,12 +97,16 @@ export function SplitTextTitleSequence() {
         const toVars = split
           ? { autoAlpha: 1, rotationX: 0, stagger: 0.02, y: 0 }
           : { autoAlpha: 1, stagger: 0 };
-        timeline.fromTo(
-          segments,
-          fromVars,
-          toVars,
-          index === 0 ? 0.12 : "-=0.48",
-        );
+        if (animateOnMount) {
+          timeline.fromTo(
+            segments,
+            fromVars,
+            toVars,
+            index === 0 ? 0.12 : "-=0.48",
+          );
+        } else {
+          gsap.set(segments, { autoAlpha: 1, rotationX: 0, y: 0 });
+        }
       });
     });
 
@@ -106,7 +114,7 @@ export function SplitTextTitleSequence() {
       context.revert();
       splitInstances.forEach((split) => split.revert());
     };
-  }, []);
+  }, [animateOnMount]);
 
   return null;
 }

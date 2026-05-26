@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
 
 import type { ScrollDirectorProps } from "../types";
 import { phaseForProgress, setStoryVars, snapToStoryBeat } from "../storyTimeline";
+import { getLandingMotionRuntime, isMotionDebugEnabled } from "../performance/motionRuntime";
 
 export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorProps) {
   const storyRef = useRef<HTMLElement>(null);
@@ -13,6 +15,8 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
     if (!storyElement) {
       return undefined;
     }
+
+    (window as any).__scrollProgressRef = scrollProgressRef;
 
     scrollProgressRef.current = 0;
     setStoryVars(storyElement, "intro", 0);
@@ -26,17 +30,56 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
 
     gsap.registerPlugin(ScrollTrigger);
 
+    const lenis = new Lenis({
+      duration: 0.92,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
+
+    const handleLenisScroll = () => ScrollTrigger.update();
+    lenis.on("scroll", handleLenisScroll);
+
+    const runtime = getLandingMotionRuntime({
+      debug: isMotionDebugEnabled(),
+    });
+    const unsubscribeVisibility = runtime.subscribeVisibility((visible) => {
+      if (!visible) {
+        lenis.stop();
+        return;
+      }
+      lenis.start();
+      ScrollTrigger.refresh();
+    });
+    const unsubscribeLenis = runtime.subscribe(({ timeMs }) => {
+      lenis.raf(timeMs);
+    });
+
+    const startRuntime = () => runtime.start();
+    const stopRuntime = () => runtime.stop();
+
+    if (!document.hidden) {
+      startRuntime();
+    } else {
+      lenis.stop();
+    }
+
+    gsap.ticker.lagSmoothing(0);
+
     const context = gsap.context(() => {
       const trigger = ScrollTrigger.create({
         trigger: storyElement,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.55,
+        scrub: 0.86,
         snap: {
-          snapTo: snapToStoryBeat,
-          duration: { min: 0.22, max: 0.55 },
-          delay: 0.02,
-          ease: "power3.out",
+          snapTo: (value: number, self?: { direction?: number }) => snapToStoryBeat(value, self),
+          duration: { min: 0.34, max: 0.72 },
+          delay: 0.05,
+          ease: "power4.out",
         },
         onUpdate(self) {
           const progress = self.progress;
@@ -51,7 +94,14 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
     }, storyElement);
 
     return () => {
+      stopRuntime();
+      unsubscribeLenis();
+      unsubscribeVisibility();
+      lenis.off("scroll", handleLenisScroll);
       context.revert();
+      runtime.destroy();
+      lenis.destroy();
+      ScrollTrigger.update();
       scrollProgressRef.current = 0;
     };
   }, [scrollProgressRef]);

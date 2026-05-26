@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
-import gsap from "gsap";
 
+import { createRafThrottledPointerWriter } from "../performance/raf";
+import { HeroIntroDirector } from "./HeroIntroDirector";
 import { SplitTextTitleSequence } from "./SplitTextTitleSequence";
 
 type StarStyle = CSSProperties & {
@@ -27,29 +28,20 @@ export function Hero() {
       return undefined;
     }
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const intro = reduceMotion
-      ? null
-      : gsap.context(() => {
-          gsap
-            .timeline({ defaults: { ease: "power3.out" } })
-            .fromTo(".mission-kicker, .mission-actions", { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.12 })
-            .fromTo(".glitch-title", { letterSpacing: "0.06em" }, { letterSpacing: "0", duration: 0.8 }, "-=0.38")
-            .fromTo(".readout-line", { autoAlpha: 0, x: 12 }, { autoAlpha: 1, x: 0, duration: 0.45, stagger: 0.12 }, "-=0.28");
-        }, heroElement);
-
-    const handleMouseMove = (event: MouseEvent) => {
-      document.documentElement.style.setProperty("--mouse-x", `${event.clientX}px`);
-      document.documentElement.style.setProperty("--mouse-y", `${event.clientY}px`);
-    };
+    const pointerWriter = createRafThrottledPointerWriter({
+      target: document.documentElement,
+      xVar: "--mouse-x",
+      yVar: "--mouse-y",
+    });
+    const handleMouseMove = (event: MouseEvent) => pointerWriter.schedule(event);
 
     window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+      pointerWriter.cancel();
       document.documentElement.style.removeProperty("--mouse-x");
       document.documentElement.style.removeProperty("--mouse-y");
-      intro?.revert();
     };
   }, []);
 
@@ -66,15 +58,12 @@ export function Hero() {
 
       <section className="landing-hero" ref={heroRef}>
         <div className="landing-copy">
-          <SplitTextTitleSequence />
+          <SplitTextTitleSequence animateOnMount={false} />
           <div className="hud-corners" aria-hidden="true" />
-          <p className="mission-kicker">PAPER WORKSPACE FOR LATEX AUTHORS</p>
           <h1 className="glitch-title" data-split-title="headline">
-            FORMULA LAB
+            <span className="title-line title-line-formula">FORMULA</span>
+            <span className="title-line title-line-lab">LAB</span>
           </h1>
-          <p className="mission-subtitle" data-split-title="subtitle">
-            Turn rough formulas into reviewable papers
-          </p>
           <div className="mission-actions">
             <a className="button button-primary" href="/workbench/">
               ENTER WORKBENCH
@@ -90,6 +79,7 @@ export function Hero() {
           <span className="readout-line">COLLABORATION LAYER READY</span>
         </div>
       </section>
+      <HeroIntroDirector heroRef={heroRef} />
     </>
   );
 }

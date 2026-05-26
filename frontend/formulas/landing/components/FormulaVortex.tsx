@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { PAPER_EXIT } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
 import { easedRange } from "../three/motion";
+import { getLandingMotionRuntime } from "../performance/motionRuntime";
 
 const EQUATIONS = [
   'e^{iπ} + 1 = 0',
@@ -18,6 +20,53 @@ const EQUATIONS = [
   'PV = nRT',
 ];
 
+const VORTEX_FRAME_INTERVAL_MS = 33;
+const VORTEX_PROGRESS_EPSILON = 0.001;
+const TEXTURE_FONT = "bold 96px 'D-DIN', 'Courier New', monospace";
+const TEXTURE_PADDING = 64;
+const TEXTURE_HEIGHT = 224;
+
+type FormulaTexture = {
+  canvas: HTMLCanvasElement;
+  width: number;
+  height: number;
+};
+
+type FormulaParticle = {
+  x: number;
+  y: number;
+  scale: number;
+  rotate: number;
+  textureIndex: number;
+};
+
+function createFormulaTextureAtlas(): FormulaTexture[] {
+  const textures: FormulaTexture[] = [];
+  EQUATIONS.forEach((equation) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+
+    ctx.font = TEXTURE_FONT;
+    const textWidth = Math.ceil(ctx.measureText(equation).width);
+    canvas.width = textWidth + TEXTURE_PADDING * 2;
+    canvas.height = TEXTURE_HEIGHT;
+
+    ctx.font = TEXTURE_FONT;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(92, 255, 176, 1)";
+    ctx.shadowColor = "rgba(92, 255, 176, 0.6)";
+    ctx.shadowBlur = 18;
+    ctx.fillText(equation, canvas.width / 2, canvas.height / 2);
+
+    textures.push({ canvas, width: canvas.width, height: canvas.height });
+  });
+  return textures;
+}
+
 export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
@@ -32,7 +81,8 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
     let ch = (canvas.height = window.innerHeight);
     let radius = Math.max(cw, ch);
     const count = 72;
-    const particles: Array<{ x: number; y: number; scale: number; rotate: number; text: string }> = [];
+    const textures = createFormulaTextureAtlas();
+    const particles: FormulaParticle[] = [];
 
     for (let i = 0; i < count; i++) {
       particles.push({
@@ -40,7 +90,7 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
         y: 0,
         scale: 0,
         rotate: 0,
-        text: EQUATIONS[i % EQUATIONS.length]!,
+        textureIndex: i % textures.length,
       });
     }
 
@@ -51,23 +101,24 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
       particles.forEach((p) => {
         if (p.scale < 0.01) return; // Skip particles too small to see (avoids Infinity)
 
+        const texture = textures[p.textureIndex];
+        if (!texture) return;
         const alpha = Math.min(1, p.scale * 1.2);
 
         ctx.save();
         ctx.translate(cw / 2, ch / 2);
         ctx.rotate(p.rotate);
         ctx.scale(p.scale, p.scale);
-
-        // Font size is large because it will be scaled down by the particle's scale factor
-        ctx.font = "bold 96px 'D-DIN', 'Courier New', monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = `rgba(92, 255, 176, ${alpha})`;
-        ctx.shadowColor = `rgba(92, 255, 176, ${alpha * 0.6})`;
-        ctx.shadowBlur = 18;
+        ctx.globalAlpha = alpha;
 
         // p.x/p.y are in world coords; since we already scaled, divide by scale to get correct position
-        ctx.fillText(p.text, p.x / p.scale, p.y / p.scale);
+        ctx.drawImage(
+          texture.canvas,
+          p.x / p.scale - texture.width / 2,
+          p.y / p.scale - texture.height / 2,
+          texture.width,
+          texture.height,
+        );
         ctx.restore();
       });
     };
@@ -104,24 +155,46 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
       tl.invalidate();
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        tl.pause();
+        return;
+      }
+      tl.resume();
+      draw();
+    };
+
     window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       tl.kill();
     };
   }, []);
 
-  // rAF loop to control timeScale and global opacity
+  // Runtime subscription to control timeScale and global opacity.
   useEffect(() => {
-    let animationFrameId: number;
+    let lastPaintTime = 0;
     let currentSpeed = 0.15;
     let lastProgress = scrollProgressRef.current;
 
-    const update = () => {
+    const update = (now: number) => {
+      if (document.hidden) {
+        return;
+      }
+
       if (timelineRef.current && canvasRef.current) {
         const p = scrollProgressRef.current;
+        const shouldThrottle =
+          now - lastPaintTime < VORTEX_FRAME_INTERVAL_MS &&
+          Math.abs(p - lastProgress) < VORTEX_PROGRESS_EPSILON;
+        if (shouldThrottle) {
+          return;
+        }
+
         const absorbPhase = easedRange(p, 0.05, 0.35);
-        const exitPhase = easedRange(p, 0.50, 0.80);
+        const exitPhase = easedRange(p, PAPER_EXIT[0] - 0.04, PAPER_EXIT[1]);
 
         const delta = Math.abs(p - lastProgress);
         lastProgress = p;
@@ -134,12 +207,23 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
 
         const targetOpacity = Math.max(0, absorbPhase - exitPhase * 1.2);
         canvasRef.current.style.opacity = Math.min(1.0, targetOpacity).toFixed(3);
+        lastPaintTime = now;
       }
-      animationFrameId = requestAnimationFrame(update);
     };
 
-    update();
-    return () => cancelAnimationFrame(animationFrameId);
+    const runtime = getLandingMotionRuntime();
+    const unsubscribeFrame = runtime.subscribe(({ timeMs }) => {
+      update(timeMs);
+    });
+    const unsubscribeVisibility = runtime.subscribeVisibility(() => {
+      lastPaintTime = 0;
+    });
+
+    update(performance.now());
+    return () => {
+      unsubscribeFrame();
+      unsubscribeVisibility();
+    };
   }, [scrollProgressRef]);
 
   return (

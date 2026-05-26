@@ -2,20 +2,28 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 
+import { REAL_GREEN_COPY_BLOCK_RANGES, REAL_GREEN_COPY_VISIBILITY_RANGES } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
 import { easedRange, phaseOpacityHold } from "../three/motion";
+import { getLandingMotionRuntime } from "../performance/motionRuntime";
 
 const COPY_BLOCKS = [
-  "Turn rough formula captures into trusted LaTeX evidence.",
-  "Review every candidate beside the paper, not in a disconnected OCR box.",
-  "Keep corrections, context, and collaboration moving inside one research workspace.",
+  {
+    eyebrow: "01 CAPTURE",
+    body: "Turn rough formula captures into trusted LaTeX evidence.",
+  },
+  {
+    eyebrow: "02 REVIEW",
+    body: "Review every candidate beside the paper, not in a disconnected OCR box.",
+  },
+  {
+    eyebrow: "03 COLLABORATE",
+    body: "Keep corrections, context, and collaboration moving inside one research workspace.",
+  },
 ];
 
-const COPY_RANGES = [
-  [0.770, 0.790],
-  [0.820, 0.840],
-  [0.870, 0.890],
-] as const;
+const COPY_PROGRESS_EPSILON = 0.00005;
+const DWELL_TRANSLATE_PX = 18;
 
 export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -32,31 +40,35 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
     gsap.registerPlugin(SplitText);
     const copyNodes = Array.from(root.querySelectorAll<HTMLElement>("[data-curtain-copy]"));
     containersRef.current = Array.from(root.querySelectorAll<HTMLElement>(".curtain-copy-container"));
+    let lastRenderedProgress = -1;
 
     const context = gsap.context(() => {
       copyNodes.forEach((node, index) => {
         const split = SplitText.create(node, {
-          type: "words,lines",
+          type: "lines,words,chars",
           mask: "lines",
           linesClass: "curtain-copy-line",
           wordsClass: "curtain-copy-word",
+          charsClass: "curtain-copy-char",
           autoSplit: true,
           onSplit(instance) {
             const animation = gsap.fromTo(
-              instance.lines,
-              { autoAlpha: 0, yPercent: 120, rotateX: 8 },
+              instance.chars,
+              { autoAlpha: 0, y: 15, scale: 0.85, rotate: -6 },
               {
                 autoAlpha: 1,
-                yPercent: 0,
-                rotateX: 0,
-                duration: 1,
-                ease: "power3.out",
-                stagger: 0.1,
+                y: 0,
+                scale: 1,
+                rotate: 0,
+                duration: 1.1,
+                ease: "back.out(1.4)",
+                stagger: 0.03,
                 paused: true,
               },
             );
             animationsRef.current[index]?.kill();
             animationsRef.current[index] = animation;
+            lastRenderedProgress = -1;
             return animation;
           },
         });
@@ -64,27 +76,35 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
       });
     }, root);
 
-    let raf = 0;
     const update = () => {
       const progress = scrollProgressRef.current;
+      if (Math.abs(progress - lastRenderedProgress) < COPY_PROGRESS_EPSILON) {
+        return;
+      }
+
       animationsRef.current.forEach((animation, index) => {
-        const range = COPY_RANGES[index] ?? COPY_RANGES[COPY_RANGES.length - 1]!;
+        const range = REAL_GREEN_COPY_BLOCK_RANGES[index] ?? REAL_GREEN_COPY_BLOCK_RANGES[REAL_GREEN_COPY_BLOCK_RANGES.length - 1]!;
         const [start, end] = range;
         animation.progress(easedRange(progress, start, end));
       });
       containersRef.current.forEach((container, index) => {
-        const fadeInStart = [0.760, 0.810, 0.860][index] ?? 0.860;
-        const fadeInEnd = fadeInStart + 0.01;
-        const fadeOutStart = fadeInStart + 0.022;
-        const fadeOutEnd = fadeOutStart + 0.01;
-        container.style.opacity = phaseOpacityHold(progress, fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd).toFixed(3);
+        const [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd] =
+          REAL_GREEN_COPY_VISIBILITY_RANGES[index] ?? REAL_GREEN_COPY_VISIBILITY_RANGES[REAL_GREEN_COPY_VISIBILITY_RANGES.length - 1]!;
+        const opacity = phaseOpacityHold(progress, fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd);
+        const entry = 1 - easedRange(progress, fadeInStart, fadeInEnd);
+        const exit = easedRange(progress, fadeOutStart, fadeOutEnd);
+        container.style.opacity = opacity.toFixed(3);
+        container.style.transform = `translate3d(0, ${(entry * DWELL_TRANSLATE_PX - exit * DWELL_TRANSLATE_PX).toFixed(3)}px, 0)`;
       });
-      raf = requestAnimationFrame(update);
+      lastRenderedProgress = progress;
     };
-    raf = requestAnimationFrame(update);
+
+    update();
+    const runtime = getLandingMotionRuntime();
+    const unsubscribe = runtime.subscribe(update);
 
     return () => {
-      cancelAnimationFrame(raf);
+      unsubscribe();
       animationsRef.current.forEach((animation) => animation.kill());
       animationsRef.current = [];
       splitRefs.current.forEach((split) => split.revert());
@@ -99,9 +119,10 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
       <div className="black-curtain-panel" />
       <div className="curtain-copy-content">
         {COPY_BLOCKS.map((copy, index) => (
-          <div className="curtain-copy-container" key={copy}>
+          <div className="curtain-copy-container" key={copy.eyebrow}>
+            <p className="curtain-copy-eyebrow">{copy.eyebrow}</p>
             <h2 data-curtain-copy data-copy-index={index}>
-              {copy}
+              {copy.body}
             </h2>
           </div>
         ))}

@@ -52,6 +52,7 @@ assert.match(storySource, /<FormulaConstellationField/, "LandingScrollStory shou
 assert.match(storySource, /<DecodeChamberOverlay/, "LandingScrollStory should render the decode chamber module.");
 assert.match(storySource, /<PaperWorkspaceGhost/, "LandingScrollStory should render the paper workspace ghost module.");
 assert.match(storySource, /<CollaborationSignalField/, "LandingScrollStory should render the collaboration signal module.");
+assert.match(storySource, /paper-system-transfer/, "LandingScrollStory should show the paper-to-workspace transfer metaphor during manuscript exit.");
 assert.match(storySource, /<CurtainCopyStage/, "LandingScrollStory should render the green curtain SplitText copy module.");
 assert.match(storySource, /<WorkbenchGateOverlay/, "LandingScrollStory should render the Workbench Gate module.");
 assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "LandingScrollStory should not render the rejected Product Preview overlay.");
@@ -106,13 +107,15 @@ assert.doesNotMatch(gateSource, /Start Recognition/, "Workbench Gate should not 
 assert.doesNotMatch(gateSource, /Open Workspace/, "Workbench Gate should not keep a competing Open Workspace CTA.");
 assert.doesNotMatch(gateSource, /product-preview-/, "Workbench Gate should not render Product Preview markup.");
 assert.doesNotMatch(gateSource, /Project|Formula Review|Suggested edit|references\.bib|main\.tex/, "Workbench Gate should not render product preview content.");
+assert.match(curtainCopySource, /curtain-copy-eyebrow/, "Green curtain copy should include compact chapter labels.");
+assert.match(curtainCopySource, /01 CAPTURE[\s\S]*02 REVIEW[\s\S]*03 COLLABORATE/, "Green curtain copy should present capture, review, and collaboration as separate beats.");
 assert.notEqual(gateIndex, -1, "Workbench Gate should define its terminal shell.");
 assert.notEqual(ctaIndex, -1, "Workbench Gate should define its CTA.");
 assert.ok(gateIndex < ctaIndex, "Workbench Gate CTA should live inside the terminal shell.");
 
 assert.match(manuscriptSource, /createManuscriptShaderMaterial|manuscriptShaderUniforms/, "ManuscriptCanvas should use the manuscript shader scan material.");
-assert.match(manuscriptSource, /STARFIELD_PARTICLE_COUNT\s*=\s*720/, "Particle count should remain capped for desktop performance.");
-assert.match(manuscriptSource, /MAX_DPR:\s*\[number,\s*number\]\s*=\s*\[1,\s*1\.5\]/, "Canvas DPR should remain capped.");
+assert.doesNotMatch(manuscriptSource, /STARFIELD_PARTICLE_COUNT|FormulaStarfield|createFormulaStarfieldMaterial/, "The retired starfield should not remain in the manuscript canvas.");
+assert.match(manuscriptSource, /MAX_DPR:\s*\[number,\s*number\]\s*=\s*\[0\.75,\s*1\.15\]/, "Canvas DPR should remain capped for low-power preview.");
 assert.match(shaderSource, /uScanProgress/, "Manuscript shader should expose scan progress uniform.");
 assert.match(shaderSource, /uTime/, "Manuscript shader should expose time uniform.");
 assert.match(shaderSource, /ShaderMaterial/, "Manuscript scan should be implemented as a Three.js shader material.");
@@ -129,6 +132,8 @@ assert.doesNotMatch(typeSource, /"scan"|"reveal"/, "Scan and reveal should not r
 assert.match(styleSource, /\.workbench-gate-cta/, "Final CTA styles should exist.");
 assert.match(styleSource, /\.cinematic-overlay[\s\S]*?pointer-events:\s*none/, "Cinematic overlays should not intercept CTA clicks.");
 assert.doesNotMatch(styleSource, /\[data-story-phase="cta"\]\s+\.collaboration-signal-field/, "Collaboration signals should not be visible during the final CTA phase.");
+assert.match(styleSource, /--collab-signal-x/, "Collaboration signals should have a horizontal exit vector into the green curtain transition.");
+assert.match(styleSource, /\.paper-system-transfer/, "Landing styles should include a visual paper-to-editor transfer layer.");
 assert.match(
   styleSource,
   /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.decode-chamber,\s*[\s\S]*?\.paper-workspace-ghost,\s*[\s\S]*?\.collaboration-signal-field[\s\S]*?display:\s*none/,

@@ -1,5 +1,8 @@
 import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { BLACK_LIQUID, GREEN_LIQUID } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
+import { getLandingMotionRuntime } from "../performance/motionRuntime";
 import { progressBetween } from "../three/motion";
 
 const NUM_POINTS = 10;
@@ -7,22 +10,30 @@ const NUM_PATHS = 2;
 const DELAY_POINTS_MAX = 0.3;
 const DELAY_PER_PATH = 0.25;
 const MORPH_DURATION = 0.9;
+const MORPH_PROGRESS_EPSILON = 0.0007;
+const PATH_CACHE_STEPS = 240;
+const WAVE_SWEEP_RANGE = [0.04, 0.97] as const;
+
+type LiquidPathCache = {
+  frames: string[][];
+  timeline: gsap.core.Timeline;
+};
 
 const GREEN_GRADIENTS = [
   {
     id: "morph-grad-1",
     stops: [
-      ["0%", "#0e100f"],
-      ["75%", "#0e100f"],
-      ["100%", "#1a3a2a"],
+      ["0%", "#1db86c"],
+      ["75%", "#1db86c"],
+      ["100%", "#17c873"],
     ],
   },
   {
     id: "morph-grad-2",
     stops: [
-      ["0%", "#0e100f"],
-      ["80%", "#0e100f"],
-      ["100%", "#5cffb0"],
+      ["0%", "#5cffb0"],
+      ["80%", "#5cffb0"],
+      ["100%", "#17c873"],
     ],
   },
 ];
@@ -39,109 +50,222 @@ const BLACK_GRADIENTS = [
   {
     id: "morph-black-grad-2",
     stops: [
-      ["0%", "#113222"],
-      ["74%", "#06130d"],
+      ["0%", "#000000"],
+      ["74%", "#000000"],
       ["100%", "#000000"],
     ],
   },
 ];
 
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function smootherStep(value: number) {
+  const t = clamp01(value);
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+function liquidSegmentProgress(progress: number, [start, end]: readonly [number, number]) {
+  return progressBetween(progress, start, end);
+}
+
+function liquidWaveProgress(segmentProgress: number) {
+  return smootherStep(progressBetween(segmentProgress, WAVE_SWEEP_RANGE[0], WAVE_SWEEP_RANGE[1]));
+}
+
+function liquidOpacity(segmentProgress: number) {
+  const fadeIn = smootherStep(progressBetween(segmentProgress, 0.006, 0.10));
+  const fadeOut = smootherStep(progressBetween(segmentProgress, 0.965, 1));
+  return fadeIn * (1 - fadeOut);
+}
+
+function createLiquidPoints() {
+  const points: number[][] = [];
+  for (let pathIndex = 0; pathIndex < NUM_PATHS; pathIndex += 1) {
+    const row: number[] = [];
+    for (let pointIndex = 0; pointIndex < NUM_POINTS; pointIndex += 1) {
+      row.push(100);
+    }
+    points.push(row);
+  }
+  return points;
+}
+
+function createPointDelays() {
+  const delays: number[] = [];
+  for (let pointIndex = 0; pointIndex < NUM_POINTS; pointIndex += 1) {
+    delays.push(Math.random() * DELAY_POINTS_MAX);
+  }
+  return delays;
+}
+
+function buildLiquidPath(points: number[], isOpened: boolean) {
+  let d = "";
+  d += isOpened ? `M 0 0 V ${points[0]} C` : `M 0 ${points[0]} C`;
+
+  for (let pointIndex = 0; pointIndex < NUM_POINTS - 1; pointIndex += 1) {
+    const p = ((pointIndex + 1) / (NUM_POINTS - 1)) * 100;
+    const cp = p - (1 / (NUM_POINTS - 1) * 100) / 2;
+    d += ` ${cp} ${points[pointIndex]} ${cp} ${points[pointIndex + 1]} ${p} ${points[pointIndex + 1]}`;
+  }
+
+  d += isOpened ? " V 100 H 0" : " V 0 H 0";
+  return d;
+}
+
+function createLiquidPathCache({ isOpened }: { isOpened: boolean }): LiquidPathCache {
+  const points = createLiquidPoints();
+  const pointDelays = createPointDelays();
+
+  const timeline = gsap.timeline({
+    paused: true,
+    defaults: {
+      ease: "power2.inOut",
+      duration: MORPH_DURATION,
+    },
+  });
+
+  for (let pathIndex = 0; pathIndex < NUM_PATHS; pathIndex += 1) {
+    const row = points[pathIndex]!;
+    const pathDelay = DELAY_PER_PATH * (isOpened ? pathIndex : NUM_PATHS - pathIndex - 1);
+    for (let pointIndex = 0; pointIndex < NUM_POINTS; pointIndex += 1) {
+      const pointDelay = pointDelays[pointIndex]!;
+      timeline.to(row, { [pointIndex]: 0 }, pointDelay + pathDelay);
+    }
+  }
+
+  const frames: string[][] = [];
+  for (let frameIndex = 0; frameIndex <= PATH_CACHE_STEPS; frameIndex += 1) {
+    const sampleProgress = frameIndex / PATH_CACHE_STEPS;
+    timeline.progress(sampleProgress, true);
+    frames.push(points.map((row) => buildLiquidPath(row, isOpened)));
+  }
+  timeline.progress(0, true);
+
+  return { frames, timeline };
+}
+
+function frameIndexForProgress(progress: number) {
+  return Math.round(clamp01(progress) * PATH_CACHE_STEPS);
+}
+
+function applyCachedPaths(paths: SVGPathElement[], cachedPaths: string[]) {
+  for (let pathIndex = 0; pathIndex < paths.length; pathIndex += 1) {
+    paths[pathIndex]?.setAttribute("d", cachedPaths[pathIndex]!);
+  }
+}
+
 export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
-  const allPoints = useRef<number[][]>([]);
-  const delaysRef = useRef<number[]>([]);
+  const greenPathCacheRef = useRef<LiquidPathCache | null>(null);
+  const blackPathCacheRef = useRef<LiquidPathCache | null>(null);
 
-  // Initialize point arrays
   useEffect(() => {
-    // Each path has NUM_POINTS control points, all starting at 0 (fully open/uncovered)
-    const pts: number[][] = [];
-    for (let i = 0; i < NUM_PATHS; i++) {
-      const row: number[] = [];
-      for (let j = 0; j < NUM_POINTS; j++) {
-        row.push(0);
-      }
-      pts.push(row);
+    const greenPaths = pathRefs.current.slice(0, NUM_PATHS).filter(Boolean) as SVGPathElement[];
+    const blackPaths = pathRefs.current.slice(NUM_PATHS, NUM_PATHS * 2).filter(Boolean) as SVGPathElement[];
+    if (greenPaths.length !== NUM_PATHS || blackPaths.length !== NUM_PATHS) {
+      return undefined;
     }
-    allPoints.current = pts;
 
-    // Random per-point delays for organic feel
-    const delays: number[] = [];
-    for (let j = 0; j < NUM_POINTS; j++) {
-      delays.push(Math.random() * DELAY_POINTS_MAX);
-    }
-    delaysRef.current = delays;
+    greenPathCacheRef.current = createLiquidPathCache({ isOpened: true });
+    blackPathCacheRef.current = createLiquidPathCache({ isOpened: true });
+    applyCachedPaths(greenPaths, greenPathCacheRef.current.frames[0]!);
+    applyCachedPaths(blackPaths, blackPathCacheRef.current.frames[0]!);
+
+    return () => {
+      greenPathCacheRef.current?.timeline.kill();
+      blackPathCacheRef.current?.timeline.kill();
+      greenPathCacheRef.current = null;
+      blackPathCacheRef.current = null;
+    };
   }, []);
 
-  // rAF loop to update the curtain based on scroll progress
   useEffect(() => {
-    let raf: number;
+    let lastPaintTime = 0;
+    let lastRenderedProgress = -1;
+    let lastGreenPathFrame = -1;
+    let lastBlackPathFrame = -1;
+    let lastRenderedOpacity = "-1:-1";
 
-    const update = () => {
+    const update = (now: number) => {
+      if (document.hidden) {
+        return;
+      }
+
       const svg = svgRef.current;
-      if (!svg) {
-        raf = requestAnimationFrame(update);
+      const greenPathCache = greenPathCacheRef.current;
+      const blackPathCache = blackPathCacheRef.current;
+      if (!svg || !greenPathCache || !blackPathCache) {
+        return;
+      }
+      const greenPaths = pathRefs.current.slice(0, NUM_PATHS).filter(Boolean) as SVGPathElement[];
+      const blackPaths = pathRefs.current.slice(NUM_PATHS, NUM_PATHS * 2).filter(Boolean) as SVGPathElement[];
+      if (greenPaths.length !== NUM_PATHS || blackPaths.length !== NUM_PATHS) {
         return;
       }
 
       const progress = scrollProgressRef.current;
-      const greenSweepProgress = progressBetween(progress, 0.66, 0.74);
-      const blackSweepProgress = progressBetween(progress, 0.92, 0.945);
-      const greenProgress = greenSweepProgress * greenSweepProgress * (3 - 2 * greenSweepProgress);
-      const blackProgress = blackSweepProgress * blackSweepProgress * (3 - 2 * blackSweepProgress);
-      const greenExitProgress = progressBetween(progress, 0.90, 0.925);
-      const blackExitProgress = progressBetween(progress, 0.965, 0.985);
-      const activeProgress = blackProgress > 0 ? blackProgress : greenProgress;
-
-      // Update points through a GSAP-style delayed overlay timeline.
-      const pts = allPoints.current;
-      const delays = delaysRef.current;
-      const baseProgress = activeProgress;
-      const timelineProgress = baseProgress * (MORPH_DURATION + DELAY_POINTS_MAX + DELAY_PER_PATH);
-
-      for (let i = 0; i < NUM_PATHS; i++) {
-        const pathDelay = DELAY_PER_PATH * i;
-        for (let j = 0; j < NUM_POINTS; j++) {
-          const pointDelay = delays[j]! + pathDelay;
-          const pointProgress = Math.max(0, Math.min(1, (timelineProgress - pointDelay) / MORPH_DURATION));
-          // Ease: power2.inOut approximation
-          const eased = pointProgress < 0.5
-            ? 2 * pointProgress * pointProgress
-            : 1 - Math.pow(-2 * pointProgress + 2, 2) / 2;
-          pts[i]![j] = 92 * eased;
-        }
+      if (Math.abs(progress - lastRenderedProgress) < MORPH_PROGRESS_EPSILON) {
+        return;
       }
 
-      // Render SVG paths
-      for (let i = 0; i < pathRefs.current.length; i++) {
-        const pathEl = pathRefs.current[i];
-        if (!pathEl) continue;
-        const points = pts[i % NUM_PATHS]!;
+      const greenSegmentProgress = liquidSegmentProgress(progress, GREEN_LIQUID);
+      const blackSegmentProgress = liquidSegmentProgress(progress, BLACK_LIQUID);
+      const greenWaveProgress = liquidWaveProgress(greenSegmentProgress);
+      const blackWaveProgress = liquidWaveProgress(blackSegmentProgress);
+      const greenSvgOpacity = greenSegmentProgress > 0 && greenSegmentProgress < 1 ? liquidOpacity(greenSegmentProgress) : 0;
+      const blackSvgOpacity = blackSegmentProgress > 0 && blackSegmentProgress < 1 ? liquidOpacity(blackSegmentProgress) : 0;
+      const combinedOpacity = Math.max(greenSvgOpacity, blackSvgOpacity);
+      const opacityKey = `${greenSvgOpacity.toFixed(3)}:${blackSvgOpacity.toFixed(3)}`;
 
-        // Build the SVG path: curtain hangs from top, sweeping down
-        let d = `M 0 0 V ${points[0]} C`;
-        for (let j = 0; j < NUM_POINTS - 1; j++) {
-          const p = ((j + 1) / (NUM_POINTS - 1)) * 100;
-          const cp = p - (1 / (NUM_POINTS - 1) * 100) / 2;
-          d += ` ${cp} ${points[j]} ${cp} ${points[j + 1]} ${p} ${points[j + 1]}`;
+      if (combinedOpacity <= 0) {
+        if (lastRenderedOpacity !== opacityKey) {
+          svg.style.setProperty("--green-curtain-svg-opacity", "0.000");
+          svg.style.setProperty("--black-curtain-svg-opacity", "0.000");
+          svg.style.opacity = "0.000";
+          lastRenderedOpacity = opacityKey;
         }
-        d += ` V 0 H 0`;
-        pathEl.setAttribute("d", d);
+        lastPaintTime = now;
+        lastRenderedProgress = progress;
+        return;
       }
 
-      svg.dataset.curtainMode = blackProgress > 0 ? "black" : "green";
-      svg.style.setProperty("--green-curtain-svg-opacity", (0.76 * greenProgress * (1 - greenExitProgress)).toFixed(3));
-      svg.style.setProperty("--black-curtain-svg-opacity", (0.88 * blackProgress * (1 - blackExitProgress)).toFixed(3));
-      svg.style.opacity = Math.max(
-        0.76 * greenProgress * (1 - greenExitProgress),
-        0.88 * blackProgress * (1 - blackExitProgress),
-      ).toFixed(3);
+      const greenPathFrame = frameIndexForProgress(greenWaveProgress);
+      const blackPathFrame = frameIndexForProgress(blackWaveProgress);
 
-      raf = requestAnimationFrame(update);
+      if (greenSvgOpacity > 0 && greenPathFrame !== lastGreenPathFrame) {
+        applyCachedPaths(greenPaths, greenPathCache.frames[greenPathFrame]!);
+        lastGreenPathFrame = greenPathFrame;
+      }
+      if (blackSvgOpacity > 0 && blackPathFrame !== lastBlackPathFrame) {
+        applyCachedPaths(blackPaths, blackPathCache.frames[blackPathFrame]!);
+        lastBlackPathFrame = blackPathFrame;
+      }
+
+      svg.dataset.curtainMode = blackSegmentProgress > 0 ? "black" : "green";
+      svg.style.setProperty("--green-curtain-svg-opacity", greenSvgOpacity.toFixed(3));
+      svg.style.setProperty("--black-curtain-svg-opacity", blackSvgOpacity.toFixed(3));
+      svg.style.opacity = combinedOpacity.toFixed(3);
+      lastRenderedOpacity = opacityKey;
+      lastPaintTime = now;
+      lastRenderedProgress = progress;
     };
 
-    raf = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(raf);
+    const runtime = getLandingMotionRuntime();
+    const unsubscribeFrame = runtime.subscribe(({ timeMs }) => {
+      update(timeMs);
+    });
+    const unsubscribeVisibility = runtime.subscribeVisibility(() => {
+      lastPaintTime = 0;
+    });
+    update(performance.now());
+
+    return () => {
+      unsubscribeFrame();
+      unsubscribeVisibility();
+    };
   }, [scrollProgressRef]);
 
   return (
