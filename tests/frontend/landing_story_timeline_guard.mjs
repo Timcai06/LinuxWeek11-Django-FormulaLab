@@ -10,12 +10,12 @@ const director = read("frontend/formulas/landing/components/ScrollDirector.tsx")
 
 assert.match(
   timeline,
-  /export const STORY_SNAP_POINTS = \[0, 0\.10, 0\.25, 0\.36, 0\.46, 0\.58, 0\.82, 0\.91, 0\.94, 0\.97, 0\.982, 0\.992, 0\.9994\]/,
+  /export const STORY_SNAP_POINTS = \[0, 0\.06, 0\.16, 0\.24, 0\.30, 0\.42, 0\.58, 0\.68, 0\.76, 0\.84, 0\.92, 0\.965, 0\.99\]/,
   "Landing story snap points must remain stable during zero-visual architecture refactors.",
 );
 assert.match(
   timeline,
-  /export const SOFT_SNAP_RADIUS = 0\.018/,
+  /export const SOFT_SNAP_RADIUS = 0\.035/,
   "Landing story snap radius must remain stable during zero-visual architecture refactors.",
 );
 

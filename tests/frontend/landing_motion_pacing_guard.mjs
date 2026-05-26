@@ -30,27 +30,27 @@ assert.doesNotMatch(
 );
 assert.match(
   directorSource,
-  /scrub:\s*1\.35/,
-  "Landing ScrollTrigger should use a damped scrub value so key scenes do not flash by.",
+  /scrub:\s*1\.1/,
+  "Landing ScrollTrigger should stay damped without making the opening drag.",
 );
 assert.match(
   directorSource,
-  /duration:\s*\{ min: 0\.35, max: 0\.8 \}/,
+  /duration:\s*\{ min: 0\.42, max: 0\.95 \}/,
   "Story snap should settle with enough damping to feel like a pause instead of a jump cut.",
 );
 assert.match(
   directorSource,
-  /delay:\s*0\.12/,
+  /delay:\s*0\.08/,
   "Story snap should wait briefly after wheel input so the hold feels intentional.",
 );
 assert.match(
   directorSource,
-  /const STORY_SNAP_POINTS = \[0, 0\.10, 0\.25, 0\.36, 0\.46, 0\.58, 0\.82, 0\.91, 0\.94, 0\.97, 0\.982, 0\.992, 0\.9994\]/,
+  /const STORY_SNAP_POINTS = \[0, 0\.06, 0\.16, 0\.24, 0\.30, 0\.42, 0\.58, 0\.68, 0\.76, 0\.84, 0\.92, 0\.965, 0\.99\]/,
   "Landing should define narrative keyframes that can act as soft magnetic beats.",
 );
 assert.match(
   directorSource,
-  /const SOFT_SNAP_RADIUS = 0\.018/,
+  /const SOFT_SNAP_RADIUS = 0\.035/,
   "Late-stage keyframe snap should be soft and local rather than forcing a page-turn jump.",
 );
 assert.match(
@@ -65,12 +65,12 @@ assert.match(
 );
 assert.doesNotMatch(
   directorSource,
-  /if \(value >= 0\.62\) \{[\s\S]*?return value;[\s\S]*?\}/,
+  /if \(value >= 0\.70\) \{[\s\S]*?return value;[\s\S]*?\}/,
   "Late-stage curtain, text, letter, and CTA chapters should use soft keyframe snap instead of disabling snap entirely.",
 );
 assert.match(
   directorSource,
-  /phaseOpacityHold\(progress,\s*0\.990,\s*0\.993,\s*0\.997,\s*0\.999\)/,
+  /phaseOpacityHold\(progress,\s*0\.965,\s*0\.973,\s*0\.988,\s*0\.995\)/,
   "The letter storm should arrive after the black curtain and hold until just before the final CTA.",
 );
 assert.match(
@@ -80,7 +80,7 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /const tickerSweep = progressBetween\(progress,\s*0\.990,\s*0\.9992\)/,
+  /const tickerSweep = progressBetween\(progress,\s*0\.965,\s*0\.994\)/,
   "The final ticker should have enough scroll distance to finish before the CTA phase.",
 );
 assert.match(
@@ -90,12 +90,12 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.82,\s*0\.90\)/,
+  /progressBetween\(progress,\s*0\.68,\s*0\.76\)/,
   "MorphCurtain should have a first liquid transition into the green curtain.",
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.982,\s*0\.990\)/,
+  /progressBetween\(progress,\s*0\.92,\s*0\.945\)/,
   "MorphCurtain should have a second liquid transition from green into black.",
 );
 assert.match(
@@ -130,27 +130,27 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /const gateProgress = progressBetween\(progress,\s*0\.9994,\s*0\.99985\)/,
+  /const gateProgress = progressBetween\(progress,\s*0\.99,\s*0\.996\)/,
   "The Workbench Gate should wait until the ticker has fully faded out.",
 );
 assert.match(
   directorSource,
-  /const manuscriptFinalOpacity = 1 - progressBetween\(progress,\s*0\.80,\s*0\.88\) \* 0\.72/,
+  /const manuscriptFinalOpacity = 1 - progressBetween\(progress,\s*0\.66,\s*0\.74\) \* 0\.72/,
   "The manuscript should visibly recede before the liquid transition takes over.",
 );
 assert.match(
   styleSource,
-  /\.landing-story[\s\S]*?min-height:\s*7800vh/,
+  /\.landing-story[\s\S]*?min-height:\s*6000vh/,
   "The cinematic landing story should be compact enough to avoid drag while preserving green copy, black curtain, and letter beats.",
 );
 assert.match(
   copyStageSource,
-  /\[0\.900,\s*0\.918\][\s\S]*\[0\.930,\s*0\.948\][\s\S]*\[0\.960,\s*0\.978\]/,
+  /\[0\.770,\s*0\.790\][\s\S]*\[0\.820,\s*0\.840\][\s\S]*\[0\.870,\s*0\.890\]/,
   "Green curtain copy should animate in three clearly separated beats.",
 );
 assert.match(
   copyStageSource,
-  /\[0\.895,\s*0\.925,\s*0\.955\]/,
+  /\[0\.760,\s*0\.810,\s*0\.860\]/,
   "Green curtain copy fade windows should not start on top of each other.",
 );
 assert.match(

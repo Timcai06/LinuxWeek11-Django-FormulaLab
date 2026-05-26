@@ -3,41 +3,41 @@ import gsap from "gsap";
 import type { LandingPhase } from "./types";
 import { phaseOpacity, phaseOpacityHold, progressBetween } from "./three/motion";
 
-export const STORY_SNAP_POINTS = [0, 0.10, 0.25, 0.36, 0.46, 0.58, 0.82, 0.91, 0.94, 0.97, 0.982, 0.992, 0.9994];
-export const SOFT_SNAP_RADIUS = 0.018;
+export const STORY_SNAP_POINTS = [0, 0.06, 0.16, 0.24, 0.30, 0.42, 0.58, 0.68, 0.76, 0.84, 0.92, 0.965, 0.99];
+export const SOFT_SNAP_RADIUS = 0.035;
 
 export function snapToStoryBeat(value: number) {
   const nearest = gsap.utils.snap(STORY_SNAP_POINTS, value);
-  if (value < 0.62 || Math.abs(nearest - value) <= SOFT_SNAP_RADIUS) {
+  if (value < 0.70 || Math.abs(nearest - value) <= SOFT_SNAP_RADIUS) {
     return nearest;
   }
   return value;
 }
 
 export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: number) {
-  const centerProgress = progressBetween(progress, 0.10, 0.46);
-  const heroExitProgress = progressBetween(progress, 0.10, 0.35);
+  const centerProgress = progressBetween(progress, 0.06, 0.30);
+  const heroExitProgress = progressBetween(progress, 0.06, 0.24);
   const heroOpacity = Math.max(1 - heroExitProgress * 1.28, 0);
   const shutdownOpacity = Math.max(1 - heroExitProgress * 1.45, 0);
   const cosmosOpacity = Math.max(1 - heroExitProgress * 1.18, 0);
 
-  const scanOpacity = phaseOpacity(progress, 0.40, 0.50, 0.58);
-  const decodeChamberOpacity = phaseOpacityHold(progress, 0.42, 0.48, 0.56, 0.62);
-  const workspaceGhostOpacity = phaseOpacityHold(progress, 0.58, 0.64, 0.70, 0.75);
-  const collabSignalOpacity = phaseOpacityHold(progress, 0.72, 0.77, 0.82, 0.86);
-  const paperExitProgress = progressBetween(progress, 0.80, 0.88);
-  const greenStageOpacity = phaseOpacityHold(progress, 0.82, 0.90, 0.982, 0.990);
-  const greenCopyOpacity = phaseOpacityHold(progress, 0.895, 0.908, 0.982, 0.990);
-  const blackStageOpacity = phaseOpacityHold(progress, 0.982, 0.990, 0.996, 1.0);
-  const tickerOpacity = phaseOpacityHold(progress, 0.990, 0.993, 0.997, 0.999);
-  const tickerSweep = progressBetween(progress, 0.990, 0.9992);
-  const tickerSettle = progressBetween(progress, 0.993, 0.997);
+  const scanOpacity = phaseOpacity(progress, 0.28, 0.36, 0.44);
+  const decodeChamberOpacity = phaseOpacityHold(progress, 0.30, 0.36, 0.44, 0.50);
+  const workspaceGhostOpacity = phaseOpacityHold(progress, 0.42, 0.48, 0.54, 0.60);
+  const collabSignalOpacity = phaseOpacityHold(progress, 0.58, 0.63, 0.68, 0.72);
+  const paperExitProgress = progressBetween(progress, 0.66, 0.74);
+  const greenStageOpacity = phaseOpacityHold(progress, 0.68, 0.76, 0.90, 0.925);
+  const greenCopyOpacity = phaseOpacityHold(progress, 0.76, 0.79, 0.90, 0.925);
+  const blackStageOpacity = phaseOpacityHold(progress, 0.92, 0.945, 0.968, 0.985);
+  const tickerOpacity = phaseOpacityHold(progress, 0.965, 0.973, 0.988, 0.995);
+  const tickerSweep = progressBetween(progress, 0.965, 0.994);
+  const tickerSettle = progressBetween(progress, 0.973, 0.988);
   const tickerChaos = Math.max(0, 1 - tickerSettle);
 
-  const gateProgress = progressBetween(progress, 0.9994, 0.99985);
+  const gateProgress = progressBetween(progress, 0.99, 0.996);
   const gateAuraOpacity = gateProgress * 0.24;
-  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.80, 0.88) * 0.72;
-  const ctaOpacity = progressBetween(progress, 0.9994, 1.0);
+  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.66, 0.74) * 0.72;
+  const ctaOpacity = progressBetween(progress, 0.99, 1.0);
 
   storyElement.style.setProperty("--story-progress", progress.toFixed(4));
   storyElement.style.setProperty("--hero-opacity", heroOpacity.toFixed(4));
@@ -89,37 +89,37 @@ export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, pro
 }
 
 export function phaseForProgress(progress: number): LandingPhase {
-  if (progress >= 0.9994) {
+  if (progress >= 0.99) {
     return "cta";
   }
-  if (progress >= 0.990) {
+  if (progress >= 0.965) {
     return "letterStorm";
   }
-  if (progress >= 0.982) {
+  if (progress >= 0.92) {
     return "blackCurtain";
   }
-  if (progress >= 0.895) {
+  if (progress >= 0.76) {
     return "greenCopy";
   }
-  if (progress >= 0.82) {
+  if (progress >= 0.68) {
     return "greenCurtain";
   }
-  if (progress >= 0.80) {
+  if (progress >= 0.66) {
     return "paperExit";
   }
-  if (progress >= 0.72) {
+  if (progress >= 0.58) {
     return "collab";
   }
-  if (progress >= 0.58) {
+  if (progress >= 0.42) {
     return "workspace";
   }
-  if (progress >= 0.42) {
+  if (progress >= 0.30) {
     return "decode";
   }
-  if (progress >= 0.20) {
+  if (progress >= 0.16) {
     return "center";
   }
-  if (progress >= 0.10) {
+  if (progress >= 0.06) {
     return "absorb";
   }
   return "intro";

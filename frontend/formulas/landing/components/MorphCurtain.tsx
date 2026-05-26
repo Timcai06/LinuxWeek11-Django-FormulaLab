@@ -85,12 +85,12 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       const progress = scrollProgressRef.current;
-      const greenSweepProgress = progressBetween(progress, 0.82, 0.90);
-      const blackSweepProgress = progressBetween(progress, 0.982, 0.990);
+      const greenSweepProgress = progressBetween(progress, 0.68, 0.76);
+      const blackSweepProgress = progressBetween(progress, 0.92, 0.945);
       const greenProgress = greenSweepProgress * greenSweepProgress * (3 - 2 * greenSweepProgress);
       const blackProgress = blackSweepProgress * blackSweepProgress * (3 - 2 * blackSweepProgress);
-      const greenExitProgress = progressBetween(progress, 0.982, 0.990);
-      const blackExitProgress = progressBetween(progress, 0.990, 0.996);
+      const greenExitProgress = progressBetween(progress, 0.90, 0.925);
+      const blackExitProgress = progressBetween(progress, 0.965, 0.985);
       const activeProgress = blackProgress > 0 ? blackProgress : greenProgress;
 
       // Update points through a GSAP-style delayed overlay timeline.

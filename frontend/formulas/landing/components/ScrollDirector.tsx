@@ -31,11 +31,11 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
         trigger: storyElement,
         start: "top top",
         end: "bottom bottom",
-        scrub: 1.35,
+        scrub: 1.1,
         snap: {
           snapTo: snapToStoryBeat,
-          duration: { min: 0.35, max: 0.8 },
-          delay: 0.12,
+          duration: { min: 0.42, max: 0.95 },
+          delay: 0.08,
           ease: "power3.out",
         },
         onUpdate(self) {
