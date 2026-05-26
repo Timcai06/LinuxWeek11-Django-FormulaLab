@@ -20,10 +20,10 @@
 Formula Lab 的最终方向是：
 
 ```text
-SpaceX-inspired Formula Recognition Mission Control + Paper Formula Workbench
+Cinematic Formula Landing + SpaceX-inspired Formula Mission Control + Paper Formula Workbench
 ```
 
-也就是一个公式识别任务控制台和论文公式资产工作台，而不是普通 SaaS 面板。
+也就是用有记忆点的 Landing 建立产品想象，再用克制的公式识别任务控制台和论文公式资产工作台完成真实工作，而不是普通 SaaS 面板。
 
 ## 为什么选择 SpaceX
 
@@ -46,7 +46,7 @@ LaTeX 后处理
 SpaceX 原始设计语言偏航天品牌官网，强调全屏摄影、视频、巨型全大写标题和极少 UI。Formula Lab 是工具型网站，所以必须改造：
 
 - 不做火箭图片或太空图片装饰。
-- 不做纯宣传型 hero。
+- Landing 可以做强叙事，但不能变成空洞宣传页；最终必须导向可用的 Workbench。
 - 不把所有中文文字强行处理成大写英文风格。
 - 不让电影感压过上传、复制、历史记录这些真实操作。
 - 不让纯黑背景影响 LaTeX 阅读和公式预览。
@@ -145,20 +145,38 @@ SYSTEM
 
 ## 页面设计方向
 
-### 工作台首页
+### Landing 首页
 
-首页不是营销页，而是任务控制台。
+首页已经从上传任务控制台升级为 cinematic landing。它的任务不是直接上传图片，而是用滚动叙事展示 Formula Lab 的产品形态：公式草稿被识别、整理、审查并汇入论文工作区，最后进入 Workbench。
 
 推荐结构：
 
 ```text
 顶部：FORMULA LAB / PROJECTS / WORKBENCH / MISSION LOG / SYSTEM
-主体左侧：上传指令区和图片预览
-主体右侧：模型状态、队列状态、最近任务
-底部：最近任务日志
+主体：Manuscript / formula constellation / scroll story
+阶段：intro -> absorb -> center -> decode -> workspace -> collab -> cta
+尾声：进入 Workbench 的明确入口
 ```
 
-上传区要像 command zone，不像普通文件表单。
+Landing 允许使用 GSAP、ScrollTrigger、Three.js、shader、SplitText-like 文本拆分等强视觉技术，但必须遵守三个边界：
+
+- 不阻塞真实产品入口。
+- 不把工具页的操作组件伪装成假 demo。
+- 不影响 Workbench、Mission Log、Report、System 等普通页面的性能和可用性。
+
+### Workbench
+
+Workbench 才是上传任务控制台。
+
+推荐结构：
+
+```text
+左侧：项目路由、上传指令区、图片预览、START RECOGNITION
+右侧：模型状态、队列状态、最近任务
+下方：Recent Missions
+```
+
+上传区要像 command zone，不像普通文件表单。它可以保持细网格、黑白控制台和紧凑仪表感，但不承载 Landing 的长滚动叙事。
 
 ### 进度页
 
@@ -200,15 +218,17 @@ Paper Fit Preview 是辅助仪表，不是主角。它可以使用暗色半透�
 
 ### Project Workspace
 
-Project Workspace 的视觉目标是轻量工作台：
+Project Workspace 的视觉目标是论文工作区，而不是 OCR 后台表格：
 
 ```text
-左侧：公式队列，紧凑可扫读
-中间：Formula Inspector，展示当前公式源码、预览、Paper Fit 和 Review 入口
-右侧：Workflow Status，展示完成率、最近批次和后续智能能力占位
+左侧：项目/论文文件上下文与工作状态
+中间：Paper Workspace，承载 CodeMirror 源码编辑、预览和保存
+右侧或下方：Formula Review Inbox、Version Timeline、Workflow Status
 ```
 
-它不应像后台表格，也不应把所有信息堆成卡片墙。公式审校链路应一眼可见：选择公式 -> 看渲染 -> 看适配 -> 打开 Review -> 导出。
+它不应像后台表格，也不应把所有信息堆成卡片墙。公式审校链路应一眼可见：选择公式 -> 看渲染 -> 必要时编辑 -> 插入论文 -> 保存版本 -> 导出。
+
+Formula Review Inbox 是 Project Workspace 的核心产品面之一。它应像论文审查收件箱，而不是旧式 Review Drawer：大量公式可以被筛选、扫读、确认、插入和回溯。Paper Fit Preview 是辅助仪表，不能抢走论文源码编辑与公式预览的主视觉。
 
 ### 历史记录页
 
@@ -254,7 +274,7 @@ Last Recognition Job
 
 ## 动效原则
 
-动效只服务任务反馈。
+工具页动效只服务任务反馈；Landing 动效服务产品叙事。二者不能混成一种节奏。
 
 允许：
 
@@ -263,19 +283,20 @@ Last Recognition Job
 - 进度条平滑推进。
 - 复制成功状态。
 - 失败信息展开。
+- Landing 中的 scroll-driven manuscript 聚焦、文本消散、公式场变化、产品界面暗示和最终入口。
 
 避免：
 
 - 火箭、星空、粒子、火焰等装饰动画。
-- 大面积背景视频。
-- 为了电影感延迟任务反馈。
+- 在工具页使用大面积背景视频。
+- 为了电影感延迟真实任务反馈。
 - 浮动 orb、bokeh 或与任务无关的装饰物。
 - Paper Fit、状态灯或 telemetry 元素抢走主要工作内容。
 
 ## 设计禁忌
 
 - 不使用火箭/太空图片装饰。
-- 不做营销型全屏 hero。
+- 不做空洞营销型全屏 hero；Landing 必须回到论文公式产品本身。
 - 不把所有中文都做成字距很大的标题。
 - 不引入彩色 SaaS 徽章系统。
 - 不用渐变、光晕、bokeh 背景。
@@ -288,6 +309,7 @@ Last Recognition Job
 
 ```text
 进入 Formula Lab Mission Control
+从 Landing 理解产品形态并进入 Workbench
 上传公式图片
 任务进入识别序列
 观察真实阶段进度

@@ -243,6 +243,11 @@ make frontend-build
 
 ```text
 apps/formulas/static/formulas/js/generated/layout-intelligence.js
+apps/formulas/static/formulas/js/generated/landing*.js
+apps/formulas/static/formulas/js/generated/workspace-editor.js
+apps/formulas/static/formulas/js/generated/codemirror.js
+apps/formulas/static/formulas/css/generated/landing.css
+apps/formulas/static/formulas/css/generated/workspace-editor.css
 ```
 
 视觉资产放在：
@@ -250,9 +255,11 @@ apps/formulas/static/formulas/js/generated/layout-intelligence.js
 ```text
 static/formulas/visuals/
   landing-mission-bg.png
+  manuscript_texture_alpha.png
+  manuscript_texture_alpha_legacy.png
 ```
 
-Landing 背景资产纳入版本库，保证 Mac 和 Ubuntu 环境都能直接呈现完整首页；其余页面统一使用 CSS 全局细网格背景。
+Landing 背景和 manuscript 纹理资产纳入版本库，保证 Mac 和 Ubuntu 环境都能直接呈现完整首页；其余页面统一使用 CSS 全局细网格背景。
 
 媒体文件和模型缓存仍然不进入版本库：
 
