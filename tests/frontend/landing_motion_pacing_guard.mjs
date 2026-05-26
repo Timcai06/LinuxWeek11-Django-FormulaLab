@@ -26,18 +26,58 @@ assert.doesNotMatch(
 );
 assert.match(
   directorSource,
-  /scrub:\s*0\.8/,
+  /scrub:\s*1\.35/,
   "Landing ScrollTrigger should use a damped scrub value so key scenes do not flash by.",
 );
 assert.match(
   directorSource,
-  /snapTo\(value\)[\s\S]*if \(value >= 0\.62\)[\s\S]*return value/,
-  "Late-stage curtain, text, letter, and CTA chapters should not be skipped by hard snap.",
+  /duration:\s*\{ min: 0\.35, max: 0\.8 \}/,
+  "Story snap should settle with enough damping to feel like a pause instead of a jump cut.",
 );
 assert.match(
   directorSource,
-  /phaseOpacityHold\(progress,\s*0\.94,\s*0\.95,\s*0\.98,\s*0\.992\)/,
+  /delay:\s*0\.12/,
+  "Story snap should wait briefly after wheel input so the hold feels intentional.",
+);
+assert.match(
+  directorSource,
+  /const STORY_SNAP_POINTS = \[0, 0\.10, 0\.25, 0\.36, 0\.46, 0\.58, 0\.82, 0\.91, 0\.94, 0\.97, 0\.982, 0\.992, 0\.9994\]/,
+  "Landing should define narrative keyframes that can act as soft magnetic beats.",
+);
+assert.match(
+  directorSource,
+  /const SOFT_SNAP_RADIUS = 0\.018/,
+  "Late-stage keyframe snap should be soft and local rather than forcing a page-turn jump.",
+);
+assert.match(
+  directorSource,
+  /function snapToStoryBeat\(value: number\)/,
+  "ScrollDirector should route ScrollTrigger snap through a named story-beat helper.",
+);
+assert.match(
+  directorSource,
+  /Math\.abs\(nearest - value\) <= SOFT_SNAP_RADIUS/,
+  "Late-stage snap should only catch the scroll when the user releases near a key beat.",
+);
+assert.doesNotMatch(
+  directorSource,
+  /if \(value >= 0\.62\) \{[\s\S]*?return value;[\s\S]*?\}/,
+  "Late-stage curtain, text, letter, and CTA chapters should use soft keyframe snap instead of disabling snap entirely.",
+);
+assert.match(
+  directorSource,
+  /phaseOpacityHold\(progress,\s*0\.990,\s*0\.993,\s*0\.997,\s*0\.999\)/,
   "The letter storm should arrive after the black curtain and hold until just before the final CTA.",
+);
+assert.match(
+  directorSource,
+  /70 - tickerSweep \* 140\)\.toFixed\(3\)/,
+  "The final ticker should complete a full marquee pass before the Workbench Gate enters.",
+);
+assert.match(
+  directorSource,
+  /const tickerSweep = progressBetween\(progress,\s*0\.990,\s*0\.9992\)/,
+  "The final ticker should have enough scroll distance to finish before the CTA phase.",
 );
 assert.match(
   directorSource,
@@ -46,13 +86,23 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.72,\s*0\.80\)/,
+  /progressBetween\(progress,\s*0\.82,\s*0\.90\)/,
   "MorphCurtain should have a first liquid transition into the green curtain.",
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.90,\s*0\.94\)/,
+  /progressBetween\(progress,\s*0\.982,\s*0\.990\)/,
   "MorphCurtain should have a second liquid transition from green into black.",
+);
+assert.match(
+  curtainSource,
+  /const DELAY_POINTS_MAX = 0\.3;[\s\S]*const DELAY_PER_PATH = 0\.25;[\s\S]*const MORPH_DURATION = 0\.9;/,
+  "MorphCurtain should preserve the layered point/path delays from the GSAP liquid overlay reference.",
+);
+assert.match(
+  curtainSource,
+  /const timelineProgress = baseProgress \* \(MORPH_DURATION \+ DELAY_POINTS_MAX \+ DELAY_PER_PATH\)/,
+  "MorphCurtain should map scroll progress through a delayed overlay timeline instead of directly filling all points.",
 );
 assert.doesNotMatch(
   curtainSource,
@@ -76,18 +126,28 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /const gateProgress = progressBetween\(progress,\s*0\.985,\s*0\.998\)/,
-  "The Workbench Gate should wait until the black letter storm resolves.",
+  /const gateProgress = progressBetween\(progress,\s*0\.9994,\s*0\.99985\)/,
+  "The Workbench Gate should wait until the ticker has fully faded out.",
 );
 assert.match(
   directorSource,
-  /const manuscriptFinalOpacity = 1 - progressBetween\(progress,\s*0\.64,\s*0\.76\) \* 0\.72/,
+  /const manuscriptFinalOpacity = 1 - progressBetween\(progress,\s*0\.80,\s*0\.88\) \* 0\.72/,
   "The manuscript should visibly recede before the liquid transition takes over.",
 );
 assert.match(
   styleSource,
-  /\.landing-story[\s\S]*?min-height:\s*2600vh/,
-  "The cinematic landing story should be long enough for green copy, black curtain, and letters to breathe.",
+  /\.landing-story[\s\S]*?min-height:\s*7800vh/,
+  "The cinematic landing story should be compact enough to avoid drag while preserving green copy, black curtain, and letter beats.",
+);
+assert.match(
+  copyStageSource,
+  /\[0\.900,\s*0\.918\][\s\S]*\[0\.930,\s*0\.948\][\s\S]*\[0\.960,\s*0\.978\]/,
+  "Green curtain copy should animate in three clearly separated beats.",
+);
+assert.match(
+  copyStageSource,
+  /\[0\.895,\s*0\.925,\s*0\.955\]/,
+  "Green curtain copy fade windows should not start on top of each other.",
 );
 assert.match(
   copyStageSource,

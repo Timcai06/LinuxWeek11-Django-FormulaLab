@@ -4,6 +4,9 @@ import { progressBetween } from "../three/motion";
 
 const NUM_POINTS = 10;
 const NUM_PATHS = 2;
+const DELAY_POINTS_MAX = 0.3;
+const DELAY_PER_PATH = 0.25;
+const MORPH_DURATION = 0.9;
 
 const GREEN_GRADIENTS = [
   {
@@ -65,7 +68,7 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
     // Random per-point delays for organic feel
     const delays: number[] = [];
     for (let j = 0; j < NUM_POINTS; j++) {
-      delays.push(Math.random() * 0.12);
+      delays.push(Math.random() * DELAY_POINTS_MAX);
     }
     delaysRef.current = delays;
   }, []);
@@ -82,23 +85,25 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       const progress = scrollProgressRef.current;
-      const greenSweepProgress = progressBetween(progress, 0.72, 0.80);
-      const blackSweepProgress = progressBetween(progress, 0.90, 0.94);
+      const greenSweepProgress = progressBetween(progress, 0.82, 0.90);
+      const blackSweepProgress = progressBetween(progress, 0.982, 0.990);
       const greenProgress = greenSweepProgress * greenSweepProgress * (3 - 2 * greenSweepProgress);
       const blackProgress = blackSweepProgress * blackSweepProgress * (3 - 2 * blackSweepProgress);
-      const greenExitProgress = progressBetween(progress, 0.80, 0.86);
-      const blackExitProgress = progressBetween(progress, 0.94, 0.985);
+      const greenExitProgress = progressBetween(progress, 0.982, 0.990);
+      const blackExitProgress = progressBetween(progress, 0.990, 0.996);
       const activeProgress = blackProgress > 0 ? blackProgress : greenProgress;
 
-      // Update points: each point grows from 0 to 100 based on progress + delays
+      // Update points through a GSAP-style delayed overlay timeline.
       const pts = allPoints.current;
       const delays = delaysRef.current;
+      const baseProgress = activeProgress;
+      const timelineProgress = baseProgress * (MORPH_DURATION + DELAY_POINTS_MAX + DELAY_PER_PATH);
 
       for (let i = 0; i < NUM_PATHS; i++) {
-        const pathDelay = 0.08 * i; // Back path (i=0) starts first, front path (i=1) follows
+        const pathDelay = DELAY_PER_PATH * i;
         for (let j = 0; j < NUM_POINTS; j++) {
           const pointDelay = delays[j]! + pathDelay;
-          const pointProgress = Math.max(0, Math.min(1, (activeProgress - pointDelay) / (1 - pointDelay - 0.05)));
+          const pointProgress = Math.max(0, Math.min(1, (timelineProgress - pointDelay) / MORPH_DURATION));
           // Ease: power2.inOut approximation
           const eased = pointProgress < 0.5
             ? 2 * pointProgress * pointProgress

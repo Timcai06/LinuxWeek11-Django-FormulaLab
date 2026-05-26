@@ -5,32 +5,41 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { LandingPhase, ScrollDirectorProps } from "../types";
 import { phaseOpacity, phaseOpacityHold, progressBetween } from "../three/motion";
 
-const SNAP_LABELS = [0, 0.10, 0.25, 0.36, 0.50, 0.60];
+const STORY_SNAP_POINTS = [0, 0.10, 0.25, 0.36, 0.46, 0.58, 0.82, 0.91, 0.94, 0.97, 0.982, 0.992, 0.9994];
+const SOFT_SNAP_RADIUS = 0.018;
+
+function snapToStoryBeat(value: number) {
+  const nearest = gsap.utils.snap(STORY_SNAP_POINTS, value);
+  if (value < 0.62 || Math.abs(nearest - value) <= SOFT_SNAP_RADIUS) {
+    return nearest;
+  }
+  return value;
+}
 
 function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: number) {
-  const centerProgress = progressBetween(progress, 0.10, 0.50);
+  const centerProgress = progressBetween(progress, 0.10, 0.46);
   const heroExitProgress = progressBetween(progress, 0.10, 0.35);
   const heroOpacity = Math.max(1 - heroExitProgress * 1.28, 0);
   const shutdownOpacity = Math.max(1 - heroExitProgress * 1.45, 0);
   const cosmosOpacity = Math.max(1 - heroExitProgress * 1.18, 0);
   
-  const scanOpacity = phaseOpacity(progress, 0.46, 0.56, 0.66);
-  const decodeChamberOpacity = phaseOpacityHold(progress, 0.46, 0.50, 0.62, 0.66);
-  const workspaceGhostOpacity = phaseOpacityHold(progress, 0.54, 0.58, 0.64, 0.68);
-  const collabSignalOpacity = phaseOpacity(progress, 0.60, 0.64, 0.70);
-  const paperExitProgress = progressBetween(progress, 0.64, 0.76);
-  const greenStageOpacity = phaseOpacityHold(progress, 0.72, 0.78, 0.90, 0.94);
-  const greenCopyOpacity = phaseOpacityHold(progress, 0.80, 0.82, 0.89, 0.92);
-  const blackStageOpacity = phaseOpacityHold(progress, 0.90, 0.94, 0.985, 1.0);
-  const tickerOpacity = phaseOpacityHold(progress, 0.94, 0.95, 0.98, 0.992);
-  const tickerSweep = progressBetween(progress, 0.94, 0.985);
-  const tickerSettle = progressBetween(progress, 0.95, 0.975);
+  const scanOpacity = phaseOpacity(progress, 0.40, 0.50, 0.58);
+  const decodeChamberOpacity = phaseOpacityHold(progress, 0.42, 0.48, 0.56, 0.62);
+  const workspaceGhostOpacity = phaseOpacityHold(progress, 0.58, 0.64, 0.70, 0.75);
+  const collabSignalOpacity = phaseOpacityHold(progress, 0.72, 0.77, 0.82, 0.86);
+  const paperExitProgress = progressBetween(progress, 0.80, 0.88);
+  const greenStageOpacity = phaseOpacityHold(progress, 0.82, 0.90, 0.982, 0.990);
+  const greenCopyOpacity = phaseOpacityHold(progress, 0.895, 0.908, 0.982, 0.990);
+  const blackStageOpacity = phaseOpacityHold(progress, 0.982, 0.990, 0.996, 1.0);
+  const tickerOpacity = phaseOpacityHold(progress, 0.990, 0.993, 0.997, 0.999);
+  const tickerSweep = progressBetween(progress, 0.990, 0.9992);
+  const tickerSettle = progressBetween(progress, 0.993, 0.997);
   const tickerChaos = Math.max(0, 1 - tickerSettle);
   
-  const gateProgress = progressBetween(progress, 0.985, 0.998);
+  const gateProgress = progressBetween(progress, 0.9994, 0.99985);
   const gateAuraOpacity = gateProgress * 0.24;
-  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.64, 0.76) * 0.72;
-  const ctaOpacity = progressBetween(progress, 0.985, 1.0);
+  const manuscriptFinalOpacity = 1 - progressBetween(progress, 0.80, 0.88) * 0.72;
+  const ctaOpacity = progressBetween(progress, 0.9994, 1.0);
 
   storyElement.style.setProperty("--story-progress", progress.toFixed(4));
   storyElement.style.setProperty("--hero-opacity", heroOpacity.toFixed(4));
@@ -63,7 +72,7 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
   storyElement.style.setProperty("--green-copy-y", `${(30 * (1 - greenCopyOpacity)).toFixed(3)}px`);
   storyElement.style.setProperty("--black-stage-opacity", blackStageOpacity.toFixed(4));
   storyElement.style.setProperty("--ticker-opacity", tickerOpacity.toFixed(4));
-  storyElement.style.setProperty("--ticker-x", `${(42 - tickerSweep * 84).toFixed(3)}vw`);
+  storyElement.style.setProperty("--ticker-x", `${(70 - tickerSweep * 140).toFixed(3)}vw`);
   storyElement.style.setProperty("--ticker-y", `${(-4 + tickerSettle * 2).toFixed(3)}vh`);
   storyElement.style.setProperty("--ticker-chaos", tickerChaos.toFixed(4));
   storyElement.style.setProperty("--ticker-scale", (0.92 + tickerSettle * 0.08).toFixed(4));
@@ -82,31 +91,31 @@ function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, progress: 
 }
 
 function phaseForProgress(progress: number): LandingPhase {
-  if (progress >= 0.985) {
+  if (progress >= 0.9994) {
     return "cta";
   }
-  if (progress >= 0.94) {
+  if (progress >= 0.990) {
     return "letterStorm";
   }
-  if (progress >= 0.90) {
+  if (progress >= 0.982) {
     return "blackCurtain";
   }
-  if (progress >= 0.80) {
+  if (progress >= 0.895) {
     return "greenCopy";
   }
-  if (progress >= 0.72) {
+  if (progress >= 0.82) {
     return "greenCurtain";
   }
-  if (progress >= 0.64) {
+  if (progress >= 0.80) {
     return "paperExit";
   }
-  if (progress >= 0.60) {
+  if (progress >= 0.72) {
     return "collab";
   }
-  if (progress >= 0.54) {
+  if (progress >= 0.58) {
     return "workspace";
   }
-  if (progress >= 0.5) {
+  if (progress >= 0.42) {
     return "decode";
   }
   if (progress >= 0.20) {
@@ -144,17 +153,12 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
         trigger: storyElement,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.8,
+        scrub: 1.35,
         snap: {
-          snapTo(value) {
-            if (value >= 0.62) {
-              return value;
-            }
-            return gsap.utils.snap(SNAP_LABELS, value);
-          },
-          duration: { min: 0.25, max: 0.55 },
-          delay: 0.08,
-          ease: "power2.out",
+          snapTo: snapToStoryBeat,
+          duration: { min: 0.35, max: 0.8 },
+          delay: 0.12,
+          ease: "power3.out",
         },
         onUpdate(self) {
           const progress = self.progress;

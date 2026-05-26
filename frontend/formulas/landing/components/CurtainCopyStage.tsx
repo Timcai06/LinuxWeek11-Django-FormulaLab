@@ -12,9 +12,9 @@ const COPY_BLOCKS = [
 ];
 
 const COPY_RANGES = [
-  [0.805, 0.842],
-  [0.835, 0.875],
-  [0.865, 0.902],
+  [0.900, 0.918],
+  [0.930, 0.948],
+  [0.960, 0.978],
 ] as const;
 
 export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
@@ -73,10 +73,10 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
         animation.progress(easedRange(progress, start, end));
       });
       containersRef.current.forEach((container, index) => {
-        const fadeInStart = [0.795, 0.852, 0.884][index] ?? 0.884;
-        const fadeInEnd = fadeInStart + 0.014;
-        const fadeOutStart = fadeInStart + 0.038;
-        const fadeOutEnd = fadeOutStart + 0.02;
+        const fadeInStart = [0.895, 0.925, 0.955][index] ?? 0.955;
+        const fadeInEnd = fadeInStart + 0.01;
+        const fadeOutStart = fadeInStart + 0.022;
+        const fadeOutEnd = fadeOutStart + 0.01;
         container.style.opacity = phaseOpacityHold(progress, fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd).toFixed(3);
       });
       raf = requestAnimationFrame(update);
