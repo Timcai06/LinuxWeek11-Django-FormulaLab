@@ -85,7 +85,7 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       const progress = scrollProgressRef.current;
-      const greenSweepProgress = progressBetween(progress, 0.68, 0.76);
+      const greenSweepProgress = progressBetween(progress, 0.66, 0.74);
       const blackSweepProgress = progressBetween(progress, 0.92, 0.945);
       const greenProgress = greenSweepProgress * greenSweepProgress * (3 - 2 * greenSweepProgress);
       const blackProgress = blackSweepProgress * blackSweepProgress * (3 - 2 * blackSweepProgress);

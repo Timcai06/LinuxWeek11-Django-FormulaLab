@@ -40,25 +40,25 @@ assert.match(directorSource, /if \(progress >= 0\.99\)[\s\S]*return "cta"/, "CTA
 assert.match(directorSource, /if \(progress >= 0\.965\)[\s\S]*return "letterStorm"/, "The letter storm should follow the black curtain.");
 assert.match(directorSource, /if \(progress >= 0\.92\)[\s\S]*return "blackCurtain"/, "The black curtain should follow the green SplitText copy.");
 assert.match(directorSource, /if \(progress >= 0\.76\)[\s\S]*return "greenCopy"/, "The green SplitText copy should follow the first liquid curtain.");
-assert.match(directorSource, /if \(progress >= 0\.68\)[\s\S]*return "greenCurtain"/, "The first liquid transition should enter the green curtain.");
-assert.match(directorSource, /if \(progress >= 0\.66\)[\s\S]*return "paperExit"/, "The manuscript should recede before the green curtain begins.");
-assert.match(directorSource, /if \(progress >= 0\.58\)[\s\S]*return "collab"/, "Collaboration phase should precede the manuscript exit.");
-assert.match(directorSource, /if \(progress >= 0\.42\)[\s\S]*return "workspace"/, "Workspace ghost phase should follow decode before collaboration begins.");
-assert.match(directorSource, /if \(progress >= 0\.30\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
+assert.match(directorSource, /if \(progress >= 0\.66\)[\s\S]*return "greenCurtain"/, "The first liquid transition should enter the green curtain.");
+assert.match(directorSource, /if \(progress >= 0\.62\)[\s\S]*return "paperExit"/, "The manuscript should recede before the green curtain begins.");
+assert.match(directorSource, /if \(progress >= 0\.52\)[\s\S]*return "collab"/, "Collaboration phase should precede the manuscript exit.");
+assert.match(directorSource, /if \(progress >= 0\.34\)[\s\S]*return "workspace"/, "Workspace ghost phase should follow decode before collaboration begins.");
+assert.match(directorSource, /if \(progress >= 0\.20\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
 assert.doesNotMatch(directorSource, /return "reveal"/, "The old reveal phase should be replaced by explicit workspace/collaboration phases.");
 assert.doesNotMatch(directorSource, /return "scan"/, "Scan should be a visual sub-progress, not a top-level fifth-stage phase.");
-assert.match(directorSource, /phaseOpacity\(progress, 0\.28, 0\.36, 0\.44\)/, "Scan should begin after the paper moves to center.");
+assert.match(directorSource, /phaseOpacity\(progress, 0\.15, 0\.22, 0\.29\)/, "Scan should begin shortly after the first centered manuscript snap.");
 assert.match(
   directorSource,
-  /phaseOpacityHold\(progress,\s*0\.30,\s*0\.36,\s*0\.44,\s*0\.50\)[\s\S]*phaseOpacityHold\(progress,\s*0\.42,\s*0\.48,\s*0\.54,\s*0\.60\)[\s\S]*phaseOpacityHold\(progress,\s*0\.58,\s*0\.63,\s*0\.68,\s*0\.72\)/,
+  /phaseOpacityHold\(progress,\s*0\.20,\s*0\.26,\s*0\.32,\s*0\.38\)[\s\S]*phaseOpacityHold\(progress,\s*0\.34,\s*0\.40,\s*0\.46,\s*0\.52\)[\s\S]*phaseOpacityHold\(progress,\s*0\.52,\s*0\.57,\s*0\.62,\s*0\.66\)/,
   "Decode, workspace, and collaboration overlays should appear as staged beats instead of all at once.",
 );
 assert.match(canvasSource, /scrollProgressRef/, "The manuscript canvas should receive scroll progress.");
 assert.match(canvasSource, /useFrame/, "The manuscript canvas should animate the paper per frame.");
-assert.match(canvasSource, /easedRange\(progress, 0\.08, 0\.30\)/, "The paper should move to center during the manuscript gravity phase.");
-assert.match(canvasSource, /easedRange\(progress, 0\.28, 0\.44\)/, "The paper scan should align with the decode chamber entrance.");
-assert.match(canvasSource, /easedRange\(progress, 0\.66, 0\.74\)/, "The paper should recede before the liquid transition starts.");
-assert.match(canvasSource, /const releaseProgress = easedRange\(progress, 0\.66, 0\.74\)/, "The formula starfield should release as the manuscript recedes before the liquid transition.");
+assert.match(canvasSource, /easedRange\(progress, 0\.04, 0\.105\)/, "The paper should move to center by the first snap beat.");
+assert.match(canvasSource, /easedRange\(progress, 0\.15, 0\.29\)/, "The paper scan should align with the decode chamber entrance.");
+assert.match(canvasSource, /easedRange\(progress, 0\.62, 0\.68\)/, "The paper should recede before the liquid transition starts.");
+assert.match(canvasSource, /const releaseProgress = easedRange\(progress, 0\.62, 0\.68\)/, "The formula starfield should release as the manuscript recedes before the liquid transition.");
 assert.match(
   canvasSource,
   /materialRef\.current\.opacity = THREE\.MathUtils\.lerp\(0\.34, 0\.72, absorbProgress\) \* \(1 - orbitProgress \* 0\.2\) \* \(1 - releaseProgress \* 0\.72\)/,
@@ -154,7 +154,7 @@ assert.match(heroSource, /REVIEW INBOX PRIMED/, "The landing hero should preview
 assert.match(heroSource, /COLLABORATION LAYER READY/, "The landing hero should preview the collaboration layer.");
 assert.match(
   directorSource,
-  /const collabSignalOpacity = phaseOpacityHold\(progress, 0\.58, 0\.63, 0\.68, 0\.72\)/,
+  /const collabSignalOpacity = phaseOpacityHold\(progress, 0\.52, 0\.57, 0\.62, 0\.66\)/,
   "Collaboration signals should resolve before the manuscript exits into the curtain sequence.",
 );
 assert.doesNotMatch(

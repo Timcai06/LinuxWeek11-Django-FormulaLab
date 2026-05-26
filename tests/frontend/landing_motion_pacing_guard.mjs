@@ -30,23 +30,23 @@ assert.doesNotMatch(
 );
 assert.match(
   directorSource,
-  /scrub:\s*1\.1/,
-  "Landing ScrollTrigger should stay damped without making the opening drag.",
+  /scrub:\s*0\.55/,
+  "Landing ScrollTrigger should respond quickly enough for one wheel gesture to reach the centered manuscript.",
 );
 assert.match(
   directorSource,
-  /duration:\s*\{ min: 0\.42, max: 0\.95 \}/,
-  "Story snap should settle with enough damping to feel like a pause instead of a jump cut.",
+  /duration:\s*\{ min: 0\.22, max: 0\.55 \}/,
+  "Story snap should settle quickly enough to avoid hiding the first centered manuscript beat.",
 );
 assert.match(
   directorSource,
-  /delay:\s*0\.08/,
-  "Story snap should wait briefly after wheel input so the hold feels intentional.",
+  /delay:\s*0\.02/,
+  "Story snap should start almost immediately after a wheel gesture.",
 );
 assert.match(
   directorSource,
-  /const STORY_SNAP_POINTS = \[0, 0\.06, 0\.16, 0\.24, 0\.30, 0\.42, 0\.58, 0\.68, 0\.76, 0\.84, 0\.92, 0\.965, 0\.99\]/,
-  "Landing should define narrative keyframes that can act as soft magnetic beats.",
+  /const STORY_SNAP_POINTS = \[0, 0\.105, 0\.20, 0\.30, 0\.42, 0\.58, 0\.68, 0\.76, 0\.84, 0\.92, 0\.965, 0\.99\]/,
+  "Landing should snap the first wheel gesture toward the centered manuscript beat.",
 );
 assert.match(
   directorSource,
@@ -90,7 +90,7 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /progressBetween\(progress,\s*0\.68,\s*0\.76\)/,
+  /progressBetween\(progress,\s*0\.66,\s*0\.74\)/,
   "MorphCurtain should have a first liquid transition into the green curtain.",
 );
 assert.match(
@@ -135,13 +135,13 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /const manuscriptFinalOpacity = 1 - progressBetween\(progress,\s*0\.66,\s*0\.74\) \* 0\.72/,
+  /const manuscriptFinalOpacity = 1 - progressBetween\(progress,\s*0\.62,\s*0\.68\) \* 0\.72/,
   "The manuscript should visibly recede before the liquid transition takes over.",
 );
 assert.match(
   styleSource,
-  /\.landing-story[\s\S]*?min-height:\s*6000vh/,
-  "The cinematic landing story should be compact enough to avoid drag while preserving green copy, black curtain, and letter beats.",
+  /\.landing-story[\s\S]*?min-height:\s*3000vh/,
+  "The cinematic landing story should stay compact enough for the first scroll to reach the centered manuscript beat.",
 );
 assert.match(
   copyStageSource,

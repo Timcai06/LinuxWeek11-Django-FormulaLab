@@ -61,9 +61,9 @@ function FormulaStarfield({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: Manuscri
     const positionAttribute = field.geometry.getAttribute("position") as THREE.BufferAttribute;
     const positions = positionAttribute.array as Float32Array;
     const progress = scrollProgressRef.current;
-    const absorbProgress = easedRange(progress, 0.08, 0.30);
-    const orbitProgress = easedRange(progress, 0.30, 0.74);
-    const releaseProgress = easedRange(progress, 0.66, 0.74);
+    const absorbProgress = easedRange(progress, 0.04, 0.105);
+    const orbitProgress = easedRange(progress, 0.105, 0.68);
+    const releaseProgress = easedRange(progress, 0.62, 0.68);
     const time = state.clock.getElapsedTime();
 
     for (let index = 0; index < positions.length; index += 3) {
@@ -132,10 +132,10 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
 
     const time = state.clock.getElapsedTime();
     const progress = scrollProgressRef.current;
-    const centerProgress = easedRange(progress, 0.08, 0.30);
-    const scanProgress = easedRange(progress, 0.28, 0.44);
-    const decodeProgress = easedRange(progress, 0.30, 0.52);
-    const workspaceProgress = easedRange(progress, 0.66, 0.74);
+    const centerProgress = easedRange(progress, 0.04, 0.105);
+    const scanProgress = easedRange(progress, 0.15, 0.29);
+    const decodeProgress = easedRange(progress, 0.20, 0.38);
+    const workspaceProgress = easedRange(progress, 0.62, 0.68);
     const floatAmount = 1 - centerProgress * 0.72;
 
     const x = THREE.MathUtils.lerp(3.4, -0.18, centerProgress);
@@ -152,7 +152,7 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
     if (materialRef.current) {
       const uniforms = materialRef.current.uniforms;
       uniforms.uTime.value = time;
-      uniforms.uScanProgress.value = THREE.MathUtils.clamp((progress - 0.28) / 0.16, 0, 1);
+      uniforms.uScanProgress.value = THREE.MathUtils.clamp((progress - 0.15) / 0.14, 0, 1);
       uniforms.uDecodeProgress.value = decodeProgress;
       uniforms.uOpacity.value = THREE.MathUtils.lerp(1, 0.9, decodeProgress);
     }

@@ -7,13 +7,13 @@ body.landing-shell {
 }
 
 .landing-fallback {
-  min-height: 6000vh;
+  min-height: 3000vh;
 }
 
 
 .landing-story {
   position: relative;
-  min-height: 6000vh;
+  min-height: 3000vh;
   --hero-opacity: 1;
   --hero-y: 0px;
   --text-disperse: 0px;
