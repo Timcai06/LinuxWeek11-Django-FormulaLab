@@ -1,0 +1,154 @@
+/* ── SplitText Curtain Copy ────────────────────────── */
+.curtain-copy-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.green-curtain-panel,
+.black-curtain-panel {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.18s ease;
+}
+
+.green-curtain-panel {
+  opacity: var(--green-stage-opacity);
+  background:
+    radial-gradient(circle at 70% 18%, rgba(190, 255, 216, 0.24), transparent 32%),
+    radial-gradient(circle at 22% 72%, rgba(92, 255, 176, 0.18), transparent 36%),
+    linear-gradient(135deg, rgba(92, 255, 176, 0.95), rgba(15, 72, 45, 0.96) 54%, rgba(3, 18, 12, 0.98));
+}
+
+.green-curtain-panel::after,
+.black-curtain-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 8px),
+    radial-gradient(circle at 50% 50%, transparent 0 38%, rgba(0, 0, 0, 0.28) 100%);
+  mix-blend-mode: soft-light;
+}
+
+.black-curtain-panel {
+  opacity: var(--black-stage-opacity);
+  background:
+    radial-gradient(circle at 52% 36%, rgba(92, 255, 176, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(5, 10, 8, 0.98), rgba(0, 0, 0, 1));
+}
+
+.curtain-copy-content {
+  position: relative;
+  z-index: 2;
+  width: min(88vw, 1080px);
+  min-height: 100vh;
+  margin: 0 auto;
+  opacity: var(--green-copy-opacity);
+  transform: translate3d(0, var(--green-copy-y), 0);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.curtain-copy-container {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  opacity: 0;
+}
+
+.curtain-copy-container h2 {
+  margin: 0;
+  max-width: min(86vw, 1120px);
+  color: rgba(6, 16, 12, 0.92);
+  font-family: "D-DIN", "D-DIN Exp", "Arial Narrow", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: clamp(1.9rem, 4.9vw, 5.4rem);
+  font-weight: 900;
+  line-height: 0.95;
+  text-align: center;
+  text-transform: uppercase;
+  text-wrap: balance;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.curtain-copy-line-mask {
+  display: block;
+}
+
+.curtain-copy-line {
+  display: block;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+.curtain-copy-word {
+  display: inline-block;
+}
+
+/* ── Horizontal Ticker (Epilogue) ────────────────────────── */
+.ht-section {
+  overflow: hidden;
+  position: absolute;
+  inset: 0;
+  z-index: 13;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  opacity: var(--ticker-opacity);
+  pointer-events: none;
+}
+
+.ht-track {
+  width: 100%;
+  transform: translate3d(var(--ticker-x), var(--ticker-y), 0) scale(var(--ticker-scale));
+  transform-origin: center;
+  will-change: transform;
+}
+
+.ht-text {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  padding-left: 0;
+  margin: 0;
+  font-size: clamp(3rem, 12vw, 15rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: "D-DIN", "D-DIN Exp", "Arial Narrow", Arial, sans-serif;
+  text-shadow: 0 0 60px rgba(255, 255, 255, 0.15);
+  transform: translate3d(0, 0, 0);
+}
+
+.ht-char {
+  display: inline-block;
+  transform: translate3d(0, calc(var(--ticker-chaos) * var(--char-drift)), 0)
+    rotate(calc(var(--ticker-chaos) * var(--char-rotation)));
+  will-change: transform;
+}
+
+/* ── Morph Curtain (Phase Gate Transition) ───────────────── */
+.morph-curtain {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15; /* Above the story stage, below the nav (z-index: 20) */
+  pointer-events: none;
+  opacity: 0;
+  --green-curtain-svg-opacity: 0;
+  --black-curtain-svg-opacity: 0;
+}
+
+.morph-curtain-green {
+  opacity: var(--green-curtain-svg-opacity);
+}
+
+.morph-curtain-black {
+  opacity: var(--black-curtain-svg-opacity);
+}

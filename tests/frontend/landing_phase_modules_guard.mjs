@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
+import { readLandingStoryComposition } from "./helpers/landing_story.mjs";
+import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const files = {
   story: "frontend/formulas/landing/components/LandingScrollStory.tsx",
+  stage: "frontend/formulas/landing/components/StoryStage.tsx",
+  rail: "frontend/formulas/landing/components/StoryRail.tsx",
   director: "frontend/formulas/landing/components/ScrollDirector.tsx",
+  timeline: "frontend/formulas/landing/storyTimeline.ts",
+  curtainCopy: "frontend/formulas/landing/components/CurtainCopyStage.tsx",
   splitText: "frontend/formulas/landing/components/SplitTextTitleSequence.tsx",
   constellation: "frontend/formulas/landing/components/FormulaConstellationField.tsx",
   decode: "frontend/formulas/landing/components/DecodeChamberOverlay.tsx",
@@ -21,8 +27,12 @@ for (const [name, file] of Object.entries(files)) {
   assert.ok(existsSync(file), `${name} module should exist at ${file}`);
 }
 
-const storySource = readFileSync(files.story, "utf8");
-const directorSource = readFileSync(files.director, "utf8");
+const storyShellSource = readFileSync(files.story, "utf8");
+const storySource = readLandingStoryComposition();
+const directorComponentSource = readFileSync(files.director, "utf8");
+const timelineSource = readFileSync(files.timeline, "utf8");
+const directorSource = `${directorComponentSource}\n${timelineSource}`;
+const curtainCopySource = readFileSync(files.curtainCopy, "utf8");
 const splitTextSource = readFileSync(files.splitText, "utf8");
 const constellationSource = readFileSync(files.constellation, "utf8");
 const decodeSource = readFileSync(files.decode, "utf8");
@@ -33,7 +43,7 @@ const manuscriptSource = readFileSync(files.manuscript, "utf8");
 const shaderSource = readFileSync(files.shader, "utf8");
 const motionSource = readFileSync(files.motion, "utf8");
 const typeSource = readFileSync(files.types, "utf8");
-const styleSource = readFileSync(files.styles, "utf8");
+const styleSource = readLandingStyles(files.styles);
 const gateIndex = gateSource.indexOf("workbench-gate");
 const ctaIndex = gateSource.indexOf("workbench-gate-cta");
 
@@ -42,13 +52,14 @@ assert.match(storySource, /<FormulaConstellationField/, "LandingScrollStory shou
 assert.match(storySource, /<DecodeChamberOverlay/, "LandingScrollStory should render the decode chamber module.");
 assert.match(storySource, /<PaperWorkspaceGhost/, "LandingScrollStory should render the paper workspace ghost module.");
 assert.match(storySource, /<CollaborationSignalField/, "LandingScrollStory should render the collaboration signal module.");
+assert.match(storySource, /<CurtainCopyStage/, "LandingScrollStory should render the green curtain SplitText copy module.");
 assert.match(storySource, /<WorkbenchGateOverlay/, "LandingScrollStory should render the Workbench Gate module.");
 assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "LandingScrollStory should not render the rejected Product Preview overlay.");
-assert.doesNotMatch(storySource, /ScrollTrigger\.create/, "ScrollTrigger setup should live in ScrollDirector.");
-assert.doesNotMatch(storySource, /workspace-pane|product-preview-/, "Old product preview card markup should stay out of LandingScrollStory.");
+assert.doesNotMatch(storyShellSource, /ScrollTrigger\.create/, "ScrollTrigger setup should live in ScrollDirector.");
+assert.doesNotMatch(storySource, /workspace-pane|product-preview-/, "Old product preview card markup should stay out of the landing story composition.");
 
 assert.match(directorSource, /ScrollTrigger\.create/, "ScrollDirector should own ScrollTrigger setup.");
-for (const phase of ["intro", "absorb", "center", "decode", "workspace", "collab", "cta"]) {
+for (const phase of ["intro", "absorb", "center", "decode", "workspace", "collab", "paperExit", "greenCurtain", "greenCopy", "blackCurtain", "letterStorm", "cta"]) {
   assert.match(directorSource, new RegExp(`["']${phase}["']`), `ScrollDirector should expose the "${phase}" story phase.`);
 }
 assert.match(directorSource, /--cta-opacity/, "ScrollDirector should drive the final CTA phase.");
@@ -57,6 +68,10 @@ assert.doesNotMatch(directorSource, /useState/, "ScrollDirector should not use R
 assert.match(splitTextSource, /SplitTextTitleSequence/, "SplitTextTitleSequence component should exist.");
 assert.match(splitTextSource, /data-split-title/, "SplitTextTitleSequence should target explicit title text.");
 assert.doesNotMatch(splitTextSource, /fromTo\(\s*['"]\.landing-copy['"]/, "SplitText should not animate the scroll-controlled copy container.");
+assert.match(curtainCopySource, /CurtainCopyStage/, "CurtainCopyStage component should exist.");
+assert.match(curtainCopySource, /SplitText\.create/, "CurtainCopyStage should create SplitText instances for intro copy.");
+assert.match(curtainCopySource, /mask:\s*"lines"/, "CurtainCopyStage should mask SplitText lines.");
+assert.match(curtainCopySource, /autoSplit:\s*true/, "CurtainCopyStage should resplit when layout changes.");
 
 assert.match(constellationSource, /FormulaConstellationField/, "FormulaConstellationField component should exist.");
 assert.match(constellationSource, /katex|renderToString/, "Formula constellation should render formulas, not raw TeX strings.");
@@ -107,8 +122,8 @@ assert.match(motionSource, /export function phaseOpacity/, "Phase opacity helper
 assert.match(typeSource, /export type LandingPhase/, "Landing phases should have a shared type.");
 assert.match(
   typeSource,
-  /export type LandingPhase = "intro" \| "absorb" \| "center" \| "decode" \| "workspace" \| "collab" \| "cta"/,
-  "LandingPhase should match the fifth-stage top-level phase contract.",
+  /export type LandingPhase =[\s\S]*\| "intro"[\s\S]*\| "absorb"[\s\S]*\| "center"[\s\S]*\| "decode"[\s\S]*\| "workspace"[\s\S]*\| "collab"[\s\S]*\| "paperExit"[\s\S]*\| "greenCurtain"[\s\S]*\| "greenCopy"[\s\S]*\| "blackCurtain"[\s\S]*\| "letterStorm"[\s\S]*\| "cta"/,
+  "LandingPhase should match the staged cinematic landing phase contract.",
 );
 assert.doesNotMatch(typeSource, /"scan"|"reveal"/, "Scan and reveal should not remain top-level landing phases.");
 assert.match(styleSource, /\.workbench-gate-cta/, "Final CTA styles should exist.");

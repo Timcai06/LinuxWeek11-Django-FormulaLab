@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readLandingStoryComposition } from "./helpers/landing_story.mjs";
+import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const appSource = readFileSync("frontend/formulas/landing/LandingApp.tsx", "utf8");
-const storySource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
-const directorSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
+const storyShellSource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
+const storySource = readLandingStoryComposition();
+const directorComponentSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
+const timelineSource = readFileSync("frontend/formulas/landing/storyTimeline.ts", "utf8");
+const directorSource = `${directorComponentSource}\n${timelineSource}`;
 const canvasSource = readFileSync("frontend/formulas/landing/components/ManuscriptCanvas.tsx", "utf8");
 const heroSource = readFileSync("frontend/formulas/landing/components/Hero.tsx", "utf8");
 const splitTextSource = readFileSync("frontend/formulas/landing/components/SplitTextTitleSequence.tsx", "utf8");
-const styleSource = readFileSync("frontend/formulas/landing/styles/landing.css", "utf8");
+const styleSource = readLandingStyles();
 
 assert.match(appSource, /LandingScrollStory/, "Landing should wrap the hero in a scroll story controller.");
 assert.match(directorSource, /ScrollTrigger/, "Landing scroll story should use GSAP ScrollTrigger.");
-assert.match(storySource, /scrollProgressRef/, "Scroll progress should be stored in a ref bridge.");
+assert.match(storyShellSource, /scrollProgressRef/, "Scroll progress should be stored in a ref bridge.");
 assert.match(directorSource, /--hero-opacity/, "Landing story should fade hero text away as the manuscript takes focus.");
 assert.match(directorSource, /--text-disperse/, "Landing text should disperse away instead of simply blurring.");
 assert.match(directorSource, /--shutdown-opacity/, "Landing HUD should shut down as the paper takes focus.");
@@ -31,19 +36,29 @@ assert.match(styleSource, /var\(--workspace-ghost-opacity\)/, "Landing styles sh
 assert.match(styleSource, /var\(--collab-signal-opacity\)/, "Landing styles should consume Collaboration Signal opacity.");
 assert.match(canvasSource, /FormulaStarfield/, "Landing should use a Three.js formula particle starfield.");
 assert.match(directorSource, /center/, "Landing story should have a manuscript-centering phase before scan/decode.");
-assert.match(directorSource, /if \(progress >= 0\.92\)[\s\S]*return "cta"/, "CTA phase should begin at the final gate threshold.");
-assert.match(directorSource, /if \(progress >= 0\.82\)[\s\S]*return "collab"/, "Collaboration phase should precede the final gate.");
-assert.match(directorSource, /if \(progress >= 0\.66\)[\s\S]*return "workspace"/, "Workspace ghost phase should follow decode.");
-assert.match(directorSource, /if \(progress >= 0\.5\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
+assert.match(directorSource, /if \(progress >= 0\.99\)[\s\S]*return "cta"/, "CTA phase should begin only after the black letter storm resolves.");
+assert.match(directorSource, /if \(progress >= 0\.965\)[\s\S]*return "letterStorm"/, "The letter storm should follow the black curtain.");
+assert.match(directorSource, /if \(progress >= 0\.92\)[\s\S]*return "blackCurtain"/, "The black curtain should follow the green SplitText copy.");
+assert.match(directorSource, /if \(progress >= 0\.76\)[\s\S]*return "greenCopy"/, "The green SplitText copy should follow the first liquid curtain.");
+assert.match(directorSource, /if \(progress >= 0\.66\)[\s\S]*return "greenCurtain"/, "The first liquid transition should enter the green curtain.");
+assert.match(directorSource, /if \(progress >= 0\.62\)[\s\S]*return "paperExit"/, "The manuscript should recede before the green curtain begins.");
+assert.match(directorSource, /if \(progress >= 0\.52\)[\s\S]*return "collab"/, "Collaboration phase should precede the manuscript exit.");
+assert.match(directorSource, /if \(progress >= 0\.34\)[\s\S]*return "workspace"/, "Workspace ghost phase should follow decode before collaboration begins.");
+assert.match(directorSource, /if \(progress >= 0\.20\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
 assert.doesNotMatch(directorSource, /return "reveal"/, "The old reveal phase should be replaced by explicit workspace/collaboration phases.");
 assert.doesNotMatch(directorSource, /return "scan"/, "Scan should be a visual sub-progress, not a top-level fifth-stage phase.");
-assert.match(directorSource, /phaseOpacity\(progress, 0\.46, 0\.56, 0\.66\)/, "Scan should begin after the paper moves to center.");
+assert.match(directorSource, /phaseOpacity\(progress, 0\.15, 0\.22, 0\.29\)/, "Scan should begin shortly after the first centered manuscript snap.");
+assert.match(
+  directorSource,
+  /phaseOpacityHold\(progress,\s*0\.20,\s*0\.26,\s*0\.32,\s*0\.38\)[\s\S]*phaseOpacityHold\(progress,\s*0\.34,\s*0\.40,\s*0\.46,\s*0\.52\)[\s\S]*phaseOpacityHold\(progress,\s*0\.52,\s*0\.57,\s*0\.62,\s*0\.66\)/,
+  "Decode, workspace, and collaboration overlays should appear as staged beats instead of all at once.",
+);
 assert.match(canvasSource, /scrollProgressRef/, "The manuscript canvas should receive scroll progress.");
 assert.match(canvasSource, /useFrame/, "The manuscript canvas should animate the paper per frame.");
-assert.match(canvasSource, /easedRange\(progress, 0\.16, 0\.46\)/, "The paper should move to center during the manuscript gravity phase.");
-assert.match(canvasSource, /easedRange\(progress, 0\.46, 0\.66\)/, "The paper scan should align with the decode chamber entrance.");
-assert.match(canvasSource, /easedRange\(progress, 0\.66, 0\.92\)/, "The paper should recede as the workspace ghost appears.");
-assert.match(canvasSource, /const releaseProgress = easedRange\(progress, 0\.82, 0\.99\)/, "The formula starfield should release as collaboration and gate layers appear.");
+assert.match(canvasSource, /easedRange\(progress, 0\.04, 0\.105\)/, "The paper should move to center by the first snap beat.");
+assert.match(canvasSource, /easedRange\(progress, 0\.15, 0\.29\)/, "The paper scan should align with the decode chamber entrance.");
+assert.match(canvasSource, /easedRange\(progress, 0\.62, 0\.68\)/, "The paper should recede before the liquid transition starts.");
+assert.match(canvasSource, /const releaseProgress = easedRange\(progress, 0\.62, 0\.68\)/, "The formula starfield should release as the manuscript recedes before the liquid transition.");
 assert.match(
   canvasSource,
   /materialRef\.current\.opacity = THREE\.MathUtils\.lerp\(0\.34, 0\.72, absorbProgress\) \* \(1 - orbitProgress \* 0\.2\) \* \(1 - releaseProgress \* 0\.72\)/,
@@ -64,8 +79,8 @@ assert.match(directorSource, /--gate-scale/, "The final Workbench Gate should se
 assert.match(directorSource, /--gate-aura-opacity/, "The final Workbench Gate should expose a subtle aura layer.");
 assert.match(
   directorSource,
-  /const gateProgress = progressBetween\(progress, 0\.92, 0\.99\)/,
-  "Workbench Gate motion should start only after the collaboration signal phase.",
+  /const gateProgress = progressBetween\(progress, 0\.99, 0\.996\)/,
+  "Workbench Gate motion should start only after the black letter storm resolves.",
 );
 assert.match(
   directorSource,
@@ -90,7 +105,7 @@ assert.doesNotMatch(
 assert.match(styleSource, /var\(--manuscript-final-opacity\)/, "Landing styles should consume the final manuscript fade variable.");
 assert.doesNotMatch(styleSource, /product-preview-/, "Landing styles should not keep Product Preview terminal styles.");
 assert.doesNotMatch(
-  storySource,
+  storyShellSource,
   /ScrollTrigger\.create/,
   "LandingScrollStory should compose modules instead of owning ScrollTrigger directly.",
 );
@@ -110,7 +125,7 @@ assert.doesNotMatch(
   "Scroll progress should not be stored in React state for per-frame animation.",
 );
 assert.doesNotMatch(
-  storySource,
+  storyShellSource,
   /useState/,
   "Scroll progress should not be stored in React state for per-frame animation.",
 );
@@ -139,8 +154,8 @@ assert.match(heroSource, /REVIEW INBOX PRIMED/, "The landing hero should preview
 assert.match(heroSource, /COLLABORATION LAYER READY/, "The landing hero should preview the collaboration layer.");
 assert.match(
   directorSource,
-  /const collabSignalOpacity = phaseOpacity\(progress, 0\.82, 0\.87, 0\.91\)/,
-  "Collaboration signals should fully resolve before the CTA phase begins.",
+  /const collabSignalOpacity = phaseOpacityHold\(progress, 0\.52, 0\.57, 0\.62, 0\.66\)/,
+  "Collaboration signals should resolve before the manuscript exits into the curtain sequence.",
 );
 assert.doesNotMatch(
   styleSource,

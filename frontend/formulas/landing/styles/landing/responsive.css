@@ -1,0 +1,97 @@
+@media (max-width: 900px) {
+  .workbench-gate {
+    width: min(90vw, 680px);
+  }
+}
+
+@media (max-width: 720px) {
+  .landing-hero {
+    min-height: 100vh;
+    padding-top: 128px;
+  }
+
+  .landing-readout {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    margin-top: 28px;
+    text-align: left;
+  }
+
+  .story-rail {
+    display: none;
+  }
+
+  .workbench-gate {
+    width: min(92vw, 560px);
+    bottom: 40px;
+  }
+
+  .workbench-gate-shell {
+    padding: 22px;
+  }
+
+  .decode-chamber,
+  .collaboration-signal-field {
+    right: 18px;
+    bottom: 88px;
+    width: calc(100vw - 36px);
+  }
+
+  .collaboration-signal-field {
+    inset: auto 18px 88px auto;
+  }
+
+  .paper-workspace-ghost {
+    grid-template-columns: 1fr;
+    width: min(92vw, 560px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-scanline,
+  .landing-hero::after,
+  .landing-copy h1,
+  .landing-copy h1:hover,
+  .shooting-star,
+  .manuscript-scan-beam {
+    animation: none;
+  }
+
+  .landing-story,
+  #landing-root {
+    min-height: 100vh;
+  }
+
+  .landing-story-stage {
+    position: relative;
+  }
+
+  .decode-chamber,
+  .paper-workspace-ghost,
+  .collaboration-signal-field,
+  .curtain-copy-stage,
+  .ht-section,
+  .morph-curtain {
+    display: none;
+  }
+
+  .workbench-gate {
+    position: relative;
+    inset: auto;
+    width: min(92vw, 720px);
+    margin: 120px auto 48px;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .workbench-gate-cta {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    visibility: visible;
+  }
+}
+

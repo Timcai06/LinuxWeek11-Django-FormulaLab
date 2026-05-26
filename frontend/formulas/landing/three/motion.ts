@@ -16,3 +16,22 @@ export function phaseOpacity(progress: number, start: number, peak: number, end:
   }
   return 1 - (progress - peak) / (end - peak);
 }
+
+export function phaseOpacityHold(
+  progress: number,
+  fadeInStart: number,
+  fadeInEnd: number,
+  fadeOutStart: number,
+  fadeOutEnd: number
+): number {
+  if (progress <= fadeInStart || progress >= fadeOutEnd) {
+    return 0;
+  }
+  if (progress <= fadeInEnd) {
+    return (progress - fadeInStart) / (fadeInEnd - fadeInStart);
+  }
+  if (progress <= fadeOutStart) {
+    return 1;
+  }
+  return 1 - (progress - fadeOutStart) / (fadeOutEnd - fadeOutStart);
+}

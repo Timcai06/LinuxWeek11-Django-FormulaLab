@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const heroSource = readFileSync("frontend/formulas/landing/components/Hero.tsx", "utf8");
-const landingStyles = readFileSync("frontend/formulas/landing/styles/landing.css", "utf8");
+const landingStyles = readLandingStyles();
 
 assert.match(
   landingStyles,
