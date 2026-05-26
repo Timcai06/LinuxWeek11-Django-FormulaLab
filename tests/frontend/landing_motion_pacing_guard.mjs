@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readLandingStoryComposition } from "./helpers/landing_story.mjs";
 import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const appSource = readFileSync("frontend/formulas/landing/LandingApp.tsx", "utf8");
-const storySource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
+const storySource = readLandingStoryComposition();
 const directorComponentSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
 const timelineSource = readFileSync("frontend/formulas/landing/storyTimeline.ts", "utf8");
 const directorSource = `${directorComponentSource}\n${timelineSource}`;

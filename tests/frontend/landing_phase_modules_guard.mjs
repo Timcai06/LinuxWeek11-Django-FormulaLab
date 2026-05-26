@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
+import { readLandingStoryComposition } from "./helpers/landing_story.mjs";
 import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const files = {
   story: "frontend/formulas/landing/components/LandingScrollStory.tsx",
+  stage: "frontend/formulas/landing/components/StoryStage.tsx",
+  rail: "frontend/formulas/landing/components/StoryRail.tsx",
   director: "frontend/formulas/landing/components/ScrollDirector.tsx",
   timeline: "frontend/formulas/landing/storyTimeline.ts",
   curtainCopy: "frontend/formulas/landing/components/CurtainCopyStage.tsx",
@@ -24,7 +27,8 @@ for (const [name, file] of Object.entries(files)) {
   assert.ok(existsSync(file), `${name} module should exist at ${file}`);
 }
 
-const storySource = readFileSync(files.story, "utf8");
+const storyShellSource = readFileSync(files.story, "utf8");
+const storySource = readLandingStoryComposition();
 const directorComponentSource = readFileSync(files.director, "utf8");
 const timelineSource = readFileSync(files.timeline, "utf8");
 const directorSource = `${directorComponentSource}\n${timelineSource}`;
@@ -51,8 +55,8 @@ assert.match(storySource, /<CollaborationSignalField/, "LandingScrollStory shoul
 assert.match(storySource, /<CurtainCopyStage/, "LandingScrollStory should render the green curtain SplitText copy module.");
 assert.match(storySource, /<WorkbenchGateOverlay/, "LandingScrollStory should render the Workbench Gate module.");
 assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "LandingScrollStory should not render the rejected Product Preview overlay.");
-assert.doesNotMatch(storySource, /ScrollTrigger\.create/, "ScrollTrigger setup should live in ScrollDirector.");
-assert.doesNotMatch(storySource, /workspace-pane|product-preview-/, "Old product preview card markup should stay out of LandingScrollStory.");
+assert.doesNotMatch(storyShellSource, /ScrollTrigger\.create/, "ScrollTrigger setup should live in ScrollDirector.");
+assert.doesNotMatch(storySource, /workspace-pane|product-preview-/, "Old product preview card markup should stay out of the landing story composition.");
 
 assert.match(directorSource, /ScrollTrigger\.create/, "ScrollDirector should own ScrollTrigger setup.");
 for (const phase of ["intro", "absorb", "center", "decode", "workspace", "collab", "paperExit", "greenCurtain", "greenCopy", "blackCurtain", "letterStorm", "cta"]) {

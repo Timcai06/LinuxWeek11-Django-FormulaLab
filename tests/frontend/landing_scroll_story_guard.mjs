@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readLandingStoryComposition } from "./helpers/landing_story.mjs";
 import { readLandingStyles } from "./helpers/landing_styles.mjs";
 
 const appSource = readFileSync("frontend/formulas/landing/LandingApp.tsx", "utf8");
-const storySource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
+const storyShellSource = readFileSync("frontend/formulas/landing/components/LandingScrollStory.tsx", "utf8");
+const storySource = readLandingStoryComposition();
 const directorComponentSource = readFileSync("frontend/formulas/landing/components/ScrollDirector.tsx", "utf8");
 const timelineSource = readFileSync("frontend/formulas/landing/storyTimeline.ts", "utf8");
 const directorSource = `${directorComponentSource}\n${timelineSource}`;
@@ -14,7 +16,7 @@ const styleSource = readLandingStyles();
 
 assert.match(appSource, /LandingScrollStory/, "Landing should wrap the hero in a scroll story controller.");
 assert.match(directorSource, /ScrollTrigger/, "Landing scroll story should use GSAP ScrollTrigger.");
-assert.match(storySource, /scrollProgressRef/, "Scroll progress should be stored in a ref bridge.");
+assert.match(storyShellSource, /scrollProgressRef/, "Scroll progress should be stored in a ref bridge.");
 assert.match(directorSource, /--hero-opacity/, "Landing story should fade hero text away as the manuscript takes focus.");
 assert.match(directorSource, /--text-disperse/, "Landing text should disperse away instead of simply blurring.");
 assert.match(directorSource, /--shutdown-opacity/, "Landing HUD should shut down as the paper takes focus.");
@@ -103,7 +105,7 @@ assert.doesNotMatch(
 assert.match(styleSource, /var\(--manuscript-final-opacity\)/, "Landing styles should consume the final manuscript fade variable.");
 assert.doesNotMatch(styleSource, /product-preview-/, "Landing styles should not keep Product Preview terminal styles.");
 assert.doesNotMatch(
-  storySource,
+  storyShellSource,
   /ScrollTrigger\.create/,
   "LandingScrollStory should compose modules instead of owning ScrollTrigger directly.",
 );
@@ -123,7 +125,7 @@ assert.doesNotMatch(
   "Scroll progress should not be stored in React state for per-frame animation.",
 );
 assert.doesNotMatch(
-  storySource,
+  storyShellSource,
   /useState/,
   "Scroll progress should not be stored in React state for per-frame animation.",
 );
