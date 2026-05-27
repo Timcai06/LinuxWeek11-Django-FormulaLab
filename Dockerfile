@@ -5,6 +5,7 @@ WORKDIR /app
 COPY package.json package-lock.json /app/
 RUN npm ci
 
+COPY build /app/build
 COPY frontend /app/frontend
 COPY scripts/copy_katex_assets.mjs /app/scripts/copy_katex_assets.mjs
 COPY apps/formulas/static/formulas/js /app/apps/formulas/static/formulas/js
@@ -35,8 +36,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /app/requirements.txt
-COPY requirements-paddle.txt /app/requirements-paddle.txt
+COPY config/requirements/base.txt /app/requirements.txt
+COPY config/requirements/paddle.txt /app/requirements-paddle.txt
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system -r /app/requirements.txt -r /app/requirements-paddle.txt
 

@@ -47,7 +47,7 @@ apps/formulas/services/recognizer.py
 apps/formulas/tasks.py
 docker-compose.yml
 Dockerfile
-requirements.txt
+config/requirements/base.txt
 Makefile
 docs/02-总体架构.md
 docs/06-公式识别引擎.md
@@ -531,7 +531,7 @@ async def recognize_formula(image: UploadFile = File(...)):
 
 - [x] **Step 5: 增加依赖**
 
-`requirements.txt` 增加：
+`config/requirements/base.txt` 增加：
 
 ```text
 fastapi

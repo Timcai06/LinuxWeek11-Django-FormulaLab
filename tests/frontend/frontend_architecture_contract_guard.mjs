@@ -111,23 +111,29 @@ assert.match(projectTemplate, /id="workspace-editor-root"/, "Workspace editor Re
 assert.match(projectTemplate, /data-project-items-url=/, "Workspace editor must keep the Django-provided project API URL contract.");
 assert.match(projectTemplate, /json_script:"paper-preview-data"/, "Project workspace must keep paper preview JSON boot data stable.");
 
-const landingConfig = read("vite.landing.config.ts");
+const landingConfig = read("build/vite/vite.landing.config.ts");
 assert.match(landingConfig, /input:\s*"frontend\/formulas\/landing\/main\.tsx"/, "Landing Vite input must remain stable.");
 assert.match(landingConfig, /cssOutput:\s*"css\/generated\/landing\.css"/, "Landing CSS output path must remain stable.");
 assert.match(landingConfig, /entryFileName:\s*"js\/generated\/landing\.js"/, "Landing JS entry output path must remain stable.");
 assert.match(landingConfig, /chunkFileName:\s*"js\/generated\/landing-\[name\]\.js"/, "Landing chunk naming must remain stable.");
 
-const editorConfig = read("vite.workspace-editor.config.ts");
+const editorConfig = read("build/vite/vite.workspace-editor.config.ts");
 assert.match(editorConfig, /input:\s*"frontend\/formulas\/workspace_editor\/main\.tsx"/, "Workspace editor Vite input must remain stable.");
 assert.match(editorConfig, /cssOutput:\s*"css\/generated\/workspace-editor\.css"/, "Workspace editor CSS output path must remain stable.");
 assert.match(editorConfig, /entryFileName:\s*"js\/generated\/workspace-editor\.js"/, "Workspace editor JS entry output path must remain stable.");
 assert.match(editorConfig, /return "codemirror"/, "Workspace editor CodeMirror chunk naming must remain stable.");
 
 const packageJson = JSON.parse(read("package.json"));
+const playwrightConfig = read("build/playwright/playwright.config.ts");
 assert.equal(
   packageJson.scripts["build:layout"],
   "esbuild frontend/formulas/layout_intelligence.js --bundle --format=iife --global-name=FormulaLayoutBundle --outfile=apps/formulas/static/formulas/js/generated/layout-intelligence.js",
   "Layout intelligence build output path must remain stable.",
 );
-assert.equal(packageJson.scripts["build:landing"], "vite build --config vite.landing.config.ts");
-assert.equal(packageJson.scripts["build:editor"], "vite build --config vite.workspace-editor.config.ts");
+assert.equal(packageJson.scripts["build:landing"], "vite build --config build/vite/vite.landing.config.ts");
+assert.equal(packageJson.scripts["build:editor"], "vite build --config build/vite/vite.workspace-editor.config.ts");
+assert.match(
+  playwrightConfig,
+  /testDir:\s*"\.\.\/\.\.\/e2e"/,
+  "Playwright config lives under build/playwright and must point back to the root e2e directory.",
+);

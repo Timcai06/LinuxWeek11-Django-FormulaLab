@@ -65,7 +65,7 @@ local-pix2tex:
 	$(MAKE) OCR_ENGINE=pix2tex local
 
 install-pix2tex:
-	$(PYTHON) -m pip install -r requirements-pix2tex.txt
+	$(PYTHON) -m pip install -r config/requirements/pix2tex.txt
 
 paddle-web:
 	FORMULA_LAB_OCR_ENGINE=paddle $(MAKE) dev
@@ -116,16 +116,16 @@ e2e-install:
 	npx playwright install chromium
 
 e2e-smoke:
-	npx playwright test e2e/smoke.spec.ts
+	npx playwright test --config=build/playwright/playwright.config.ts e2e/smoke.spec.ts
 
 e2e-real-model:
-	npx playwright test e2e/formula_lab.spec.ts
+	npx playwright test --config=build/playwright/playwright.config.ts e2e/formula_lab.spec.ts
 
 e2e-visual:
-	E2E_VISUAL=1 npx playwright test e2e/visual.spec.ts
+	E2E_VISUAL=1 npx playwright test --config=build/playwright/playwright.config.ts e2e/visual.spec.ts
 
 e2e-visual-update:
-	E2E_VISUAL=1 npx playwright test e2e/visual.spec.ts --update-snapshots
+	E2E_VISUAL=1 npx playwright test --config=build/playwright/playwright.config.ts e2e/visual.spec.ts --update-snapshots
 
 e2e-local:
 	E2E_SPEC=e2e/formula_lab.spec.ts ./scripts/run_e2e_local.sh

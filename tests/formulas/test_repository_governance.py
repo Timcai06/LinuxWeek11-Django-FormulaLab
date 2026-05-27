@@ -19,9 +19,9 @@ from scripts.check_repository_governance import (
 
 class RepositoryGovernanceTests(SimpleTestCase):
     def test_base_requirements_keep_pix2tex_stack_optional(self):
-        base_requirements = Path("requirements.txt").read_text(encoding="utf-8").splitlines()
-        paddle_requirements = Path("requirements-paddle.txt").read_text(encoding="utf-8").splitlines()
-        optional_pix2tex_requirements = Path("requirements-pix2tex.txt").read_text(encoding="utf-8").splitlines()
+        base_requirements = Path("config/requirements/base.txt").read_text(encoding="utf-8").splitlines()
+        paddle_requirements = Path("config/requirements/paddle.txt").read_text(encoding="utf-8").splitlines()
+        optional_pix2tex_requirements = Path("config/requirements/pix2tex.txt").read_text(encoding="utf-8").splitlines()
 
         normalized_base = {line.strip().split("==")[0].split(">=")[0] for line in base_requirements if line.strip()}
         normalized_paddle = {line.strip().split("==")[0].split(">=")[0] for line in paddle_requirements if line.strip()}
@@ -35,7 +35,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
 
     def test_docker_web_entrypoint_uses_wsgi_runtime_not_runserver(self):
         entrypoint = Path("scripts/entrypoint-web.sh").read_text(encoding="utf-8")
-        base_requirements = Path("requirements.txt").read_text(encoding="utf-8")
+        base_requirements = Path("config/requirements/base.txt").read_text(encoding="utf-8")
         compose = Path("docker-compose.yml").read_text(encoding="utf-8")
 
         self.assertIn("gunicorn", base_requirements)
@@ -47,7 +47,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
 
     def test_workspace_editor_build_chain_is_declared(self):
         package_json = json.loads(Path("package.json").read_text(encoding="utf-8"))
-        vite_config = Path("vite.workspace-editor.config.ts").read_text(encoding="utf-8")
+        vite_config = Path("build/vite/vite.workspace-editor.config.ts").read_text(encoding="utf-8")
         dependencies = package_json["dependencies"]
         dev_dependencies = package_json["devDependencies"]
         scripts = package_json["scripts"]
@@ -64,6 +64,14 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertIn("npm run build:editor", scripts["build"])
         self.assertIn("manualChunks", vite_config)
         self.assertIn("codemirror", vite_config)
+
+    def test_runtime_var_directory_is_kept_without_tracking_sqlite(self):
+        gitignore = Path(".gitignore").read_text(encoding="utf-8")
+
+        self.assertTrue(Path("var/.gitkeep").exists())
+        self.assertIn("/var/*", gitignore)
+        self.assertIn("!/var/.gitkeep", gitignore)
+        self.assertIn("*.sqlite3", gitignore)
 
     def test_workspace_editor_uses_formula_item_api_contract(self):
         api_source = Path("frontend/formulas/workspace_editor/api.ts").read_text(encoding="utf-8")

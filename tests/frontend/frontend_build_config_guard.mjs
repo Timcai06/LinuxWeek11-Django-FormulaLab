@@ -32,10 +32,10 @@ assert.match(
   "Shared build helper should preserve manifest-free Django static references.",
 );
 
-const landingConfig = read("vite.landing.config.ts");
+const landingConfig = read("build/vite/vite.landing.config.ts");
 assert.match(
   landingConfig,
-  /import \{ defineDjangoStaticIslandConfig \} from "\.\/frontend\/formulas\/shared\/build\/djangoStaticIslandConfig"/,
+  /import \{ defineDjangoStaticIslandConfig \} from "\.\.\/\.\.\/frontend\/formulas\/shared\/build\/djangoStaticIslandConfig"/,
   "Landing Vite config should use the shared Django static island helper.",
 );
 assert.match(
@@ -51,10 +51,10 @@ assert.match(landingConfig, /chunkSizeWarningLimit:\s*1000/);
 assert.match(landingConfig, /return "landing-three"/);
 assert.match(landingConfig, /return "landing-motion"/);
 
-const editorConfig = read("vite.workspace-editor.config.ts");
+const editorConfig = read("build/vite/vite.workspace-editor.config.ts");
 assert.match(
   editorConfig,
-  /import \{ defineDjangoStaticIslandConfig \} from "\.\/frontend\/formulas\/shared\/build\/djangoStaticIslandConfig"/,
+  /import \{ defineDjangoStaticIslandConfig \} from "\.\.\/\.\.\/frontend\/formulas\/shared\/build\/djangoStaticIslandConfig"/,
   "Workspace editor Vite config should use the shared Django static island helper.",
 );
 assert.match(
@@ -67,3 +67,10 @@ assert.match(editorConfig, /cssOutput:\s*"css\/generated\/workspace-editor\.css"
 assert.match(editorConfig, /entryFileName:\s*"js\/generated\/workspace-editor\.js"/);
 assert.match(editorConfig, /chunkFileName:\s*"js\/generated\/\[name\]\.js"/);
 assert.match(editorConfig, /return "codemirror"/);
+
+const dockerfile = read("Dockerfile");
+assert.match(
+  dockerfile,
+  /COPY build \/app\/build[\s\S]*COPY frontend \/app\/frontend[\s\S]*RUN npm run build/,
+  "Docker frontend stage must copy build configs before running npm build.",
+);

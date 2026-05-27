@@ -16,4 +16,6 @@ media/
 .model-cache/
 .superpowers/
 *.sqlite3
+/var/*
+!/var/.gitkeep
 .DS_Store

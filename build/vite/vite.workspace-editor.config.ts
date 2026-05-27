@@ -1,4 +1,4 @@
-import { defineDjangoStaticIslandConfig } from "./frontend/formulas/shared/build/djangoStaticIslandConfig";
+import { defineDjangoStaticIslandConfig } from "../../frontend/formulas/shared/build/djangoStaticIslandConfig";
 
 export default defineDjangoStaticIslandConfig({
   chunkFileName: "js/generated/[name].js",

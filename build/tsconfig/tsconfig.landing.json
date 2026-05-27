@@ -14,5 +14,5 @@
     "target": "ES2022",
     "types": ["react", "react-dom"]
   },
-  "include": ["frontend/formulas/workspace_editor/**/*.ts", "frontend/formulas/workspace_editor/**/*.tsx"]
+  "include": ["../../frontend/formulas/landing/**/*.ts", "../../frontend/formulas/landing/**/*.tsx"]
 }

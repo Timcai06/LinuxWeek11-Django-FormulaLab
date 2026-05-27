@@ -29,13 +29,13 @@ make local
 Docker 默认只安装：
 
 ```text
-requirements.txt
-requirements-paddle.txt
+config/requirements/base.txt
+config/requirements/paddle.txt
 ```
 
-`pix2tex`、`torch`、`torchvision` 已拆到 `requirements-pix2tex.txt`，不进入默认 Docker 镜像。当前 Linux 部署主线使用 PaddleOCR，避免同时下载 Paddle 与 Torch/CUDA 两套模型生态。
+`pix2tex`、`torch`、`torchvision` 已拆到 `config/requirements/pix2tex.txt`，不进入默认 Docker 镜像。当前 Linux 部署主线使用 PaddleOCR，避免同时下载 Paddle 与 Torch/CUDA 两套模型生态。
 
-`requirements-paddle.txt` 显式保留 `tokenizers`，这是 PaddleX 公式识别后处理的运行时依赖，不是 pix2tex 依赖。
+`config/requirements/paddle.txt` 显式保留 `tokenizers`，这是 PaddleX 公式识别后处理的运行时依赖，不是 pix2tex 依赖。
 
 PaddlePaddle 3.3.1 没有 Linux ARM64 wheel。Apple Silicon Mac 的 Docker 默认会按 `linux/arm64` 构建，导致容器内安装 `paddlepaddle==3.3.1` 失败。因此 Compose 中 `web`、`worker`、`model-api` 固定为：
 

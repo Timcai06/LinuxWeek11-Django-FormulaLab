@@ -140,4 +140,4 @@ else
 fi
 
 echo "Running Playwright spec: ${E2E_SPEC}"
-E2E_BASE_URL="$E2E_BASE_URL" npx playwright test "$E2E_SPEC"
+E2E_BASE_URL="$E2E_BASE_URL" npx playwright test --config=build/playwright/playwright.config.ts "$E2E_SPEC"
