@@ -2,7 +2,7 @@
 
 ## 目标
 
-把 Project Workspace 里的 Formula Materials 升级成 Formula Review Inbox，让用户像处理论文审稿意见一样处理识别出来的公式资产。
+Project Workspace 里的 Formula Review Inbox 是当前公式资产审查入口，让用户像处理论文审稿意见一样处理识别出来的公式资产。
 
 这一阶段的核心不是再做一个漂亮列表，而是建立一个可长期扩展的公式审查工作流：
 
@@ -110,7 +110,7 @@ Inspector + AI Sidecar 入口
 
 - Project Workspace 首屏仍以论文编辑为主，不被 Inbox 抢走。
 - Formula Review Inbox 可以处理 30 条以上公式资产。
-- 不影响现有 Formula Materials 的插入论文能力。
+- 不影响 Formula Review Inbox 里的 `INSERT INTO PAPER` 插入论文能力。
 
 ## 第二片：Pretext Masonry
 

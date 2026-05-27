@@ -230,7 +230,7 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 
 - Project Workspace 的 React island 已经从公式编辑扩展到论文文件编辑，形成 Overleaf 型产品雏形。
 - CodeMirror 6 已经接管论文源码区，并拆成独立 `codemirror` chunk，降低主 editor bundle 压力。
-- `INSERT INTO PAPER` 已经把 Formula Materials 与论文草稿连起来，公式不再只是识别结果，而是可进入论文的素材资产。
+- `INSERT INTO PAPER` 已经把 Formula Review Inbox 中的公式资产与论文草稿连起来，公式不再只是识别结果，而是可进入论文的素材资产。
 - 旧 Django 模板和静态 JS 仍然保留 Project Workspace 的主要信息结构，React 失败时不会影响 landing、history、system、report。
 
 ## 风险控制
@@ -265,12 +265,12 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - [x] 新增 `PaperSourceEditor`，编辑当前 `PaperFile.content`。
 - [x] 新增 `PaperPreview`，先以源码 preview 占位，后续替换为 PDF/LaTeX preview。
 - [x] 保存文件调用 `PATCH /api/document-files/<file_id>/`。
-- [x] 下方 Formula Materials 继续保留，作为 OCR 公式素材区。
+- [x] 下方公式资产区继续保留，并已演进为 Formula Review Inbox。
 
 当前实现说明：
 
 - 第一版先做单人编辑闭环，不做多人 presence、批注或 PDF 编译。
-- Paper Workspace 位于 Project Workspace 顶部，Formula Materials 位于下方，形成“论文编辑区 + 公式素材区”的产品层次。
+- Paper Workspace 位于 Project Workspace 顶部，Formula Review Inbox 位于下方，形成“论文编辑区 + 公式审查收件箱”的产品层次。
 - `main.tex` 保存后会同步 React 本地文件树状态，避免保存后预览和文件内容脱节。
 - 下一片应从源码 preview 进入真正的 LaTeX 编辑体验：CodeMirror、插入公式、基础文件操作和 PDF 编译/预览入口。
 
@@ -288,13 +288,13 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - [x] 新增 `DELETE /api/document-files/<file_id>/`，允许删除非根文件，保护 `root_file_path` 和最后一个文件。
 - [x] React 新增 `PaperDeleteDialog`，用项目内确认弹窗处理删除操作，不使用浏览器原生 confirm。
 - [x] 新建文件支持 Section、Blank、Bibliography 三种模板，减少空文件后的第一步手工输入。
-- [x] Formula Materials 新增 `INSERT INTO PAPER`，把当前 LaTeX 以 `equation` block 插入当前论文文件草稿。
+- [x] Formula Review Inbox 保留 `INSERT INTO PAPER` 动作，把当前 LaTeX 以 `equation` block 插入当前论文文件草稿。
 
 当前实现说明：
 
 - 这一片仍然是单人编辑器，不处理多人冲突、锁定和 OT/CRDT。
 - 新建、重命名、删除已经形成项目内 modal 闭环；删除操作保护根文件，避免把论文项目删成不可启动状态。
-- CodeMirror 目前只接管论文源码区，下方 Formula Materials 仍维持轻量 textarea，但已经能把当前公式转移到论文草稿。
+- CodeMirror 目前只接管论文源码区；Formula Review Inbox 内的公式源码编辑仍维持轻量 textarea，但已经能把当前公式转移到论文草稿。
 - 公式插入不会自动保存；用户可以先检查论文源码和预览，再点击 `SAVE FILE` 持久化。
 - 下一片应继续收敛 Project Workspace 的视觉密度，并补 PDF 编译入口、文件拖拽排序或公式插入位置控制。
 
@@ -303,8 +303,8 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - [x] Mission Log 已经使用 Pretext 做 summary 测量、截断和展开高度辅助。
 - [x] Mission Log 卡片外壳宽度已经交回 CSS grid，避免 Pretext 动态宽度导致成功/失败卡片大小不一致。
 - [x] 新增 `tests/frontend/history_layout_guard.mjs`，防止 history 卡片宽度再次被 JS 动态变量接管。
-- [ ] Formula Review Inbox 尚未建立独立产品视图。
-- [ ] Formula Review Inbox 尚未使用 Pretext masonry / height prediction。
+- [x] Formula Review Inbox 已经建立独立产品视图。
+- [x] Formula Review Inbox 已经使用 Pretext masonry / height prediction 和长 LaTeX 截断。
 - [ ] Review Drawer 尚未引入 rich inline 批注文本。
 
 当前实现说明：
@@ -312,21 +312,21 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 - B 阶段的 React 编辑器岛已经完成“能编辑论文文件、能管理文件、能插入公式”的第一版。
 - React 编辑器岛已经完成第一轮架构拆分：`EditorIsland.tsx` 只组合 UI，`usePaperDocuments.ts` 保留论文文件主状态，文件弹窗、删除副作用和内容生成分别拆到独立 hook / lib。
 - Project Workspace presenter 已移除旧服务端公式队列、分页和状态筛选上下文；Django 模板只保留页面骨架、overview、最近批次、paper preview 和 React mount 配置。
-- 下一步不应该继续盲目堆编辑器按钮，而应该把 Formula Materials 升级成 Formula Review Inbox。
-- Pretext 第二阶段会在 Inbox 中承担稳定长列表、复杂公式卡片、富文本批注和批处理队列的布局智能。
+- 旧公式素材区已升级为 Formula Review Inbox，当前继续补批量审查、rich inline 批注和 AI suggestion 入口。
+- Pretext 第二阶段已在 Inbox 中承担稳定长列表和复杂公式卡片布局；富文本批注和批处理队列仍是后续任务。
 - 这仍然属于 B 阶段之后的前端产品化，不改变 Django + React island 的架构边界。
 
 ## 下一阶段产品路线
 
 ```text
-Formula Review Inbox
+Formula Review Inbox 批量审查 / rich inline
   -> AI paper sidecar
   -> Collaboration review room
 ```
 
 ### Formula Review Inbox
 
-把现有 Formula Materials 做成公式审查收件箱，支持状态筛选、批量审查、长公式稳定显示、来源任务追踪和一键插入论文。
+当前已经形成 Formula Review Inbox，支持状态分组、长公式稳定显示、来源任务追踪和一键插入论文。下一步补多选与批量审查。
 
 ### AI paper sidecar
 

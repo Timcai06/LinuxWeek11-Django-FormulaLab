@@ -2,7 +2,7 @@
 
 ## 目标
 
-把 Formula Lab 的 landing page 从“已有的电影式手稿场景”升级为一个完整的产品叙事：混乱科研手稿进入系统视野，公式星图被吸收，纸张被扫描理解，最后展开成可协作的在线论文工作台入口。
+把 Formula Lab 的 landing page 从“已有的电影式手稿场景”升级为一个完整的产品叙事：混乱科研手稿进入系统视野，公式场被吸收，纸张被扫描理解，最后展开成可协作的在线论文工作台入口。
 
 本阶段不是重做首页，也不是堆叠 WebGL 特效。它要在当前已经合入 main 的 React/Vite landing island、GSAP ScrollTrigger、Three.js manuscript canvas 基础上继续增强，让视觉效果服务产品理解。
 
@@ -38,7 +38,7 @@
 
 ### 2. Absorb
 
-背景公式星图、标题和界面辅助文字在滚动中消散，并被草稿纸吸收。公式不再作为固定右侧列表出现。
+背景公式场、标题和界面辅助文字在滚动中消散，并被草稿纸吸收。公式不再作为固定右侧列表出现。
 
 设计约束：
 
@@ -115,7 +115,7 @@
 
 ### FormulaConstellationField
 
-负责公式星图的层次。远景可继续使用 DOM KaTeX，近景吸收使用 Three.js particles。
+负责公式场的层次。远景可继续使用 DOM KaTeX，近景吸收使用 Three.js particles。
 
 职责：
 

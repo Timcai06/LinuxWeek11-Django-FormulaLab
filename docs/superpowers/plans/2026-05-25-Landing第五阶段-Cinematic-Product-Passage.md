@@ -53,7 +53,7 @@
   - `apps/formulas/static/formulas/js/generated/landing.js`
   - `apps/formulas/static/formulas/js/generated/landing-landing-three.js`
   - `apps/formulas/static/formulas/css/generated/landing.css`
-  - Legacy note: `apps/formulas/static/formulas/css/pages/landing.css` was used by the pre-Vite landing surface and has since been removed.
+  - Legacy note: the pre-Vite landing page stylesheet has since been removed.
 
 ---
 
