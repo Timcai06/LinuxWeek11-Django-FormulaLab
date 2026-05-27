@@ -6,9 +6,12 @@ function read(path) {
 }
 
 const gatePath = "frontend/formulas/landing/performance/scrollFrameGate.ts";
+const schedulerPath = "frontend/formulas/landing/performance/rendererScheduler.ts";
 assert.ok(existsSync(gatePath), "Landing scroll-linked updates should have a shared frame gate.");
+assert.ok(existsSync(schedulerPath), "Landing renderers should use a runtime-level scheduler.");
 
 const gate = read(gatePath);
+const scheduler = read(schedulerPath);
 assert.match(
   gate,
   /createScrollFrameGate[\s\S]*frame\.visible[\s\S]*frame\.progress[\s\S]*lastProgress/,
@@ -18,6 +21,11 @@ assert.match(
   gate,
   /reset\(\)[\s\S]*Number\.NaN/,
   "Scroll frame gate should expose reset for resize and visibility invalidation.",
+);
+assert.match(
+  scheduler,
+  /createRendererFrameGate[\s\S]*phases[\s\S]*includeTransitionSettling[\s\S]*scrollGate\.shouldUpdate\(frame\)/,
+  "Renderer scheduler should centralize phase and scroll-frame gating above individual components.",
 );
 
 const guardedComponents = [
@@ -31,6 +39,6 @@ const guardedComponents = [
 
 for (const path of guardedComponents) {
   const source = read(path);
-  assert.match(source, /createScrollFrameGate/, `${path} should use the shared scroll frame gate.`);
-  assert.match(source, /frameGate\.shouldUpdate\(frame\)/, `${path} should skip unchanged scroll-linked frames.`);
+  assert.match(source, /subscribeRenderer/, `${path} should subscribe through the runtime renderer scheduler.`);
+  assert.doesNotMatch(source, /createScrollFrameGate/, `${path} should not own scroll-frame gating locally.`);
 }

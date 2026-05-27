@@ -9,7 +9,7 @@ const files = {
   orchestrator: "frontend/formulas/landing/performance/transitionOrchestrator.ts",
   runtime: "frontend/formulas/landing/performance/motionRuntime.ts",
   curtain: "frontend/formulas/landing/components/MorphCurtain.tsx",
-  gate: "frontend/formulas/landing/performance/scrollFrameGate.ts",
+  scheduler: "frontend/formulas/landing/performance/rendererScheduler.ts",
 };
 
 for (const [name, path] of Object.entries(files)) {
@@ -19,7 +19,7 @@ for (const [name, path] of Object.entries(files)) {
 const orchestrator = read(files.orchestrator);
 const runtime = read(files.runtime);
 const curtain = read(files.curtain);
-const gate = read(files.gate);
+const scheduler = read(files.scheduler);
 
 assert.match(
   orchestrator,
@@ -42,9 +42,9 @@ assert.match(
   "Motion debug snapshots should expose transition settling and active liquid state.",
 );
 assert.match(
-  gate,
+  scheduler,
   /includeTransitionSettling[\s\S]*frame\.transitions\.settling/,
-  "Scroll frame gate should allow components to keep painting while runtime transitions settle.",
+  "Renderer scheduler should allow components to keep painting while runtime transitions settle.",
 );
 assert.match(
   curtain,

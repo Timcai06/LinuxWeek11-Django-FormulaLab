@@ -5,7 +5,6 @@ import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { REAL_GREEN_COPY_VISIBILITY_RANGES } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
-import { createScrollFrameGate } from "../performance/scrollFrameGate";
 
 export function LandingFlowCanvas({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   const pathRef = useRef<SVGPathElement>(null);
@@ -57,12 +56,10 @@ export function LandingFlowCanvas({ scrollProgressRef }: { scrollProgressRef: Sc
 
     update();
     const runtime = getLandingMotionRuntime();
-    const frameGate = createScrollFrameGate();
-    const unsubscribe = runtime.subscribe((frame) => {
-      if (frameGate.shouldUpdate(frame)) {
-        update(frame.progress);
-      }
-    });
+    const unsubscribe = runtime.subscribeRenderer({
+      id: "landing-flow-canvas",
+      phases: ["greenCopy", "blackCurtain", "letterStorm", "cta"],
+    }, (frame) => update(frame.progress));
 
     return () => {
       unsubscribe();

@@ -3,6 +3,7 @@ import { createFrameBudgetTracker } from "./frameBudget";
 import { createLandingStageRegistry, type LandingStageSnapshot } from "./stageRegistry";
 import { createMotionQualityController, type MotionQualityMode } from "./qualityController";
 import { createLandingTransitionOrchestrator, type LandingTransitionSnapshot } from "./transitionOrchestrator";
+import { createRendererSubscriber, type RendererSubscriptionOptions } from "./rendererScheduler";
 
 export type MotionRuntimeFrame = {
   timeMs: number;
@@ -18,6 +19,10 @@ export type MotionRuntimeFrame = {
 };
 
 export type MotionRuntimeSubscriber = (frame: MotionRuntimeFrame) => void;
+
+export type RendererRuntimeSubscription = (() => void) & {
+  reset: () => void;
+};
 
 export type MotionRuntimeDebugState = {
   enabled: boolean;
@@ -44,6 +49,7 @@ type LandingMotionRuntimeOptions = {
 
 export type LandingMotionRuntime = {
   subscribe: (subscriber: MotionRuntimeSubscriber) => () => void;
+  subscribeRenderer: (options: RendererSubscriptionOptions, subscriber: MotionRuntimeSubscriber) => RendererRuntimeSubscription;
   subscribeVisibility: (subscriber: (visible: boolean) => void) => () => void;
   setStage: (phase: LandingPhase, progress: number) => LandingStageSnapshot;
   getStage: () => LandingStageSnapshot;
@@ -201,6 +207,23 @@ export function createLandingMotionRuntime({
         subscribers.delete(subscriber);
         publishDebugState();
       };
+    },
+    subscribeRenderer(options, subscriber) {
+      const { gate, wrapped } = createRendererSubscriber(options, subscriber);
+      subscribers.add(wrapped);
+      const unsubscribeVisibility = runtime.subscribeVisibility((visible) => {
+        if (visible) {
+          gate.reset();
+        }
+      });
+      publishDebugState();
+      const unsubscribe = (() => {
+        unsubscribeVisibility();
+        subscribers.delete(wrapped);
+        publishDebugState();
+      }) as RendererRuntimeSubscription;
+      unsubscribe.reset = gate.reset;
+      return unsubscribe;
     },
     subscribeVisibility(subscriber) {
       visibilitySubscribers.add(subscriber);

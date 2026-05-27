@@ -4,7 +4,6 @@ import { SplitText } from "gsap/SplitText";
 
 import { WORKBENCH_GATE } from "../storyChoreography";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
-import { createScrollFrameGate } from "../performance/scrollFrameGate";
 import { progressBetween } from "../three/motion";
 
 gsap.registerPlugin(SplitText);
@@ -75,7 +74,6 @@ export function WorkbenchGateOverlay() {
     let tickerReveal: gsap.core.Tween | undefined;
     let hasPlayedIntro = false;
     let previousProgress = 0;
-    const frameGate = createScrollFrameGate();
 
     const context = gsap.context(() => {
       if (!isReduced && kickerRef.current && copyRef.current && tickerRef.current) {
@@ -157,11 +155,10 @@ export function WorkbenchGateOverlay() {
 
     update();
     const runtime = getLandingMotionRuntime();
-    const unsubscribe = runtime.subscribe((frame) => {
-      if (frameGate.shouldUpdate(frame)) {
-        update(frame.progress);
-      }
-    });
+    const unsubscribe = runtime.subscribeRenderer({
+      id: "workbench-gate",
+      phases: ["letterStorm", "cta"],
+    }, (frame) => update(frame.progress));
 
     return () => {
       unsubscribe();

@@ -10,6 +10,7 @@ const files = {
   frameBudget: "frontend/formulas/landing/performance/frameBudget.ts",
   stageRegistry: "frontend/formulas/landing/performance/stageRegistry.ts",
   qualityController: "frontend/formulas/landing/performance/qualityController.ts",
+  rendererScheduler: "frontend/formulas/landing/performance/rendererScheduler.ts",
   scrollDirector: "frontend/formulas/landing/components/ScrollDirector.tsx",
   styleVars: "frontend/formulas/landing/performance/styleVars.ts",
 };
@@ -22,6 +23,7 @@ const runtime = read(files.motionRuntime);
 const frameBudget = read(files.frameBudget);
 const stageRegistry = read(files.stageRegistry);
 const qualityController = read(files.qualityController);
+const rendererScheduler = read(files.rendererScheduler);
 const director = read(files.scrollDirector);
 const styleVars = read(files.styleVars);
 
@@ -39,6 +41,11 @@ assert.match(
   runtime,
   /qualityMode: MotionQualityMode[\s\S]*shouldRunIdleWork: boolean/,
   "MotionRuntimeFrame should carry quality metadata for future stage-level scheduling.",
+);
+assert.match(
+  runtime,
+  /subscribeRenderer: \(options: RendererSubscriptionOptions, subscriber: MotionRuntimeSubscriber\) => RendererRuntimeSubscription/,
+  "Landing motion runtime should expose a renderer-aware subscription boundary.",
 );
 assert.match(
   runtime,
@@ -65,6 +72,11 @@ assert.match(
   qualityController,
   /ACTIVE_PROGRESS_EPSILON[\s\S]*SETTLE_WINDOW_MS/,
   "Quality controller should centralize active-scroll and settling thresholds.",
+);
+assert.match(
+  rendererScheduler,
+  /createRendererSubscriber[\s\S]*createRendererFrameGate[\s\S]*gate\.shouldUpdate\(frame\)/,
+  "Renderer scheduler should wrap component subscribers with runtime-owned frame gating.",
 );
 
 assert.match(

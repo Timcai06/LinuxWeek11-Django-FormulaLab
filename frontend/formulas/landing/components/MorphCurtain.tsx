@@ -3,7 +3,6 @@ import gsap from "gsap";
 import { BLACK_LIQUID, GREEN_LIQUID } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
-import { createScrollFrameGate } from "../performance/scrollFrameGate";
 import { progressBetween } from "../three/motion";
 
 const NUM_POINTS = 10;
@@ -244,20 +243,16 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
     };
 
     const runtime = getLandingMotionRuntime();
-    const frameGate = createScrollFrameGate({
+    const unsubscribeFrame = runtime.subscribeRenderer({
+      id: "morph-curtain",
+      phases: ["greenCurtain", "blackCurtain"],
       epsilon: MORPH_PROGRESS_EPSILON,
       includeTransitionSettling: true,
-    });
-    const unsubscribeFrame = runtime.subscribe((frame) => {
-      if (frameGate.shouldUpdate(frame)) {
-        update({
-          greenSegmentProgress: frame.transitions.greenLiquidProgress,
-          blackSegmentProgress: frame.transitions.blackLiquidProgress,
-        });
-      }
-    });
-    const unsubscribeVisibility = runtime.subscribeVisibility(() => {
-      frameGate.reset();
+    }, (frame) => {
+      update({
+        greenSegmentProgress: frame.transitions.greenLiquidProgress,
+        blackSegmentProgress: frame.transitions.blackLiquidProgress,
+      });
     });
     update({
       greenSegmentProgress: progressBetween(scrollProgressRef.current, GREEN_LIQUID[0], GREEN_LIQUID[1]),
@@ -266,7 +261,6 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
 
     return () => {
       unsubscribeFrame();
-      unsubscribeVisibility();
     };
   }, [scrollProgressRef]);
 
