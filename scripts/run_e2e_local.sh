@@ -24,8 +24,14 @@ cleanup() {
       kill "$pid" >/dev/null 2>&1 || true
     fi
   done
+  for pid in "${PIDS[@]:-}"; do
+    if kill -0 "$pid" >/dev/null 2>&1; then
+      wait "$pid" >/dev/null 2>&1 || true
+    fi
+  done
   if [ -n "$REDIS_PID" ] && kill -0 "$REDIS_PID" >/dev/null 2>&1; then
     kill "$REDIS_PID" >/dev/null 2>&1 || true
+    wait "$REDIS_PID" >/dev/null 2>&1 || true
   fi
   if [ "$DOCKER_REDIS_STARTED" = "1" ]; then
     docker compose stop redis >/dev/null 2>&1 || true
@@ -112,22 +118,26 @@ start_redis() {
   return 1
 }
 
-start_redis
+if wait_for_url "$E2E_BASE_URL/" >/dev/null 2>&1; then
+  echo "Using existing Formula Lab app at ${E2E_BASE_URL}"
+else
+  start_redis
 
-echo "Applying migrations"
-DJANGO_SETTINGS_MODULE=config.settings.dev "$PYTHON" manage.py migrate
+  echo "Applying migrations"
+  DJANGO_SETTINGS_MODULE=config.settings.dev "$PYTHON" manage.py migrate
 
-echo "Starting Celery worker"
-DJANGO_SETTINGS_MODULE=config.settings.dev FORMULA_LAB_OCR_ENGINE="$OCR_ENGINE" \
-  "$PYTHON" -m celery -A config worker --loglevel=info --pool=solo >"${E2E_LOG_DIR}/celery.log" 2>&1 &
-PIDS+=("$!")
+  echo "Starting Celery worker"
+  DJANGO_SETTINGS_MODULE=config.settings.dev FORMULA_LAB_OCR_ENGINE="$OCR_ENGINE" \
+    "$PYTHON" -m celery -A config worker --loglevel=info --pool=solo >"${E2E_LOG_DIR}/celery.log" 2>&1 &
+  PIDS+=("$!")
 
-echo "Starting Django at ${E2E_BASE_URL}"
-DJANGO_SETTINGS_MODULE=config.settings.dev FORMULA_LAB_OCR_ENGINE="$OCR_ENGINE" \
-  "$PYTHON" manage.py runserver "${HOST}:${PORT}" >"${E2E_LOG_DIR}/django.log" 2>&1 &
-PIDS+=("$!")
+  echo "Starting Django at ${E2E_BASE_URL}"
+  DJANGO_SETTINGS_MODULE=config.settings.dev FORMULA_LAB_OCR_ENGINE="$OCR_ENGINE" \
+    "$PYTHON" manage.py runserver "${HOST}:${PORT}" >"${E2E_LOG_DIR}/django.log" 2>&1 &
+  PIDS+=("$!")
 
-wait_for_url "$E2E_BASE_URL/"
+  wait_for_url "$E2E_BASE_URL/"
+fi
 
 echo "Running Playwright spec: ${E2E_SPEC}"
 E2E_BASE_URL="$E2E_BASE_URL" npx playwright test "$E2E_SPEC"

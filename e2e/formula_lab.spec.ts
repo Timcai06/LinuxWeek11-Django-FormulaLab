@@ -48,7 +48,8 @@ test.describe("Formula Lab real-model flow", () => {
 
       await page.getByRole("link", { name: "SYSTEM" }).click();
       await expect(page.getByRole("heading", { name: "OPERATIONS DASHBOARD" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "WARMUP MODEL" })).toBeVisible();
+      await expect(page.locator("[data-warmup-button]")).toBeVisible();
+      await expect(page.locator("[data-queue-control-button]")).toBeVisible();
     });
   }
 });
