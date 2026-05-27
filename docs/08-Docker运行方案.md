@@ -254,12 +254,10 @@ apps/formulas/static/formulas/css/generated/workspace-editor.css
 
 ```text
 static/formulas/visuals/
-  landing-mission-bg.png
   manuscript_texture_alpha.png
-  manuscript_texture_alpha_legacy.png
 ```
 
-Landing 背景和 manuscript 纹理资产纳入版本库，保证 Mac 和 Ubuntu 环境都能直接呈现完整首页；其余页面统一使用 CSS 全局细网格背景。
+Landing 的当前首屏和滚动叙事由 React / GSAP / Three.js 生成静态产物驱动，manuscript 纹理资产纳入版本库，保证 Mac 和 Ubuntu 环境都能直接呈现完整首页；其余页面统一使用 CSS 全局细网格背景。
 
 媒体文件和模型缓存仍然不进入版本库：
 

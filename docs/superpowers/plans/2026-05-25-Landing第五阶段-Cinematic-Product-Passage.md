@@ -53,7 +53,7 @@
   - `apps/formulas/static/formulas/js/generated/landing.js`
   - `apps/formulas/static/formulas/js/generated/landing-landing-three.js`
   - `apps/formulas/static/formulas/css/generated/landing.css`
-  - `apps/formulas/static/formulas/css/pages/landing.css`
+  - Legacy note: `apps/formulas/static/formulas/css/pages/landing.css` was used by the pre-Vite landing surface and has since been removed.
 
 ---
 
@@ -968,7 +968,7 @@ Expected: no output.
 - [ ] **Step 7: Commit generated assets and any build-driven changes**
 
 ```bash
-git add apps/formulas/static/formulas/js/generated/landing.js apps/formulas/static/formulas/js/generated/landing-landing-three.js apps/formulas/static/formulas/css/generated/landing.css apps/formulas/static/formulas/css/pages/landing.css package-lock.json package.json
+git add apps/formulas/static/formulas/js/generated/landing.js apps/formulas/static/formulas/js/generated/landing-landing-three.js apps/formulas/static/formulas/css/generated/landing.css package-lock.json package.json
 git commit -m "build: regenerate cinematic landing assets"
 ```
 
