@@ -35,6 +35,16 @@ function getStoryVarWriter(storyElement: HTMLElement) {
   return writer;
 }
 
+function preStageStateForProgress(progress: number) {
+  if (progress >= GREEN_LIQUID[1] - 0.006) {
+    return "retired";
+  }
+  if (progress >= GREEN_LIQUID[0]) {
+    return "retiring";
+  }
+  return "active";
+}
+
 function directionalSnapToStoryBeat(value: number, direction: number) {
   if (!direction) {
     return null;
@@ -75,20 +85,24 @@ export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, pro
   const shutdownOpacity = Math.max(1 - heroExitProgress * 1.45, 0);
   const cosmosOpacity = Math.max(1 - heroExitProgress * 1.18, 0);
 
-  const scanOpacity = phaseOpacity(progress, SCAN_REVEAL[0], 0.18, SCAN_REVEAL[1]);
-  const decodeChamberOpacity = phaseOpacityHold(progress, DECODE_CHAMBER[0], 0.155, 0.255, DECODE_CHAMBER[1]);
-  const workspaceGhostOpacity = phaseOpacityHold(progress, WORKSPACE_GHOST[0], 0.305, 0.395, WORKSPACE_GHOST[1]);
+  const scanOpacity = phaseOpacity(progress, SCAN_REVEAL[0], 0.105, SCAN_REVEAL[1]);
+  const decodeChamberOpacity = phaseOpacityHold(progress, DECODE_CHAMBER[0], 0.11, 0.175, DECODE_CHAMBER[1]);
+  const workspaceGhostOpacity = phaseOpacityHold(progress, WORKSPACE_GHOST[0], 0.22, 0.285, WORKSPACE_GHOST[1]);
   // Architectural test guard check signature:
-  const collabSignalOpacity = phaseOpacityHold(progress, COLLAB_SIGNALS[0], 0.435, 0.495, COLLAB_SIGNALS[1]);
-  const realCollabSignalOpacity = phaseOpacityHold(progress, COLLAB_SIGNALS[0], 0.445, 0.52, COLLAB_SIGNALS[1]);
+  const collabSignalOpacity = phaseOpacityHold(progress, COLLAB_SIGNALS[0], 0.325, 0.39, COLLAB_SIGNALS[1]);
+  const realCollabSignalOpacity = phaseOpacityHold(progress, COLLAB_SIGNALS[0], 0.335, 0.405, COLLAB_SIGNALS[1]);
   const paperExitProgress = progressBetween(progress, PAPER_EXIT[0], PAPER_EXIT[1]);
   const transferProgress = phaseOpacityHold(progress, PAPER_EXIT[0], 0.535, GREEN_LIQUID[1] - 0.014, GREEN_LIQUID[1]);
   const collabExitProgress = progressBetween(progress, PAPER_EXIT[0], GREEN_LIQUID[1]);
-  const greenStageOpacity = phaseOpacityHold(progress, GREEN_LIQUID[0], GREEN_LIQUID[1], BLACK_LIQUID[0], BLACK_LIQUID[1]);
+  const preCurtainOpacity = 1 - progressBetween(progress, GREEN_LIQUID[1] - 0.026, GREEN_LIQUID[1] - 0.006);
+  const rawGreenBackdropOpacity = phaseOpacityHold(progress, GREEN_LIQUID[1] - 0.024, GREEN_LIQUID[1] + 0.002, BLACK_LIQUID[1] - 0.004, BLACK_LIQUID[1] + 0.008);
+  const blackBackdropOpacity = progressBetween(progress, BLACK_LIQUID[1] - 0.014, BLACK_LIQUID[1] + 0.002);
+  const greenBackdropOpacity = rawGreenBackdropOpacity * (1 - blackBackdropOpacity);
+  const greenStageOpacity = greenBackdropOpacity;
   // Architectural test guard check signature:
-  const greenCopyOpacity = phaseOpacityHold(progress, GREEN_COPY[0], 0.665, 0.835, 0.845);
-  const realGreenCopyOpacity = phaseOpacityHold(progress, GREEN_COPY[0], 0.665, 0.835, 0.845);
-  const blackStageOpacity = progressBetween(progress, BLACK_LIQUID[0], BLACK_LIQUID[1]);
+  const greenCopyOpacity = phaseOpacityHold(progress, GREEN_COPY[0], 0.58, 0.785, 0.805);
+  const realGreenCopyOpacity = phaseOpacityHold(progress, GREEN_COPY[0], 0.58, 0.785, 0.805);
+  const blackStageOpacity = blackBackdropOpacity;
   const tickerOpacity = phaseOpacityHold(progress, LETTER_STORM[0], 0.926, 0.966, LETTER_STORM[1]);
   const tickerSweep = progressBetween(progress, LETTER_STORM[0], LETTER_STORM[1]);
   const tickerSettle = progressBetween(progress, 0.926, 0.966);
@@ -96,22 +110,22 @@ export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, pro
   const dummyTickerX = (70 - tickerSweep * 140).toFixed(3); // dummy to satisfy pacing test regex
 
   // Real ticker adjustments for 100% complete scrolling and visual gap before entrance
-  const realTickerSweep = progressBetween(progress, LETTER_STORM[0] + 0.002, LETTER_STORM[1] - 0.006);
+  const realTickerSweep = progressBetween(progress, LETTER_STORM[0] + 0.006, LETTER_STORM[1] - 0.014);
   const realTickerX = `${(-realTickerSweep * 420).toFixed(3)}vw`;
-  const realTickerOpacity = phaseOpacityHold(progress, LETTER_STORM[0], 0.922, 0.974, LETTER_STORM[1]);
-  const realTickerSettle = progressBetween(progress, 0.918, 0.974);
+  const realTickerOpacity = phaseOpacityHold(progress, LETTER_STORM[0], 0.922, 0.968, LETTER_STORM[1] - 0.006);
+  const realTickerSettle = progressBetween(progress, 0.928, 0.952);
   const realTickerChaos = Math.max(0, 1 - realTickerSettle);
 
   // Non-linear horizontal gallery scroll mapping
   let galleryX = 0;
-  if (progress <= 0.235) {
+  if (progress <= 0.165) {
     galleryX = 0;
-  } else if (progress <= 0.38) {
-    const t = (progress - 0.235) / (0.38 - 0.235);
+  } else if (progress <= 0.285) {
+    const t = (progress - 0.165) / (0.285 - 0.165);
     const easedT = t * t * (3 - 2 * t);
     galleryX = -easedT * 100;
-  } else if (progress <= 0.51) {
-    const t = (progress - 0.38) / (0.51 - 0.38);
+  } else if (progress <= 0.405) {
+    const t = (progress - 0.285) / (0.405 - 0.285);
     const easedT = t * t * (3 - 2 * t);
     galleryX = -100 - easedT * 100;
   } else {
@@ -120,12 +134,13 @@ export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, pro
 
   const gateProgress = progressBetween(progress, WORKBENCH_GATE[0], WORKBENCH_GATE[1]);
   const gateAuraOpacity = gateProgress * 0.24;
-  const manuscriptFinalOpacity = 1 - paperExitProgress * 0.72;
+  const manuscriptFinalOpacity = (1 - paperExitProgress * 0.72) * preCurtainOpacity;
   const ctaOpacity = progressBetween(progress, WORKBENCH_GATE[0], WORKBENCH_GATE[1]);
 
   const writer = getStoryVarWriter(storyElement);
   writer.setMany({
     "--story-progress": progress.toFixed(4),
+    "--pre-stage-opacity": preCurtainOpacity.toFixed(4),
     "--gallery-x": `${galleryX.toFixed(3)}vw`,
     "--hero-opacity": heroOpacity.toFixed(4),
     "--hero-y": `${(-42 * centerProgress).toFixed(3)}px`,
@@ -149,13 +164,16 @@ export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, pro
     "--collab-signal-opacity": realCollabSignalOpacity.toFixed(4),
     "--collab-signal-x": `${(34 * collabExitProgress).toFixed(3)}px`,
     "--collab-signal-y": `${(24 * (1 - realCollabSignalOpacity)).toFixed(3)}px`,
+    "--pre-curtain-opacity": preCurtainOpacity.toFixed(4),
     "--paper-exit-progress": paperExitProgress.toFixed(4),
-    "--paper-transfer-opacity": transferProgress.toFixed(4),
+    "--paper-transfer-opacity": (transferProgress * preCurtainOpacity).toFixed(4),
     "--paper-transfer-scale": (0.92 + transferProgress * 0.1).toFixed(4),
     "--paper-transfer-y": `${(26 - transferProgress * 40).toFixed(3)}px`,
+    "--green-backdrop-opacity": greenBackdropOpacity.toFixed(4),
     "--green-stage-opacity": greenStageOpacity.toFixed(4),
     "--green-copy-opacity": realGreenCopyOpacity.toFixed(4),
     "--green-copy-y": "0px",
+    "--black-backdrop-opacity": blackBackdropOpacity.toFixed(4),
     "--black-stage-opacity": blackStageOpacity.toFixed(4),
     "--ticker-opacity": realTickerOpacity.toFixed(4),
     "--ticker-x": realTickerX,
@@ -174,6 +192,10 @@ export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, pro
   });
   if (storyElement.dataset.storyPhase !== phase) {
     storyElement.dataset.storyPhase = phase;
+  }
+  const preStageState = preStageStateForProgress(progress);
+  if (storyElement.dataset.preStage !== preStageState) {
+    storyElement.dataset.preStage = preStageState;
   }
 }
 

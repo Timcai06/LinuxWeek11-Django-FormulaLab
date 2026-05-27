@@ -158,26 +158,28 @@ function StoryTetherCanvas({ scrollProgressRef }: { scrollProgressRef: ScrollPro
 export function StoryStage({ scrollProgressRef }: StoryStageProps) {
   return (
     <div className="landing-story-stage">
-      <FormulaConstellationField />
-      <FormulaVortex scrollProgressRef={scrollProgressRef} />
-      <ManuscriptCanvas scrollProgressRef={scrollProgressRef} />
-      <Hero />
-      <div className="manuscript-scan-beam" aria-hidden="true" />
-      <div className="paper-system-transfer" aria-hidden="true" />
-      <div className="story-gallery-strip" style={{ transform: "translate3d(var(--gallery-x, 0vw), 0, 0)" }}>
-        <div className="gallery-slide slide-decode">
-          <DecodeChamberOverlay />
+      <div className="pre-curtain-stage">
+        <FormulaConstellationField />
+        <FormulaVortex scrollProgressRef={scrollProgressRef} />
+        <ManuscriptCanvas scrollProgressRef={scrollProgressRef} />
+        <Hero />
+        <div className="manuscript-scan-beam" aria-hidden="true" />
+        <div className="paper-system-transfer" aria-hidden="true" />
+        <div className="story-gallery-strip" style={{ transform: "translate3d(var(--gallery-x, 0vw), 0, 0)" }}>
+          <div className="gallery-slide slide-decode">
+            <DecodeChamberOverlay />
+          </div>
+          <div className="gallery-slide slide-workspace">
+            <PaperWorkspaceGhost />
+          </div>
+          <div className="gallery-slide slide-collab">
+            <CollaborationSignalField />
+          </div>
         </div>
-        <div className="gallery-slide slide-workspace">
-          <PaperWorkspaceGhost />
-        </div>
-        <div className="gallery-slide slide-collab">
-          <CollaborationSignalField />
-        </div>
+        <StoryTetherCanvas scrollProgressRef={scrollProgressRef} />
+        <StoryRail />
       </div>
-      <StoryTetherCanvas scrollProgressRef={scrollProgressRef} />
       <LandingTailSequence scrollProgressRef={scrollProgressRef} />
-      <StoryRail />
     </div>
   );
 }

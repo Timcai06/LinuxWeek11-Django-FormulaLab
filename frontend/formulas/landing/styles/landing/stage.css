@@ -7,13 +7,13 @@ body.landing-shell {
 }
 
 .landing-fallback {
-  min-height: 4800vh;
+  min-height: 3600vh;
 }
 
 
 .landing-story {
   position: relative;
-  min-height: 4800vh;
+  min-height: 3600vh;
   --hero-opacity: 1;
   --hero-y: 0px;
   --text-disperse: 0px;
@@ -36,6 +36,7 @@ body.landing-shell {
   --collab-signal-opacity: 0;
   --collab-signal-x: 0px;
   --collab-signal-y: 24px;
+  --pre-curtain-opacity: 1;
   --gate-opacity: 0;
   --gate-y: 34px;
   --gate-scale: 0.985;
@@ -45,9 +46,11 @@ body.landing-shell {
   --paper-transfer-opacity: 0;
   --paper-transfer-scale: 0.92;
   --paper-transfer-y: 26px;
+  --green-backdrop-opacity: 0;
   --green-stage-opacity: 0;
   --green-copy-opacity: 0;
   --green-copy-y: 30px;
+  --black-backdrop-opacity: 0;
   --black-stage-opacity: 0;
   --ticker-opacity: 0;
   --ticker-x: 34vw;
@@ -55,6 +58,7 @@ body.landing-shell {
   --ticker-chaos: 1;
   --ticker-scale: 0.92;
   --story-progress: 0;
+  --pre-stage-opacity: 1;
 }
 
 .landing-story-stage {
@@ -63,6 +67,27 @@ body.landing-shell {
   min-height: 100vh;
   overflow: hidden;
   isolation: isolate;
+}
+
+.pre-curtain-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  height: 100vh;
+  opacity: var(--pre-stage-opacity);
+  pointer-events: auto;
+  contain: layout paint style;
+}
+
+.landing-story[data-pre-stage="retiring"] .pre-curtain-stage {
+  pointer-events: none;
+}
+
+.landing-story[data-pre-stage="retired"] .pre-curtain-stage {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  content-visibility: hidden;
 }
 
 .formula-vortex-canvas {

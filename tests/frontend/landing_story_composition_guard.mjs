@@ -12,6 +12,7 @@ assert.doesNotMatch(storyShell, /FormulaConstellationField|ManuscriptCanvas|Morp
 assert.match(storyRail, /className="story-rail" aria-hidden="true"/, "StoryRail should preserve the rail DOM contract.");
 
 const layerOrder = [
+  '<div className="pre-curtain-stage">',
   "<FormulaConstellationField />",
   "<FormulaVortex scrollProgressRef={scrollProgressRef} />",
   "<ManuscriptCanvas scrollProgressRef={scrollProgressRef} />",
@@ -20,8 +21,8 @@ const layerOrder = [
   "<DecodeChamberOverlay />",
   "<PaperWorkspaceGhost />",
   "<CollaborationSignalField />",
-  "<LandingTailSequence scrollProgressRef={scrollProgressRef} />",
   "<StoryRail />",
+  "<LandingTailSequence scrollProgressRef={scrollProgressRef} />",
 ];
 
 let previousIndex = -1;

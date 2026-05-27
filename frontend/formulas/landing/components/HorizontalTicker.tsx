@@ -8,6 +8,8 @@ import type { ScrollProgressRef } from "../types";
 import { progressBetween } from "../three/motion";
 
 const COPY = "FORMULA LAB • PAPER WORKSPACE • REVIEW INBOX • COLLABORATION MEMORY •";
+const TICKER_REVEAL_RANGE = [LETTER_STORM[0] + 0.006, LETTER_STORM[1] - 0.014] as const;
+const TICKER_CENTER_RANGE = [0.928, 0.952] as const;
 
 gsap.registerPlugin(SplitText);
 
@@ -56,19 +58,19 @@ export function HorizontalTicker({ scrollProgressRef }: { scrollProgressRef: Scr
       });
 
       revealTimeline = gsap
-        .timeline({ paused: true, defaults: { ease: "back.out(1.2)" } })
+        .timeline({ paused: true, defaults: { ease: "power3.out" } })
         .fromTo(
           split.chars ?? [],
           {
             autoAlpha: 0,
-            rotation: (index) => `${((seededRandom(index + 31) * 2 - 1) * 20).toFixed(2)}deg`,
-            yPercent: (index) => Math.round((seededRandom(index) * 2 - 1) * 220),
+            rotation: (index) => `${((seededRandom(index + 31) * 2 - 1) * 10).toFixed(2)}deg`,
+            yPercent: (index) => Math.round((seededRandom(index) * 2 - 1) * 120),
           },
           {
             autoAlpha: 1,
-            duration: 1,
+            duration: 1.25,
             rotation: 0,
-            stagger: { each: 0.014, from: "start" },
+            stagger: { each: 0.01, from: "start" },
             yPercent: 0,
           },
         );
@@ -81,9 +83,12 @@ export function HorizontalTicker({ scrollProgressRef }: { scrollProgressRef: Scr
       phases: ["letterStorm"],
       epsilon: 0.00001,
     }, (frame) => {
-      const stormProgress = progressBetween(frame.progress, LETTER_STORM[0] + 0.002, LETTER_STORM[1] - 0.006);
+      const stormProgress = progressBetween(frame.progress, TICKER_REVEAL_RANGE[0], TICKER_REVEAL_RANGE[1]);
+      const centerProgress = progressBetween(frame.progress, TICKER_CENTER_RANGE[0], TICKER_CENTER_RANGE[1]);
+      const centerEase = gsap.parseEase("power2.inOut")(centerProgress);
       revealTimeline?.progress(stormProgress);
       trackElement.style.setProperty("--ticker-measured-x", `${(-stormProgress * tickerDistancePx).toFixed(3)}px`);
+      trackElement.style.setProperty("--ticker-center-settle", centerEase.toFixed(4));
     });
     resetRendererGate = unsubscribe.reset;
     window.addEventListener("resize", measureTickerDistance);

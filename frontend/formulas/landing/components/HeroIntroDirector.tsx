@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import type { RefObject } from "react";
 import gsap from "gsap";
+import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 
 type HeroIntroDirectorProps = {
   heroRef: RefObject<HTMLElement | null>;
@@ -48,6 +49,10 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
       const introEchoes = Array.from(curtainElement.querySelectorAll<HTMLElement>(".brand-intro-echo"));
       const introBeam = curtainElement.querySelector<HTMLElement>(".brand-intro-beam");
       const introFrame = curtainElement.querySelector<HTMLElement>(".brand-intro-frame");
+      const vectorSystem = curtainElement.querySelector<SVGSVGElement>(".brand-intro-vector-system");
+      const vectorPaths = Array.from(curtainElement.querySelectorAll<SVGPathElement>(".brand-intro-vector-path"));
+      const vectorNodes = Array.from(curtainElement.querySelectorAll<SVGCircleElement>(".brand-intro-vector-node"));
+      const vectorLabels = Array.from(curtainElement.querySelectorAll<SVGTextElement>(".brand-intro-vector-label"));
       const formulaLine = heroElement.querySelector<HTMLElement>(".title-line-formula");
       const labLine = heroElement.querySelector<HTMLElement>(".title-line-lab");
       if (!title || !formulaLine || !labLine) {
@@ -58,6 +63,7 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
       }
 
       const context = gsap.context(() => {
+        gsap.registerPlugin(DrawSVGPlugin);
         const introTitleLines = [formulaLine, labLine];
         const ambientTargets = [gridLayer, mathCosmos, formulaVortex, manuscriptCanvas].filter(Boolean) as HTMLElement[];
         const cleanupTargets = [
@@ -70,6 +76,10 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
           ...titleChars,
           ...actionLinks,
           ...readoutLines,
+          vectorSystem,
+          ...vectorPaths,
+          ...vectorNodes,
+          ...vectorLabels,
         ].filter(Boolean) as HTMLElement[];
         gsap.set(curtainElement, {
           autoAlpha: 1,
@@ -87,12 +97,15 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
         gsap.set(introEchoes, { autoAlpha: 0, xPercent: -18 });
         gsap.set(introBeam, { autoAlpha: 0, xPercent: -120 });
         gsap.set(introFrame, { autoAlpha: 0, scaleX: 0.42, transformOrigin: "50% 50%" });
+        gsap.set(vectorSystem, { autoAlpha: 0 });
+        gsap.set(vectorPaths, { drawSVG: "0% 0%" });
+        gsap.set(vectorNodes, { autoAlpha: 0, scale: 0.72, transformOrigin: "50% 50%" });
+        gsap.set(vectorLabels, { autoAlpha: 0, y: 5 });
         // Title container
         gsap.set(title, {
           autoAlpha: 1,
           x: 0,
           y: 0,
-          scale: 1.15,
           force3D: false,
           transformOrigin: "50% 50%",
           textShadow: "none",
@@ -108,11 +121,18 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
           y: 0,
         });
         
+        const finalTitleFontSize = getComputedStyle(title).fontSize;
+        const calibrationFontSize = "clamp(2.1rem, 4.2vw, 5rem)";
+
         // Apply dramatic initial letter-spacing first, so bounding box includes the expanded width
         gsap.set(introTitleLines, { letterSpacing: "0.16em" });
         
         const formulaRect = formulaLine.getBoundingClientRect();
         const labRect = labLine.getBoundingClientRect();
+        const calibrationTop = -formulaRect.top + window.innerHeight * 0.46;
+        const calibrationLabTop = -labRect.top + window.innerHeight * 0.46;
+        const calibrationFormulaLeft = -formulaRect.left + window.innerWidth * 0.5 - formulaRect.width * 0.62;
+        const calibrationLabLeft = -labRect.left + window.innerWidth * 0.5 + formulaRect.width * 0.08;
         
         // Exact pixel math to push to the absolute corners, accounting for current window size and exact text width
         gsap.set(formulaLine, {
@@ -177,9 +197,48 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
             "blackout+=0.32",
           )
           .to(introFrame, { autoAlpha: 0.52, duration: 0.46, ease: "power2.out", scaleX: 0.72 }, "blackout+=0.72")
+          .to(vectorSystem, { autoAlpha: 0.78, duration: 0.4, ease: "power2.out" }, "blackout+=0.62")
+          .to(vectorPaths, { drawSVG: "0% 42%", duration: 0.78, ease: "power2.inOut", stagger: 0.055 }, "blackout+=0.68")
+          .to(vectorNodes, { autoAlpha: 0.7, scale: 1, duration: 0.46, ease: "back.out(1.25)", stagger: 0.045 }, "blackout+=0.86")
+
+          // ── Calibration hold — real title becomes a small centered brand lockup ──
+          .addLabel("calibrationHold", "blackout+=1.08")
+          .to(
+            title,
+            {
+              fontSize: calibrationFontSize,
+              duration: 0.7,
+              ease: "power3.inOut",
+            },
+            "calibrationHold",
+          )
+          .to(
+            formulaLine,
+            {
+              left: calibrationFormulaLeft,
+              top: calibrationTop,
+              letterSpacing: "0.02em",
+              duration: 0.72,
+              ease: "power3.inOut",
+            },
+            "calibrationHold",
+          )
+          .to(
+            labLine,
+            {
+              left: calibrationLabLeft,
+              top: calibrationLabTop,
+              letterSpacing: "0.02em",
+              duration: 0.72,
+              ease: "power3.inOut",
+            },
+            "calibrationHold+=0.02",
+          )
+          .to(introFrame, { autoAlpha: 0.38, duration: 0.42, ease: "power2.out", scaleX: 0.52 }, "calibrationHold+=0.34")
+          .to(vectorNodes, { autoAlpha: 0.42, duration: 0.38, ease: "power2.out" }, "calibrationHold+=0.42")
 
           // ── Phase 2: WARM CUT — Warm surface, slabs, echoes emerge ──
-          .addLabel("warmCut", "blackout+=1.16")
+          .addLabel("warmCut", "calibrationHold+=0.88")
           .to(introSurface, { autoAlpha: 1, duration: 0.38, ease: "power2.out" }, "warmCut")
           .to(
             introSlabs,
@@ -189,6 +248,8 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
           .to(mathCosmos, { autoAlpha: 0.18, duration: 0.74, ease: "power2.out", y: 6 }, "warmCut+=0.08")
           .to(manuscriptCanvas, { autoAlpha: 0.2, duration: 0.82, ease: "power2.out", scale: 0.98, x: 18, y: 8 }, "warmCut+=0.16")
           .to(introEchoes, { autoAlpha: 0.22, duration: 0.34, ease: "power2.out", stagger: 0.06, xPercent: 0 }, "warmCut+=0.14")
+          .to(vectorPaths, { drawSVG: "0% 82%", duration: 0.84, ease: "power2.inOut", stagger: 0.035 }, "warmCut+=0.08")
+          .to(vectorLabels, { autoAlpha: 0.68, y: 0, duration: 0.44, ease: "power3.out", stagger: 0.075 }, "warmCut+=0.2")
 
           // ── Breathing pause — a dramatic beat before convergence ──
           .addLabel("breathe", "warmCut+=0.56")
@@ -218,15 +279,16 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
             duration: 0.54,
             ease: "power3.out",
           }, "vectorShift+=0.82")
-          // Scale settles from 1.15 → 1.0 during convergence
           .to(title, {
-            scale: 1,
+            fontSize: finalTitleFontSize,
             duration: 1.38,
             ease: "expo.out",
           }, "vectorShift+=0.12")
           .to(introFrame, { autoAlpha: 0.78, duration: 0.42, ease: "power2.out", scaleX: 1 }, "vectorShift+=0.14")
           .to(introBeam, { autoAlpha: 1, duration: 0.24, ease: "power2.out" }, "vectorShift+=0.18")
           .to(introBeam, { xPercent: 120, duration: 1.02, ease: "power2.inOut" }, "vectorShift+=0.2")
+          .to(vectorPaths, { drawSVG: "0% 100%", duration: 1.02, ease: "power3.inOut", stagger: 0.04 }, "vectorShift+=0.04")
+          .to(vectorNodes, { autoAlpha: 0.95, duration: 0.28, ease: "power2.out", stagger: 0.03 }, "vectorShift+=0.16")
           .to(introEchoes, { autoAlpha: 0.1, duration: 0.76, ease: "power2.inOut", xPercent: 12 }, "vectorShift+=0.18")
           .to(mathCosmos, { autoAlpha: 0.32, duration: 0.9, ease: "power2.inOut", y: 0 }, "vectorShift+=0.2")
           .to(manuscriptCanvas, { autoAlpha: 0.62, duration: 0.96, ease: "power3.inOut", scale: 0.992, x: 8, y: 3 }, "vectorShift+=0.28")
@@ -244,6 +306,10 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
           .addLabel("lockToHero", "vectorShift+=1.22")
           .to(introSlabs, { duration: 0.88, ease: "power3.inOut", stagger: 0.045, xPercent: 112 }, "lockToHero-=0.2")
           .to(introEchoes, { autoAlpha: 0, duration: 0.42, ease: "power2.out", xPercent: 20 }, "lockToHero-=0.06")
+          .to(vectorLabels, { autoAlpha: 0, duration: 0.3, ease: "power2.out", y: -4, stagger: 0.035 }, "lockToHero-=0.1")
+          .to(vectorNodes, { autoAlpha: 0, scale: 0.82, duration: 0.36, ease: "power2.out", stagger: 0.025 }, "lockToHero")
+          .to(vectorPaths, { drawSVG: "78% 100%", autoAlpha: 0, duration: 0.62, ease: "power3.inOut", stagger: 0.035 }, "lockToHero+=0.02")
+          .to(vectorSystem, { autoAlpha: 0, duration: 0.48, ease: "power2.out" }, "lockToHero+=0.22")
           .to(gridLayer, { autoAlpha: 1, duration: 0.84, ease: "power2.out" }, "lockToHero-=0.12")
           .to(mathCosmos, { autoAlpha: 1, duration: 0.92, ease: "power2.out" }, "lockToHero-=0.08")
           .to(manuscriptCanvas, { autoAlpha: 1, duration: 0.96, ease: "expo.out", scale: 1, x: 0, y: 0 }, "lockToHero-=0.04")
@@ -304,6 +370,18 @@ export function HeroIntroDirector({ heroRef }: HeroIntroDirectorProps) {
       <span className="brand-intro-slab brand-intro-slab-right" />
       <span className="brand-intro-echo brand-intro-echo-one">FORMULA</span>
       <span className="brand-intro-echo brand-intro-echo-two">LAB</span>
+      <svg className="brand-intro-vector-system" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path className="brand-intro-vector-path brand-intro-vector-path-main" d="M 6 14 H 34 C 43 14 47 27 55 27 H 94" />
+        <path className="brand-intro-vector-path" d="M 8 82 H 36 C 48 82 52 66 64 66 H 92" />
+        <path className="brand-intro-vector-path" d="M 18 20 V 72 M 82 22 V 78" />
+        <path className="brand-intro-vector-path brand-intro-vector-path-fine" d="M 12 48 H 88 M 50 10 V 90" />
+        <circle className="brand-intro-vector-node" cx="18" cy="20" r="0.72" />
+        <circle className="brand-intro-vector-node" cx="50" cy="48" r="0.72" />
+        <circle className="brand-intro-vector-node" cx="82" cy="78" r="0.72" />
+        <circle className="brand-intro-vector-node" cx="55" cy="27" r="0.72" />
+        <text className="brand-intro-vector-label" x="7" y="11">VECTOR LOCK</text>
+        <text className="brand-intro-vector-label" x="68" y="86">TITLE ORBIT</text>
+      </svg>
       <span className="brand-intro-frame" />
       <span className="brand-intro-beam" />
     </div>

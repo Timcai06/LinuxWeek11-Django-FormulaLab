@@ -246,11 +246,11 @@ assert.doesNotMatch(
 );
 assert.match(
   choreographySource,
-  /export const GREEN_COPY = \[0\.650,\s*0\.835\] as const;/,
-  "Green SplitText should have a wider scroll chapter so each message can breathe.",
+  /export const GREEN_LIQUID = \[0\.455,\s*0\.545\] as const;[\s\S]*export const GREEN_COPY = \[0\.565,\s*0\.805\] as const;/,
+  "Green SplitText should begin shortly after the liquid wipe while preserving enough chapter width.",
 );
 assert.match(
   choreographySource,
-  /GREEN_COPY_BLOCK_RANGES[\s\S]*\[0\.665,\s*0\.705\][\s\S]*\[0\.728,\s*0\.768\][\s\S]*\[0\.792,\s*0\.832\]/,
-  "Green SplitText should animate in three wider, well-spaced beats.",
+  /GREEN_COPY_BLOCK_RANGES[\s\S]*\[0\.585,\s*0\.630\][\s\S]*\[0\.655,\s*0\.700\][\s\S]*\[0\.725,\s*0\.775\]/,
+  "Green SplitText should animate in three earlier, well-spaced beats.",
 );

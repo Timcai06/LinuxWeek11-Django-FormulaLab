@@ -57,11 +57,11 @@ The Docker image installs both the base web stack and PaddleOCR Formula Recognit
 FORMULA_LAB_OCR_ENGINE=paddle
 ```
 
-Model files are cached under `.model-cache/` through a Compose volume mount, so the first warmup or recognition may be slow, but later runs reuse the downloaded Paddle model.
+Model files are cached under `var/model-cache/` through a Compose volume mount, so the first warmup or recognition may be slow, but later runs reuse the downloaded Paddle model.
 
 ## 🛠️ Local Development | 本地开发
 
-当前本机开发优先使用 PaddleOCR Formula Recognition。依赖和模型权重已经落在本机 `.conda` 与 `.model-cache/` 中，启动时直接运行：
+当前本机开发优先使用 PaddleOCR Formula Recognition。依赖和模型权重已经落在本机 `.conda` 与 `var/model-cache/` 中，启动时直接运行：
 
 ```bash
 make local

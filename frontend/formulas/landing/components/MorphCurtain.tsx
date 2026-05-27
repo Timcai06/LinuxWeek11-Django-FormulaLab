@@ -12,7 +12,16 @@ const DELAY_PER_PATH = 0.25;
 const MORPH_DURATION = 0.9;
 const MORPH_PROGRESS_EPSILON = 0.0007;
 const PATH_CACHE_STEPS = 240;
-const WAVE_SWEEP_RANGE = [0.04, 0.97] as const;
+type WaveSweepRange = readonly [number, number];
+type OpacityRange = readonly [number, number, number, number];
+
+const WAVE_SWEEP_RANGE: WaveSweepRange = [0.04, 0.97];
+const BLACK_WAVE_SWEEP_RANGE: WaveSweepRange = [0.035, 0.982];
+const GREEN_OPACITY_RANGE: OpacityRange = [0.006, 0.10, 0.965, 1];
+const BLACK_OPACITY_RANGE: OpacityRange = [0.008, 0.12, 0.985, 1];
+const GREEN_PANEL_HANDOFF_RANGE = [GREEN_LIQUID[1] - 0.024, GREEN_LIQUID[1] + 0.002] as const;
+const BLACK_PANEL_HANDOFF_RANGE = [BLACK_LIQUID[1] - 0.014, BLACK_LIQUID[1] + 0.002] as const;
+const COMPLETED_MASK_RANGE = [0.92, 1] as const;
 
 type LiquidPathCache = {
   frames: string[][];
@@ -66,14 +75,19 @@ function smootherStep(value: number) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
-function liquidWaveProgress(segmentProgress: number) {
-  return smootherStep(progressBetween(segmentProgress, WAVE_SWEEP_RANGE[0], WAVE_SWEEP_RANGE[1]));
+function liquidWaveProgress(segmentProgress: number, waveSweepRange = WAVE_SWEEP_RANGE) {
+  return smootherStep(progressBetween(segmentProgress, waveSweepRange[0], waveSweepRange[1]));
 }
 
-function liquidOpacity(segmentProgress: number) {
-  const fadeIn = smootherStep(progressBetween(segmentProgress, 0.006, 0.10));
-  const fadeOut = smootherStep(progressBetween(segmentProgress, 0.965, 1));
+function liquidOpacity(segmentProgress: number, opacityRange = GREEN_OPACITY_RANGE) {
+  const fadeIn = smootherStep(progressBetween(segmentProgress, opacityRange[0], opacityRange[1]));
+  const fadeOut = smootherStep(progressBetween(segmentProgress, opacityRange[2], opacityRange[3]));
   return fadeIn * (1 - fadeOut);
+}
+
+function completedMaskOpacity(segmentProgress: number, handoffProgress: number) {
+  const completedShapeOpacity = smootherStep(progressBetween(segmentProgress, COMPLETED_MASK_RANGE[0], COMPLETED_MASK_RANGE[1]));
+  return completedShapeOpacity * (1 - handoffProgress);
 }
 
 function createLiquidPoints() {
@@ -152,6 +166,12 @@ function applyCachedPaths(paths: SVGPathElement[], cachedPaths: string[]) {
   }
 }
 
+function applyCurtainOpacity(svg: SVGSVGElement, greenOpacity: number, blackOpacity: number, combinedOpacity: number) {
+  svg.style.setProperty("--green-curtain-svg-opacity", greenOpacity.toFixed(3));
+  svg.style.setProperty("--black-curtain-svg-opacity", blackOpacity.toFixed(3));
+  svg.style.opacity = combinedOpacity.toFixed(3);
+}
+
 export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
@@ -184,9 +204,11 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
     let lastRenderedOpacity = "-1:-1";
 
     const update = ({
+      progress,
       greenSegmentProgress,
       blackSegmentProgress,
     }: {
+      progress: number;
       greenSegmentProgress: number;
       blackSegmentProgress: number;
     }) => {
@@ -207,17 +229,23 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       }
 
       const greenWaveProgress = liquidWaveProgress(greenSegmentProgress);
-      const blackWaveProgress = liquidWaveProgress(blackSegmentProgress);
-      const greenSvgOpacity = greenSegmentProgress > 0 && greenSegmentProgress < 1 ? liquidOpacity(greenSegmentProgress) : 0;
-      const blackSvgOpacity = blackSegmentProgress > 0 && blackSegmentProgress < 1 ? liquidOpacity(blackSegmentProgress) : 0;
+      const blackWaveProgress = liquidWaveProgress(blackSegmentProgress, BLACK_WAVE_SWEEP_RANGE);
+      const greenPanelHandoff = smootherStep(progressBetween(progress, GREEN_PANEL_HANDOFF_RANGE[0], GREEN_PANEL_HANDOFF_RANGE[1]));
+      const blackPanelHandoff = smootherStep(progressBetween(progress, BLACK_PANEL_HANDOFF_RANGE[0], BLACK_PANEL_HANDOFF_RANGE[1]));
+      const greenSvgOpacity = Math.max(
+        greenSegmentProgress > 0 && greenSegmentProgress < 1 ? liquidOpacity(greenSegmentProgress) : 0,
+        completedMaskOpacity(greenSegmentProgress, greenPanelHandoff),
+      );
+      const blackSvgOpacity = Math.max(
+        blackSegmentProgress > 0 && blackSegmentProgress < 1 ? liquidOpacity(blackSegmentProgress, BLACK_OPACITY_RANGE) : 0,
+        completedMaskOpacity(blackSegmentProgress, blackPanelHandoff),
+      );
       const combinedOpacity = Math.max(greenSvgOpacity, blackSvgOpacity);
       const opacityKey = `${greenSvgOpacity.toFixed(3)}:${blackSvgOpacity.toFixed(3)}`;
 
       if (combinedOpacity <= 0) {
         if (lastRenderedOpacity !== opacityKey) {
-          svg.style.setProperty("--green-curtain-svg-opacity", "0.000");
-          svg.style.setProperty("--black-curtain-svg-opacity", "0.000");
-          svg.style.opacity = "0.000";
+          applyCurtainOpacity(svg, 0, 0, 0);
           lastRenderedOpacity = opacityKey;
         }
         return;
@@ -235,11 +263,13 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
         lastBlackPathFrame = blackPathFrame;
       }
 
-      svg.dataset.curtainMode = blackSegmentProgress > 0 ? "black" : "green";
-      svg.style.setProperty("--green-curtain-svg-opacity", greenSvgOpacity.toFixed(3));
-      svg.style.setProperty("--black-curtain-svg-opacity", blackSvgOpacity.toFixed(3));
-      svg.style.opacity = combinedOpacity.toFixed(3);
-      lastRenderedOpacity = opacityKey;
+      if (svg.dataset.curtainMode !== (blackSegmentProgress > 0 ? "black" : "green")) {
+        svg.dataset.curtainMode = blackSegmentProgress > 0 ? "black" : "green";
+      }
+      if (lastRenderedOpacity !== opacityKey) {
+        applyCurtainOpacity(svg, greenSvgOpacity, blackSvgOpacity, combinedOpacity);
+        lastRenderedOpacity = opacityKey;
+      }
     };
 
     const runtime = getLandingMotionRuntime();
@@ -250,11 +280,13 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       includeTransitionSettling: true,
     }, (frame) => {
       update({
+        progress: frame.progress,
         greenSegmentProgress: frame.transitions.greenLiquidProgress,
         blackSegmentProgress: frame.transitions.blackLiquidProgress,
       });
     });
     update({
+      progress: scrollProgressRef.current,
       greenSegmentProgress: progressBetween(scrollProgressRef.current, GREEN_LIQUID[0], GREEN_LIQUID[1]),
       blackSegmentProgress: progressBetween(scrollProgressRef.current, BLACK_LIQUID[0], BLACK_LIQUID[1]),
     });

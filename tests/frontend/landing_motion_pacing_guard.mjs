@@ -16,6 +16,7 @@ const canvasSource = readFileSync("frontend/formulas/landing/components/Manuscri
 const vortexSource = readFileSync("frontend/formulas/landing/components/FormulaVortex.tsx", "utf8");
 const gateSource = readFileSync("frontend/formulas/landing/components/WorkbenchGateOverlay.tsx", "utf8");
 const styleSource = readLandingStyles();
+const blackCurtainPanelBlock = styleSource.match(/\.black-curtain-panel\s*\{[\s\S]*?\n\}/)?.[0] ?? "";
 
 assert.doesNotMatch(
   appSource,
@@ -44,13 +45,13 @@ assert.match(
 );
 assert.match(
   choreographySource,
-  /export const GREEN_LIQUID = \[0\.555,\s*0\.638\] as const;[\s\S]*export const GREEN_COPY = \[0\.650,\s*0\.835\] as const;/,
-  "Green curtain should have enough room to wipe in, settle, and then begin SplitText.",
+  /export const STORY_HEIGHT_VH = 3600;[\s\S]*export const GREEN_LIQUID = \[0\.455,\s*0\.545\] as const;[\s\S]*export const GREEN_COPY = \[0\.565,\s*0\.805\] as const;/,
+  "The green SplitText chapter should start shortly after the SVG liquid wipe settles instead of leaving a long empty green curtain.",
 );
 assert.match(
   choreographySource,
   /export const FREE_SCROLL_RANGES =[\s\S]*\[0\.565,\s*0\.612\][\s\S]*\[0\.852,\s*0\.892\]/,
-  "Liquid wave chapters should avoid snap capture through the middle while leaving the completed green curtain snappable.",
+  "Liquid wave chapters should avoid snap capture through the middle while leaving the completed curtain beats snappable.",
 );
 assert.match(
   directorSource,
@@ -129,7 +130,7 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /const realTickerSweep = progressBetween\(progress,\s*LETTER_STORM\[0\] \+ 0\.002,\s*LETTER_STORM\[1\] - 0\.006\)/,
+  /const realTickerSweep = progressBetween\(progress,\s*LETTER_STORM\[0\] \+ 0\.006,\s*LETTER_STORM\[1\] - 0\.014\)/,
   "The visible final ticker should use almost the full letter-storm chapter instead of bursting through a short subrange.",
 );
 assert.doesNotMatch(
@@ -159,7 +160,7 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /const WAVE_SWEEP_RANGE = \[0\.04, 0\.97\] as const;/,
+  /const WAVE_SWEEP_RANGE: WaveSweepRange = \[0\.04, 0\.97\];/,
   "MorphCurtain should spend most of each transition on the actual wave sweep.",
 );
 assert.match(
@@ -169,13 +170,33 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /function liquidWaveProgress\(segmentProgress: number\)[\s\S]*progressBetween\(segmentProgress, WAVE_SWEEP_RANGE\[0\], WAVE_SWEEP_RANGE\[1\]\)/,
+  /function liquidWaveProgress\(segmentProgress: number, waveSweepRange = WAVE_SWEEP_RANGE\)[\s\S]*progressBetween\(segmentProgress, waveSweepRange\[0\], waveSweepRange\[1\]\)/,
   "MorphCurtain should map the wave separately from the outer transition hold.",
 );
 assert.match(
   curtainSource,
-  /function liquidOpacity\(segmentProgress: number\)[\s\S]*progressBetween\(segmentProgress, 0\.006, 0\.10\)[\s\S]*progressBetween\(segmentProgress, 0\.965, 1\)/,
+  /function liquidOpacity\(segmentProgress: number, opacityRange = GREEN_OPACITY_RANGE\)[\s\S]*progressBetween\(segmentProgress, opacityRange\[0\], opacityRange\[1\]\)[\s\S]*progressBetween\(segmentProgress, opacityRange\[2\], opacityRange\[3\]\)/,
   "MorphCurtain opacity should have its own fade-in, wave hold, and fade-out envelope.",
+);
+assert.match(
+  curtainSource,
+  /const GREEN_PANEL_HANDOFF_RANGE = \[GREEN_LIQUID\[1\] - 0\.024,\s*GREEN_LIQUID\[1\] \+ 0\.002\] as const;[\s\S]*const BLACK_PANEL_HANDOFF_RANGE = \[BLACK_LIQUID\[1\] - 0\.014,\s*BLACK_LIQUID\[1\] \+ 0\.002\] as const;/,
+  "MorphCurtain should know the completed panel handoff windows so the liquid SVG can mask raw-scroll and damped-progress timing gaps.",
+);
+assert.match(
+  curtainSource,
+  /function completedMaskOpacity\(segmentProgress: number, handoffProgress: number\)[\s\S]*COMPLETED_MASK_RANGE\[0\][\s\S]*1 - handoffProgress/,
+  "MorphCurtain should keep a completed full-screen mask until the real curtain panel has fully taken over.",
+);
+assert.match(
+  curtainSource,
+  /greenPanelHandoff = smootherStep\(progressBetween\(progress,\s*GREEN_PANEL_HANDOFF_RANGE\[0\],\s*GREEN_PANEL_HANDOFF_RANGE\[1\]\)\)[\s\S]*completedMaskOpacity\(greenSegmentProgress,\s*greenPanelHandoff\)/,
+  "The green liquid SVG should bridge its completed shape into the green panel handoff.",
+);
+assert.match(
+  curtainSource,
+  /blackPanelHandoff = smootherStep\(progressBetween\(progress,\s*BLACK_PANEL_HANDOFF_RANGE\[0\],\s*BLACK_PANEL_HANDOFF_RANGE\[1\]\)\)[\s\S]*completedMaskOpacity\(blackSegmentProgress,\s*blackPanelHandoff\)/,
+  "The black liquid SVG should bridge its completed shape into the black panel handoff.",
 );
 assert.match(
   curtainSource,
@@ -228,6 +249,36 @@ assert.match(
   "Ticker should be a story overlay layer, not a separate full-page scroll section.",
 );
 assert.match(
+  styleSource,
+  /\.ht-section[\s\S]*?z-index:\s*16;[\s\S]*?\.morph-curtain[\s\S]*?z-index:\s*15;/,
+  "The letter-storm ticker should render above any settling black liquid curtain.",
+);
+assert.match(
+  styleSource,
+  /\.story-gallery-strip[\s\S]*?opacity:\s*var\(--pre-curtain-opacity\)/,
+  "The previous gallery and workspace diagnostics should remain visible until the SVG liquid curtain is ready to take over.",
+);
+assert.match(
+  styleSource,
+  /\.green-curtain-panel[\s\S]*?opacity:\s*var\(--green-backdrop-opacity, var\(--green-stage-opacity\)\)/,
+  "The green curtain should use a dedicated completed-backdrop opacity after the SVG liquid wipe.",
+);
+assert.match(
+  styleSource,
+  /\.black-curtain-panel[\s\S]*?opacity:\s*var\(--black-backdrop-opacity, var\(--black-stage-opacity\)\)/,
+  "The black curtain should use a dedicated completed-backdrop opacity after the black SVG liquid wipe.",
+);
+assert.doesNotMatch(
+  blackCurtainPanelBlock,
+  /rgba\(92,\s*255,\s*176/,
+  "The black curtain panel should not carry the green accent tint that creates a visible film during handoff.",
+);
+assert.doesNotMatch(
+  blackCurtainPanelBlock,
+  /rgba\(5,\s*10,\s*8,\s*0\.98\)/,
+  "The black curtain panel base should be fully opaque so the completed green panel cannot bleed through.",
+);
+assert.match(
   tickerSource,
   /PAPER WORKSPACE[\s\S]*REVIEW INBOX[\s\S]*COLLABORATION MEMORY/,
   "The final ticker should reinforce the product story instead of generic sci-fi copy.",
@@ -244,8 +295,13 @@ assert.match(
 );
 assert.match(
   tickerSource,
-  /revealTimeline[\s\S]*progressBetween\((?:scrollProgressRef\.current|frame\.progress),\s*LETTER_STORM\[0\] \+ 0\.002,\s*LETTER_STORM\[1\] - 0\.006\)/,
-  "The final ticker SplitText reveal should scrub across almost the full letter-storm chapter.",
+  /const TICKER_REVEAL_RANGE = \[LETTER_STORM\[0\] \+ 0\.006,\s*LETTER_STORM\[1\] - 0\.014\] as const;[\s\S]*progressBetween\(frame\.progress,\s*TICKER_REVEAL_RANGE\[0\],\s*TICKER_REVEAL_RANGE\[1\]\)/,
+  "The final ticker SplitText reveal should scrub across a readable letter-storm chapter with room for the gate handoff.",
+);
+assert.match(
+  tickerSource,
+  /const TICKER_CENTER_RANGE = \[0\.928,\s*0\.952\] as const;[\s\S]*--ticker-center-settle/,
+  "The final ticker should have a designed center-settle moment rather than a plain marquee pass.",
 );
 assert.match(
   tickerSource,
@@ -278,29 +334,29 @@ assert.match(
   "The final liquid footer should react to scroll velocity with a bouncy path state.",
 );
 assert.match(
-  directorSource,
-  /const gateProgress = progressBetween\(progress,\s*WORKBENCH_GATE\[0\],\s*WORKBENCH_GATE\[1\]\)/,
+  gateSource,
+  /const gateProgress = progressBetween\(progress,\s*WORKBENCH_GATE\[0\] \+ 0\.0015,\s*WORKBENCH_GATE\[1\]\)/,
   "The Workbench Gate should wait until the ticker has fully faded out.",
 );
 assert.match(
   directorSource,
-  /const manuscriptFinalOpacity = 1 - paperExitProgress \* 0\.72/,
-  "The manuscript should visibly recede before the liquid transition takes over.",
+  /const manuscriptFinalOpacity = \(1 - paperExitProgress \* 0\.72\) \* preCurtainOpacity/,
+  "The manuscript canvas should exit with the pre-curtain mask so it cannot show through the completed green curtain.",
 );
 assert.match(
   styleSource,
-  /\.landing-story[\s\S]*?min-height:\s*4800vh/,
-  "The cinematic landing story should leave enough distance for the green SplitText and liquid curtain chapters to hold.",
+  /\.landing-story[\s\S]*?min-height:\s*3600vh/,
+  "The cinematic landing story should use a shorter physical scroll distance after the pre-curtain pacing revision.",
 );
 assert.match(
   choreographySource,
-  /GREEN_COPY_BLOCK_RANGES[\s\S]*\[0\.665,\s*0\.705\][\s\S]*\[0\.728,\s*0\.768\][\s\S]*\[0\.792,\s*0\.832\]/,
-  "Green curtain copy should animate in three clearly separated, less skippable beats.",
+  /GREEN_COPY_BLOCK_RANGES[\s\S]*\[0\.585,\s*0\.630\][\s\S]*\[0\.655,\s*0\.700\][\s\S]*\[0\.725,\s*0\.775\]/,
+  "Green curtain copy should animate soon after the liquid wipe while preserving three separated beats.",
 );
 assert.match(
   choreographySource,
-  /GREEN_COPY_VISIBILITY_RANGES[\s\S]*\[0\.650,\s*0\.665,\s*0\.712,\s*0\.724\][\s\S]*\[0\.716,\s*0\.728,\s*0\.776,\s*0\.788\][\s\S]*\[0\.784,\s*0\.796,\s*0\.835,\s*0\.845\]/,
-  "Green curtain copy fade windows should enter, hold, and exit one message at a time with more scroll space.",
+  /GREEN_COPY_VISIBILITY_RANGES[\s\S]*\[0\.565,\s*0\.580,\s*0\.637,\s*0\.648\][\s\S]*\[0\.646,\s*0\.660,\s*0\.707,\s*0\.719\][\s\S]*\[0\.716,\s*0\.730,\s*0\.785,\s*0\.805\]/,
+  "Green curtain copy fade windows should remove the long post-SVG gap while keeping one message visible at a time.",
 );
 assert.match(
   copyStageSource,
@@ -311,6 +367,11 @@ assert.match(
   copyStageSource,
   /const COPY_PROGRESS_EPSILON = 0\.00005;/,
   "Green curtain SplitText should use a tiny progress epsilon so slow high-refresh scrolling stays smooth.",
+);
+assert.match(
+  copyStageSource,
+  /const DWELL_TRANSLATE_PX = 12;[\s\S]*const COPY_SETTLE_SCALE = 0\.018;/,
+  "Green curtain SplitText should use restrained translation and scale settle values.",
 );
 assert.doesNotMatch(
   copyStageSource,
@@ -351,6 +412,11 @@ assert.match(
   copyStageSource,
   /mask:\s*"lines"[\s\S]*autoSplit:\s*true[\s\S]*onSplit/,
   "Green curtain copy should use SplitText line masks with autoSplit and an onSplit animation callback.",
+);
+assert.match(
+  copyStageSource,
+  /ease:\s*"power3\.out"[\s\S]*stagger:\s*\{ each:\s*0\.022,\s*from:\s*"start" \}/,
+  "Green curtain SplitText should use restrained GSAP choreography instead of a noisy character burst.",
 );
 assert.match(
   storySource,

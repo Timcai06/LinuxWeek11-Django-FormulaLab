@@ -39,7 +39,7 @@ from scripts.check_repository_governance import (
 
 def test_runtime_cache_paths_are_required_in_gitignore(tmp_path):
     gitignore = tmp_path / ".gitignore"
-    gitignore.write_text(".conda/\n.pip-cache/\n.model-cache/\nnode_modules/\nmedia/\n*.sqlite3\n", encoding="utf-8")
+    gitignore.write_text(".conda/\n.pip-cache/\nvar/model-cache/\nnode_modules/\nmedia/\n*.sqlite3\n", encoding="utf-8")
     assert check_gitignore_contains_runtime_paths(gitignore) == []
 
 
@@ -48,7 +48,7 @@ def test_missing_runtime_cache_paths_are_reported(tmp_path):
     gitignore.write_text(".conda/\nnode_modules/\n", encoding="utf-8")
     result = check_gitignore_contains_runtime_paths(gitignore)
     assert ".pip-cache/" in result
-    assert ".model-cache/" in result
+    assert "var/model-cache/" in result
     assert "media/" in result
 
 
@@ -75,7 +75,7 @@ The script must define `REQUIRED_GITIGNORE_ENTRIES`, `GovernanceConfig`, `Govern
 
 ```python
 REQUIRED_GITIGNORE_ENTRIES = (
-    ".conda/", ".pip-cache/", ".model-cache/", "node_modules/", "media/", "*.sqlite3",
+    ".conda/", ".pip-cache/", "var/model-cache/", "node_modules/", "media/", "*.sqlite3",
 )
 
 @dataclass(frozen=True)

@@ -28,5 +28,6 @@ test-results/
 playwright-report/
 
 media/
-.model-cache/
+/.model-cache/
+var/model-cache/
 *.sqlite3

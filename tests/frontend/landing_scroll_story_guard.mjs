@@ -24,6 +24,7 @@ assert.match(directorSource, /--shutdown-opacity/, "Landing HUD should shut down
 assert.match(storySource, /ScrollDirector/, "Landing should use a scroll director module.");
 assert.match(storySource, /FormulaConstellationField/, "Landing should keep formulas in a dedicated constellation module.");
 assert.match(storySource, /WorkbenchGateOverlay/, "Landing should keep the final Workbench Gate in a dedicated module.");
+assert.match(storySource, /className="pre-curtain-stage"[\s\S]*FormulaConstellationField[\s\S]*ManuscriptCanvas[\s\S]*PaperWorkspaceGhost[\s\S]*StoryTetherCanvas/, "Landing should group all pre-curtain visuals into a hard-retirable stage.");
 assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "Landing should not keep the rejected Product Preview overlay.");
 assert.match(styleSource, /--gate-opacity/, "Landing should expose a final gate phase variable.");
 assert.match(directorSource, /--decode-chamber-opacity/, "ScrollDirector should expose Decode Chamber opacity.");
@@ -48,7 +49,7 @@ assert.match(directorSource, /if \(progress >= WORKSPACE_GHOST\[0\]\)[\s\S]*retu
 assert.match(directorSource, /if \(progress >= SCAN_REVEAL\[0\]\)[\s\S]*return "decode"/, "Decode phase should begin after manuscript centering.");
 assert.doesNotMatch(directorSource, /return "reveal"/, "The old reveal phase should be replaced by explicit workspace/collaboration phases.");
 assert.doesNotMatch(directorSource, /return "scan"/, "Scan should be a visual sub-progress, not a top-level fifth-stage phase.");
-assert.match(directorSource, /phaseOpacity\(progress, SCAN_REVEAL\[0\], 0\.18, SCAN_REVEAL\[1\]\)/, "Scan should begin shortly after the first centered manuscript snap.");
+assert.match(directorSource, /phaseOpacity\(progress, SCAN_REVEAL\[0\], 0\.105, SCAN_REVEAL\[1\]\)/, "Scan should begin shortly after the first centered manuscript snap.");
 assert.match(
   directorSource,
   /phaseOpacityHold\(progress,\s*DECODE_CHAMBER\[0\],[\s\S]*phaseOpacityHold\(progress,\s*WORKSPACE_GHOST\[0\],[\s\S]*phaseOpacityHold\(progress,\s*COLLAB_SIGNALS\[0\],/,
@@ -75,7 +76,7 @@ assert.match(directorSource, /--gate-aura-opacity/, "The final Workbench Gate sh
 assert.match(
   directorSource,
   /const gateProgress = progressBetween\(progress, WORKBENCH_GATE\[0\], WORKBENCH_GATE\[1\]\)/,
-  "Workbench Gate motion should start only after the black letter storm resolves.",
+  "Story-level Workbench Gate variables should start only after the black letter storm resolves.",
 );
 assert.match(
   directorSource,
@@ -98,6 +99,8 @@ assert.doesNotMatch(
   "Workbench Gate should not become visible during the reveal phase.",
 );
 assert.match(styleSource, /var\(--manuscript-final-opacity\)/, "Landing styles should consume the final manuscript fade variable.");
+assert.match(styleSource, /\.pre-curtain-stage[\s\S]*?opacity:\s*var\(--pre-stage-opacity\)/, "Pre-curtain visuals should be controlled by one stage-level opacity.");
+assert.match(styleSource, /\[data-pre-stage="retired"\]\s+\.pre-curtain-stage[\s\S]*?visibility:\s*hidden[\s\S]*?content-visibility:\s*hidden/, "Completed green curtain should remove pre-curtain visuals from visible compositing.");
 assert.doesNotMatch(styleSource, /product-preview-/, "Landing styles should not keep Product Preview terminal styles.");
 assert.doesNotMatch(
   storyShellSource,
@@ -152,7 +155,7 @@ assert.match(heroSource, /REVIEW INBOX PRIMED/, "The landing hero should preview
 assert.match(heroSource, /COLLABORATION LAYER READY/, "The landing hero should preview the collaboration layer.");
 assert.match(
   directorSource,
-  /const collabSignalOpacity = phaseOpacityHold\(progress, COLLAB_SIGNALS\[0\], 0\.435, 0\.495, COLLAB_SIGNALS\[1\]\)/,
+  /const collabSignalOpacity = phaseOpacityHold\(progress, COLLAB_SIGNALS\[0\], 0\.325, 0\.39, COLLAB_SIGNALS\[1\]\)/,
   "Collaboration signals should resolve before the manuscript exits into the curtain sequence.",
 );
 assert.match(

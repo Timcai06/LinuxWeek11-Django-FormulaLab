@@ -187,7 +187,7 @@ Redis 不保存业务数据，只作为消息队列。
 ```text
 postgres_data                 Docker 命名 volume，保存 PostgreSQL 数据
 ./media:/app/media            bind mount，保存上传图片和预处理图片
-./.model-cache:/app/.model-cache  bind mount，保存 PaddleOCR 模型缓存
+./var/model-cache:/app/var/model-cache  bind mount，保存 PaddleOCR 模型缓存
 ```
 
 模型缓存很重要，因为 PaddleOCR 需要下载模型权重。如果每次重建容器都重新下载，会明显影响开发体验和验收稳定性。
@@ -263,5 +263,5 @@ Landing 的当前首屏和滚动叙事由 React / GSAP / Three.js 生成静态�
 
 ```text
 media/
-.model-cache/
+var/model-cache/
 ```

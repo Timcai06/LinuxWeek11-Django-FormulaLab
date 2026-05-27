@@ -18,7 +18,7 @@ services:
     volumes:
       - .:/app
       - ./media:/app/media
-      - ./.model-cache:/app/.model-cache
+      - ./var/model-cache:/app/var/model-cache
     depends_on:
       db:
         condition: service_healthy
@@ -39,7 +39,7 @@ services:
     volumes:
       - .:/app
       - ./media:/app/media
-      - ./.model-cache:/app/.model-cache
+      - ./var/model-cache:/app/var/model-cache
     depends_on:
       db:
         condition: service_healthy
@@ -65,7 +65,7 @@ services:
       - "9000:9000"
     volumes:
       - .:/app
-      - ./.model-cache:/app/.model-cache
+      - ./var/model-cache:/app/var/model-cache
     depends_on:
       db:
         condition: service_healthy

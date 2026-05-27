@@ -126,8 +126,8 @@ export function WorkbenchGateOverlay() {
       const velocity = progress - previousProgress;
       previousProgress = progress;
 
-      const footerProgress = progressBetween(progress, WORKBENCH_GATE[0] - 0.006, 1);
-      const gateProgress = progressBetween(progress, WORKBENCH_GATE[0], WORKBENCH_GATE[1]);
+      const footerProgress = progressBetween(progress, WORKBENCH_GATE[0] - 0.004, 1);
+      const gateProgress = progressBetween(progress, WORKBENCH_GATE[0] + 0.0015, WORKBENCH_GATE[1]);
       const footerY = (1 - smootherStep(footerProgress)) * 100;
       const contentY = (1 - smootherStep(gateProgress)) * 30;
       const tickerProgress = progressBetween(progress, WORKBENCH_GATE[0], WORKBENCH_GATE[1]);
@@ -139,7 +139,7 @@ export function WorkbenchGateOverlay() {
       gateElement.style.setProperty("--gate-content-opacity", gateProgress.toFixed(4));
       gateElement.style.setProperty("--gate-corner-opacity", tickerProgress.toFixed(4));
 
-      if (gateProgress > 0.18 && !hasPlayedIntro) {
+      if (gateProgress > 0.24 && !hasPlayedIntro) {
         hasPlayedIntro = true;
         introTimeline?.restart();
         tickerReveal?.restart();

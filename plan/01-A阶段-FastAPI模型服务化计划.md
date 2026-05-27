@@ -586,7 +586,7 @@ model-api:
     DJANGO_SETTINGS_MODULE: config.settings.prod
     FORMULA_LAB_OCR_ENGINE: paddle
   volumes:
-    - model-cache:/app/.model-cache
+    - model-cache:/app/var/model-cache
   depends_on:
     - redis
 

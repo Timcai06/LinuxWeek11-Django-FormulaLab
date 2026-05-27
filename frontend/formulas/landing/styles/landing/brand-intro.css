@@ -63,6 +63,7 @@ body.landing-intro-scroll-lock {
 .brand-intro-surface,
 .brand-intro-slab,
 .brand-intro-echo,
+.brand-intro-vector-system,
 .brand-intro-frame,
 .brand-intro-beam {
   position: absolute;
@@ -135,6 +136,49 @@ body.landing-intro-scroll-lock {
   left: 46vw;
   bottom: 29vh;
   color: rgba(180, 202, 194, 0.34);
+}
+
+.brand-intro-vector-system {
+  inset: clamp(28px, 5vw, 72px);
+  z-index: 2;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  opacity: 0;
+}
+
+.brand-intro-vector-path {
+  fill: none;
+  stroke: rgba(218, 231, 225, 0.46);
+  stroke-width: 0.18;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}
+
+.brand-intro-vector-path-main {
+  stroke: rgba(92, 255, 176, 0.58);
+  stroke-width: 0.24;
+}
+
+.brand-intro-vector-path-fine {
+  stroke: rgba(255, 255, 255, 0.24);
+  stroke-dasharray: 1.6 2.2;
+}
+
+.brand-intro-vector-node {
+  fill: rgba(92, 255, 176, 0.88);
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 0.12;
+  vector-effect: non-scaling-stroke;
+}
+
+.brand-intro-vector-label {
+  fill: rgba(218, 231, 225, 0.62);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.55px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
 }
 
 .brand-intro-frame {

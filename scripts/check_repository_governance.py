@@ -9,7 +9,7 @@ from pathlib import Path
 REQUIRED_GITIGNORE_ENTRIES = [
     ".conda/",
     ".pip-cache/",
-    ".model-cache/",
+    "var/model-cache/",
     "node_modules/",
     "media/",
     "staticfiles/",

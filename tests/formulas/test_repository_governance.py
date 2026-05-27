@@ -178,7 +178,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
         self.assertEqual(missing_entries, [])
         self.assertEqual(
             REQUIRED_GITIGNORE_ENTRIES,
-            [".conda/", ".pip-cache/", ".model-cache/", "node_modules/", "media/", "staticfiles/", "*.sqlite3"],
+            [".conda/", ".pip-cache/", "var/model-cache/", "node_modules/", "media/", "staticfiles/", "*.sqlite3"],
         )
 
     def test_missing_runtime_paths_are_reported(self):
@@ -188,7 +188,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
 
             missing_entries = check_gitignore_contains_runtime_paths(gitignore_path)
 
-        self.assertEqual(missing_entries, [".pip-cache/", ".model-cache/", "staticfiles/", "*.sqlite3"])
+        self.assertEqual(missing_entries, [".pip-cache/", "var/model-cache/", "staticfiles/", "*.sqlite3"])
 
     def test_semantically_equivalent_gitignore_patterns_are_accepted(self):
         with TemporaryDirectory() as temp_dir:
@@ -198,7 +198,7 @@ class RepositoryGovernanceTests(SimpleTestCase):
                     [
                         "/.conda/",
                         "/.pip-cache/",
-                        "/.model-cache/",
+                        "/var/model-cache/",
                         "/node_modules/",
                         "/media/",
                         "/staticfiles/",

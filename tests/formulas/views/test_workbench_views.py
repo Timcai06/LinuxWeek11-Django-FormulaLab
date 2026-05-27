@@ -27,9 +27,10 @@ class FormulaWorkbenchViewTests(FormulaViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "formulas/landing.html")
         self.assertContains(response, "formulas/js/generated/layout-intelligence.js")
-        self.assertContains(response, "FORMULA LAB")
-        self.assertContains(response, "MISSION CONTROL FOR LATEX RECOGNITION")
+        self.assertContains(response, "FORMULA")
+        self.assertContains(response, "LAB")
         self.assertContains(response, "ENTER WORKBENCH")
+        self.assertContains(response, "VIEW MISSION LOG")
 
     def test_workbench_renders_upload_form_and_telemetry_context(self):
         project = PaperProject.objects.create(name="Active paper", writing_goal="Collect formulas")

@@ -16,7 +16,7 @@
 }
 
 .green-curtain-panel {
-  opacity: var(--green-stage-opacity);
+  opacity: var(--green-backdrop-opacity, var(--green-stage-opacity));
   background:
     radial-gradient(circle at 70% 18%, rgba(255, 255, 255, 0.6), transparent 32%),
     radial-gradient(circle at 22% 72%, rgba(255, 255, 255, 0.3), transparent 36%),
@@ -35,10 +35,10 @@
 }
 
 .black-curtain-panel {
-  opacity: var(--black-stage-opacity);
+  opacity: var(--black-backdrop-opacity, var(--black-stage-opacity));
   background:
-    radial-gradient(circle at 52% 36%, rgba(92, 255, 176, 0.1), transparent 34%),
-    linear-gradient(180deg, rgba(5, 10, 8, 0.98), rgba(0, 0, 0, 1));
+    radial-gradient(circle at 52% 36%, rgba(255, 255, 255, 0.045), transparent 34%),
+    linear-gradient(180deg, #050a08, #000000);
 }
 
 .curtain-copy-content {
@@ -137,7 +137,7 @@
   overflow: hidden;
   position: absolute;
   inset: 0;
-  z-index: 13;
+  z-index: 16;
   height: 100vh;
   display: flex;
   align-items: center;
@@ -147,7 +147,7 @@
 
 .ht-track {
   width: 100%;
-  transform: translate3d(var(--ticker-measured-x, var(--ticker-x)), var(--ticker-y), 0) scale(var(--ticker-scale));
+  transform: translate3d(var(--ticker-measured-x, var(--ticker-x)), var(--ticker-y), 0) scale(calc(var(--ticker-scale) + var(--ticker-center-settle, 0) * 0.018));
   transform-origin: left center;
   will-change: transform;
 }

@@ -23,7 +23,8 @@ const COPY_BLOCKS = [
 ];
 
 const COPY_PROGRESS_EPSILON = 0.00005;
-const DWELL_TRANSLATE_PX = 18;
+const DWELL_TRANSLATE_PX = 12;
+const COPY_SETTLE_SCALE = 0.018;
 
 export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -43,8 +44,7 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
 
     let lastRenderedProgress = -1;
 
-    // Cache GSAP eases for the high-performance render loop
-    const expoOut = gsap.parseEase("expo.out");
+    const settleEase = gsap.parseEase("power3.out");
 
     const context = gsap.context(() => {
       copyNodes.forEach((node, index) => {
@@ -58,15 +58,15 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
           onSplit(instance) {
             const animation = gsap.fromTo(
               instance.chars,
-              { autoAlpha: 0, y: 15, scale: 0.85, rotate: -6 },
+              { autoAlpha: 0, y: 10, scale: 0.94, rotate: -2 },
               {
                 autoAlpha: 1,
                 y: 0,
                 scale: 1,
                 rotate: 0,
-                duration: 1.1,
-                ease: "back.out(1.4)",
-                stagger: 0.03,
+                duration: 1.18,
+                ease: "power3.out",
+                stagger: { each: 0.022, from: "start" },
                 paused: true,
               },
             );
@@ -100,8 +100,10 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
         const opacity = phaseOpacityHold(progress, fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd);
         const entry = 1 - easedRange(progress, fadeInStart, fadeInEnd);
         const exit = easedRange(progress, fadeOutStart, fadeOutEnd);
+        const settle = settleEase(easedRange(progress, fadeInStart, fadeInEnd));
+        const scale = 1 + (1 - settle) * COPY_SETTLE_SCALE - exit * 0.012;
         container.style.opacity = opacity.toFixed(3);
-        container.style.transform = `translate3d(0, ${(entry * DWELL_TRANSLATE_PX - exit * DWELL_TRANSLATE_PX).toFixed(3)}px, 0)`;
+        container.style.transform = `translate3d(0, ${(entry * DWELL_TRANSLATE_PX - exit * DWELL_TRANSLATE_PX).toFixed(3)}px, 0) scale(${scale.toFixed(4)})`;
       });
 
       lastRenderedProgress = progress;
