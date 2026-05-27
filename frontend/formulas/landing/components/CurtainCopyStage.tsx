@@ -9,16 +9,16 @@ import { getLandingMotionRuntime } from "../performance/motionRuntime";
 
 const COPY_BLOCKS = [
   {
-    eyebrow: "01 CAPTURE",
-    body: "Turn rough formula captures into trusted LaTeX evidence.",
+    eyebrow: "01 EXTRACTION",
+    body: "Extract complex mathematics from any static paper. Watch the raw symbols instantly compile into perfect, computable LaTeX.",
   },
   {
-    eyebrow: "02 REVIEW",
-    body: "Review every candidate beside the paper, not in a disconnected OCR box.",
+    eyebrow: "02 VALIDATION",
+    body: "Compare the extracted intelligence directly against the original manuscript. The truth is never disconnected from its source.",
   },
   {
-    eyebrow: "03 COLLABORATE",
-    body: "Keep corrections, context, and collaboration moving inside one research workspace.",
+    eyebrow: "03 MULTIPLICATION",
+    body: "Inject your verified formulas into an infinite workspace. Collaborate, iterate, and accelerate your entire research workflow.",
   },
 ];
 

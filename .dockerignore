@@ -19,7 +19,6 @@ staticfiles/
 .conda/
 .pip-cache/
 venv/
-build/
 dist/
 *.egg-info/
 

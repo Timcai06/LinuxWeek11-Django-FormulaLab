@@ -5,7 +5,14 @@ function read(path) {
   return readFileSync(path, "utf8");
 }
 
-const timeline = read("frontend/formulas/landing/storyTimeline.ts");
+const timelineCore = read("frontend/formulas/landing/storyTimeline.ts");
+const introTimeline = read("frontend/formulas/landing/timelines/introTimeline.ts");
+const collabTimeline = read("frontend/formulas/landing/timelines/collabTimeline.ts");
+const curtainTimeline = read("frontend/formulas/landing/timelines/curtainTimeline.ts");
+const ctaTimeline = read("frontend/formulas/landing/timelines/ctaTimeline.ts");
+
+const timeline = timelineCore + "\n" + introTimeline + "\n" + collabTimeline + "\n" + curtainTimeline + "\n" + ctaTimeline;
+
 const choreography = read("frontend/formulas/landing/storyChoreography.ts");
 const director = read("frontend/formulas/landing/components/ScrollDirector.tsx");
 

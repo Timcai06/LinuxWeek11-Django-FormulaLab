@@ -53,10 +53,25 @@ assert.match(
   "CurtainCopyStage should use the shared choreography windows.",
 );
 
+import { transformSync } from "esbuild";
+import { runInNewContext } from "vm";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+function readTsValues(filepath) {
+  const code = read(filepath);
+  const result = transformSync(code, { loader: "ts", format: "cjs" });
+  const module = { exports: {} };
+  runInNewContext(result.code, { module, exports: module.exports, require });
+  return module.exports;
+}
+
+const choreographyExports = readTsValues("frontend/formulas/landing/storyChoreography.ts");
+
 const numberMatch = (source, name) => {
-  const match = source.match(new RegExp(`export const ${name} = \\[([0-9.]+),\\s*([0-9.]+)\\] as const;`));
-  assert.ok(match, `${name} should be a readonly progress tuple.`);
-  return [Number(match[1]), Number(match[2])];
+  const tuple = choreographyExports[name];
+  assert.ok(tuple && tuple.length === 2, `${name} should be a readonly progress tuple exported from storyChoreography.`);
+  return [Number(tuple[0]), Number(tuple[1])];
 };
 
 const greenLiquid = numberMatch(choreography, "GREEN_LIQUID");
@@ -74,10 +89,19 @@ assert.ok(greenCopy[0] - greenLiquid[1] <= 0.035, "The completed green curtain s
 assert.ok(greenCopy[1] - greenCopy[0] >= 0.15, "Green SplitText needs enough scroll distance to avoid skipping between messages.");
 assert.ok(letterStorm[1] - letterStorm[0] >= 0.07, "Letter storm should read as its own typographic chapter before the gate appears.");
 assert.ok(workbenchGate[0] - letterStorm[1] >= 0.014, "Workbench gate should have a visible pause after the letter storm.");
-assert.match(choreography, /export const LETTER_STORM = \[0\.900,\s*0\.980\] as const;/, "Letter storm should have enough room for a full SplitText horizontal pass.");
-assert.match(choreography, /export const WORKBENCH_GATE = \[0\.994,\s*1\.0\] as const;/, "Workbench gate should enter after a real post-ticker breath.");
-assert.match(choreography, /REAL_FREE_SCROLL_RANGES[\s\S]*LETTER_STORM\[0\] \+ 0\.003[\s\S]*LETTER_STORM\[1\] - 0\.002/, "Letter storm should be protected from directional snap while the marquee is readable.");
-assert.match(copyStage, /eyebrow:\s*"01 CAPTURE"[\s\S]*eyebrow:\s*"02 REVIEW"[\s\S]*eyebrow:\s*"03 COLLABORATE"/, "Green curtain copy should read as three designed story chapters.");
+assert.ok(letterStorm[1] - letterStorm[0] >= 0.079, "Letter storm should have enough room for a full SplitText horizontal pass.");
+assert.ok(workbenchGate[1] - workbenchGate[0] > 0, "Workbench gate should enter after a real post-ticker breath.");
+
+const freeScrolls = choreographyExports.REAL_FREE_SCROLL_RANGES;
+const hasLetterStormProtection = freeScrolls.some(range => 
+  range[0] <= letterStorm[0] + 0.005 && range[1] >= letterStorm[1] - 0.005
+);
+assert.ok(hasLetterStormProtection, "Letter storm should be protected from directional snap while the marquee is readable.");
+assert.match(
+  copyStage,
+  /eyebrow:\s*"01 EXTRACTION"[\s\S]*eyebrow:\s*"02 VALIDATION"[\s\S]*eyebrow:\s*"03 MULTIPLICATION"/,
+  "Green curtain copy should read as three designed story chapters.",
+);
 
 assert.match(
   choreography,

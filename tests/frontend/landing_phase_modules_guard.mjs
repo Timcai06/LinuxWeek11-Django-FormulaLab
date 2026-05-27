@@ -30,7 +30,12 @@ for (const [name, file] of Object.entries(files)) {
 const storyShellSource = readFileSync(files.story, "utf8");
 const storySource = readLandingStoryComposition();
 const directorComponentSource = readFileSync(files.director, "utf8");
-const timelineSource = readFileSync(files.timeline, "utf8");
+const timelineSourceCore = readFileSync(files.timeline, "utf8");
+const introTimeline = readFileSync("frontend/formulas/landing/timelines/introTimeline.ts", "utf8");
+const collabTimeline = readFileSync("frontend/formulas/landing/timelines/collabTimeline.ts", "utf8");
+const curtainTimeline = readFileSync("frontend/formulas/landing/timelines/curtainTimeline.ts", "utf8");
+const ctaTimeline = readFileSync("frontend/formulas/landing/timelines/ctaTimeline.ts", "utf8");
+const timelineSource = timelineSourceCore + "\n" + introTimeline + "\n" + collabTimeline + "\n" + curtainTimeline + "\n" + ctaTimeline;
 const directorSource = `${directorComponentSource}\n${timelineSource}`;
 const curtainCopySource = readFileSync(files.curtainCopy, "utf8");
 const splitTextSource = readFileSync(files.splitText, "utf8");
@@ -115,7 +120,11 @@ assert.doesNotMatch(gateSource, /Open Workspace/, "Workbench Gate should not kee
 assert.doesNotMatch(gateSource, /product-preview-/, "Workbench Gate should not render Product Preview markup.");
 assert.doesNotMatch(gateSource, /Project|Formula Review|Suggested edit|references\.bib|main\.tex/, "Workbench Gate should not render product preview content.");
 assert.match(curtainCopySource, /curtain-copy-eyebrow/, "Green curtain copy should include compact chapter labels.");
-assert.match(curtainCopySource, /01 CAPTURE[\s\S]*02 REVIEW[\s\S]*03 COLLABORATE/, "Green curtain copy should present capture, review, and collaboration as separate beats.");
+assert.match(
+  curtainCopySource,
+  /01 EXTRACTION[\s\S]*02 VALIDATION[\s\S]*03 MULTIPLICATION/,
+  "Green curtain copy should present extraction, validation, and multiplication as separate beats.",
+);
 assert.notEqual(gateIndex, -1, "Workbench Gate should define its final entry layer.");
 assert.notEqual(ctaIndex, -1, "Workbench Gate should define its CTA.");
 assert.ok(gateIndex < ctaIndex, "Workbench Gate CTA should live inside the final entry layer.");

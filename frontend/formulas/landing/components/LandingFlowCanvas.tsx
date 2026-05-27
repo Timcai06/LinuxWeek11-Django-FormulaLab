@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 
-import { REAL_GREEN_COPY_VISIBILITY_RANGES } from "../storyChoreography";
+import { GREEN_LIQUID } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
 
@@ -22,7 +22,8 @@ export function LandingFlowCanvas({ scrollProgressRef }: { scrollProgressRef: Sc
 
     const update = (progress = scrollProgressRef.current) => {
       
-      const flowStart = REAL_GREEN_COPY_VISIBILITY_RANGES[0]![0]; // 0.650
+      // Start drawing the line as soon as the green liquid wipe begins entering the viewport
+      const flowStart = GREEN_LIQUID[0]; // 0.455
       const flowEnd = 1.0; // Absolute end of the landing page
       
       // Calculate normalized progress between the start of the green screen and the absolute bottom
