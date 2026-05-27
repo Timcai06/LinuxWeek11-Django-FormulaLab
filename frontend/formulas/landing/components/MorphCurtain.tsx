@@ -67,10 +67,6 @@ function smootherStep(value: number) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
-function liquidSegmentProgress(progress: number, [start, end]: readonly [number, number]) {
-  return progressBetween(progress, start, end);
-}
-
 function liquidWaveProgress(segmentProgress: number) {
   return smootherStep(progressBetween(segmentProgress, WAVE_SWEEP_RANGE[0], WAVE_SWEEP_RANGE[1]));
 }
@@ -188,7 +184,13 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
     let lastBlackPathFrame = -1;
     let lastRenderedOpacity = "-1:-1";
 
-    const update = (progress = scrollProgressRef.current) => {
+    const update = ({
+      greenSegmentProgress,
+      blackSegmentProgress,
+    }: {
+      greenSegmentProgress: number;
+      blackSegmentProgress: number;
+    }) => {
       if (document.hidden) {
         return;
       }
@@ -205,8 +207,6 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
         return;
       }
 
-      const greenSegmentProgress = liquidSegmentProgress(progress, GREEN_LIQUID);
-      const blackSegmentProgress = liquidSegmentProgress(progress, BLACK_LIQUID);
       const greenWaveProgress = liquidWaveProgress(greenSegmentProgress);
       const blackWaveProgress = liquidWaveProgress(blackSegmentProgress);
       const greenSvgOpacity = greenSegmentProgress > 0 && greenSegmentProgress < 1 ? liquidOpacity(greenSegmentProgress) : 0;
@@ -244,16 +244,25 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
     };
 
     const runtime = getLandingMotionRuntime();
-    const frameGate = createScrollFrameGate({ epsilon: MORPH_PROGRESS_EPSILON });
+    const frameGate = createScrollFrameGate({
+      epsilon: MORPH_PROGRESS_EPSILON,
+      includeTransitionSettling: true,
+    });
     const unsubscribeFrame = runtime.subscribe((frame) => {
       if (frameGate.shouldUpdate(frame)) {
-        update(frame.progress);
+        update({
+          greenSegmentProgress: frame.transitions.greenLiquidProgress,
+          blackSegmentProgress: frame.transitions.blackLiquidProgress,
+        });
       }
     });
     const unsubscribeVisibility = runtime.subscribeVisibility(() => {
       frameGate.reset();
     });
-    update();
+    update({
+      greenSegmentProgress: progressBetween(scrollProgressRef.current, GREEN_LIQUID[0], GREEN_LIQUID[1]),
+      blackSegmentProgress: progressBetween(scrollProgressRef.current, BLACK_LIQUID[0], BLACK_LIQUID[1]),
+    });
 
     return () => {
       unsubscribeFrame();

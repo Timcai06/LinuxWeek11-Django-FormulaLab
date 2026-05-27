@@ -149,8 +149,8 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /liquidSegmentProgress\(progress, GREEN_LIQUID\)[\s\S]*liquidSegmentProgress\(progress, BLACK_LIQUID\)/,
-  "MorphCurtain should have a second liquid transition from green into black that remains visible.",
+  /frame\.transitions\.greenLiquidProgress[\s\S]*frame\.transitions\.blackLiquidProgress/,
+  "MorphCurtain should have runtime-orchestrated green and black liquid transitions that remain visible.",
 );
 assert.match(
   curtainSource,

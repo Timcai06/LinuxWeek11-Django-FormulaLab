@@ -2,6 +2,7 @@ import type { LandingPhase } from "../types";
 import { createFrameBudgetTracker } from "./frameBudget";
 import { createLandingStageRegistry, type LandingStageSnapshot } from "./stageRegistry";
 import { createMotionQualityController, type MotionQualityMode } from "./qualityController";
+import { createLandingTransitionOrchestrator, type LandingTransitionSnapshot } from "./transitionOrchestrator";
 
 export type MotionRuntimeFrame = {
   timeMs: number;
@@ -13,6 +14,7 @@ export type MotionRuntimeFrame = {
   progress: number;
   qualityMode: MotionQualityMode;
   shouldRunIdleWork: boolean;
+  transitions: LandingTransitionSnapshot;
 };
 
 export type MotionRuntimeSubscriber = (frame: MotionRuntimeFrame) => void;
@@ -31,6 +33,8 @@ export type MotionRuntimeDebugState = {
   progressDelta: number;
   qualityMode: MotionQualityMode;
   qualityActive: boolean;
+  transitionSettling: boolean;
+  activeLiquid: LandingTransitionSnapshot["activeLiquid"];
 };
 
 type LandingMotionRuntimeOptions = {
@@ -77,11 +81,13 @@ export function createLandingMotionRuntime({
   const frameBudget = createFrameBudgetTracker({ initialFrameMs: INITIAL_FRAME_MS });
   const stageRegistry = createLandingStageRegistry();
   const qualityController = createMotionQualityController();
+  const transitionOrchestrator = createLandingTransitionOrchestrator();
 
   const snapshot = (): MotionRuntimeDebugState => {
     const frameSnapshot = frameBudget.snapshot();
     const stageSnapshot = stageRegistry.snapshot();
     const qualitySnapshot = qualityController.snapshot();
+    const transitionSnapshot = transitionOrchestrator.snapshot();
     return {
       enabled: debug,
       frameCount: frameSnapshot.frameCount,
@@ -96,6 +102,8 @@ export function createLandingMotionRuntime({
       progressDelta: stageSnapshot.progressDelta,
       qualityMode: qualitySnapshot.mode,
       qualityActive: qualitySnapshot.active,
+      transitionSettling: transitionSnapshot.settling,
+      activeLiquid: transitionSnapshot.activeLiquid,
     };
   };
 
@@ -122,6 +130,10 @@ export function createLandingMotionRuntime({
       progressDelta: stageSnapshot.progressDelta,
       timeMs,
     });
+    const transitionSnapshot = transitionOrchestrator.update({
+      progress: stageSnapshot.progress,
+      deltaMs,
+    });
 
     const frame: MotionRuntimeFrame = {
       timeMs,
@@ -133,6 +145,7 @@ export function createLandingMotionRuntime({
       progress: stageSnapshot.progress,
       qualityMode: qualitySnapshot.mode,
       shouldRunIdleWork: qualitySnapshot.shouldRunIdleWork,
+      transitions: transitionSnapshot,
     };
     subscribers.forEach((subscriber) => subscriber(frame));
     publishDebugState();
@@ -209,6 +222,7 @@ export function createLandingMotionRuntime({
       subscribers.clear();
       visibilitySubscribers.clear();
       stageRegistry.reset();
+      transitionOrchestrator.reset();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (debug) {
         delete window.__formulaLabMotionDebug;

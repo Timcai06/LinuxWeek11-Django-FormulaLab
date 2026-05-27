@@ -186,7 +186,7 @@ assert.match(
 );
 assert.match(
   curtainSource,
-  /getLandingMotionRuntime[\s\S]*createScrollFrameGate[\s\S]*runtime\.subscribe\(\(frame\) => \{[\s\S]*frameGate\.shouldUpdate\(frame\)[\s\S]*update\(frame\.progress\)/,
+  /getLandingMotionRuntime[\s\S]*createScrollFrameGate[\s\S]*runtime\.subscribe\(\(frame\) => \{[\s\S]*frameGate\.shouldUpdate\(frame\)[\s\S]*frame\.transitions\.greenLiquidProgress[\s\S]*frame\.transitions\.blackLiquidProgress/,
   "MorphCurtain should subscribe to the shared refresh-rate adaptive motion runtime and skip unchanged scroll frames.",
 );
 assert.doesNotMatch(
