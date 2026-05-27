@@ -289,7 +289,7 @@ assert.match(
 );
 assert.match(
   styleSource,
-  /\.landing-story[\s\S]*?min-height:\s*2800vh/,
+  /\.landing-story[\s\S]*?min-height:\s*4800vh/,
   "The cinematic landing story should leave enough distance for the green SplitText and liquid curtain chapters to hold.",
 );
 assert.match(

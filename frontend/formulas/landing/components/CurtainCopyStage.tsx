@@ -40,7 +40,11 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
     gsap.registerPlugin(SplitText);
     const copyNodes = Array.from(root.querySelectorAll<HTMLElement>("[data-curtain-copy]"));
     containersRef.current = Array.from(root.querySelectorAll<HTMLElement>(".curtain-copy-container"));
+
     let lastRenderedProgress = -1;
+
+    // Cache GSAP eases for the high-performance render loop
+    const expoOut = gsap.parseEase("expo.out");
 
     const context = gsap.context(() => {
       copyNodes.forEach((node, index) => {
@@ -82,11 +86,14 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
         return;
       }
 
+      // 1. Text Animation Playback
       animationsRef.current.forEach((animation, index) => {
         const range = REAL_GREEN_COPY_BLOCK_RANGES[index] ?? REAL_GREEN_COPY_BLOCK_RANGES[REAL_GREEN_COPY_BLOCK_RANGES.length - 1]!;
         const [start, end] = range;
         animation.progress(easedRange(progress, start, end));
       });
+
+      // 2. Text Container Opacity & Subtle Float
       containersRef.current.forEach((container, index) => {
         const [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd] =
           REAL_GREEN_COPY_VISIBILITY_RANGES[index] ?? REAL_GREEN_COPY_VISIBILITY_RANGES[REAL_GREEN_COPY_VISIBILITY_RANGES.length - 1]!;
@@ -96,6 +103,7 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
         container.style.opacity = opacity.toFixed(3);
         container.style.transform = `translate3d(0, ${(entry * DWELL_TRANSLATE_PX - exit * DWELL_TRANSLATE_PX).toFixed(3)}px, 0)`;
       });
+
       lastRenderedProgress = progress;
     };
 
@@ -117,6 +125,7 @@ export function CurtainCopyStage({ scrollProgressRef }: { scrollProgressRef: Scr
     <section className="curtain-copy-stage" ref={rootRef} aria-hidden="true">
       <div className="green-curtain-panel" />
       <div className="black-curtain-panel" />
+
       <div className="curtain-copy-content">
         {COPY_BLOCKS.map((copy, index) => (
           <div className="curtain-copy-container" key={copy.eyebrow}>

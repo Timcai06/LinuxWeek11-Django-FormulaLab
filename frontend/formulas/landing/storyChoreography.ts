@@ -1,4 +1,4 @@
-export const STORY_HEIGHT_VH = 3800;
+export const STORY_HEIGHT_VH = 4800;
 
 export const PAPER_CENTER = [0.008, 0.032] as const;
 export const SCAN_REVEAL = [0.12, 0.23] as const;

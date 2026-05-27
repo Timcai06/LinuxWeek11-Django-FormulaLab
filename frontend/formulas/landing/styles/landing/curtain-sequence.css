@@ -105,6 +105,33 @@
   display: inline-block;
 }
 
+/* ── Global Flowing Data Line (Native Scrolling) ────────────── */
+.landing-flow-canvas {
+  position: absolute;
+  top: 65%;
+  height: 35%;
+  width: 100%;
+  pointer-events: none;
+  z-index: 20; /* Above all stages, global viewport glass */
+}
+
+.landing-flow-path {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.85); /* Fallback */
+  stroke-width: 24px; /* Even thicker mechanical curve */
+  stroke-linecap: square; /* Mechanical feel */
+  will-change: stroke-dashoffset, stroke;
+}
+
+.landing-flow-path-glow {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.85); /* Fallback */
+  stroke-width: 48px; /* Double width for the glow halo */
+  opacity: 0.3; /* Semi-transparent */
+  stroke-linecap: square;
+  will-change: stroke-dashoffset, stroke;
+}
+
 /* ── Horizontal Ticker (Epilogue) ────────────────────────── */
 .ht-section {
   overflow: hidden;
