@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { COLLAB_SIGNALS } from "../storyChoreography";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
+import { createScrollFrameGate } from "../performance/scrollFrameGate";
 
 const SIGNALS = [
   { className: "collaboration-signal-comment", label: "Comment", value: "Check symbol domain", range: [0.0, 0.35] },
@@ -24,16 +25,7 @@ export function CollaborationSignalField() {
       return undefined;
     }
 
-    let lastProgress = -1;
-
-    const update = () => {
-      const scrollProgressRef = (window as any).__scrollProgressRef;
-      const progress = scrollProgressRef ? scrollProgressRef.current : 0;
-      if (progress === lastProgress) {
-        return;
-      }
-      lastProgress = progress;
-
+    const update = (progress = 0) => {
       const [start, end] = COLLAB_SIGNALS;
       let p = 0;
       if (progress > start) {
@@ -60,7 +52,12 @@ export function CollaborationSignalField() {
 
     update();
     const runtime = getLandingMotionRuntime();
-    const unsubscribe = runtime.subscribe(update);
+    const frameGate = createScrollFrameGate();
+    const unsubscribe = runtime.subscribe((frame) => {
+      if (frameGate.shouldUpdate(frame)) {
+        update(frame.progress);
+      }
+    });
 
     return () => {
       unsubscribe();

@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { BLACK_LIQUID, GREEN_LIQUID } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
+import { createScrollFrameGate } from "../performance/scrollFrameGate";
 import { progressBetween } from "../three/motion";
 
 const NUM_POINTS = 10;
@@ -183,13 +184,11 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
   }, []);
 
   useEffect(() => {
-    let lastPaintTime = 0;
-    let lastRenderedProgress = -1;
     let lastGreenPathFrame = -1;
     let lastBlackPathFrame = -1;
     let lastRenderedOpacity = "-1:-1";
 
-    const update = (now: number) => {
+    const update = (progress = scrollProgressRef.current) => {
       if (document.hidden) {
         return;
       }
@@ -203,11 +202,6 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       const greenPaths = pathRefs.current.slice(0, NUM_PATHS).filter(Boolean) as SVGPathElement[];
       const blackPaths = pathRefs.current.slice(NUM_PATHS, NUM_PATHS * 2).filter(Boolean) as SVGPathElement[];
       if (greenPaths.length !== NUM_PATHS || blackPaths.length !== NUM_PATHS) {
-        return;
-      }
-
-      const progress = scrollProgressRef.current;
-      if (Math.abs(progress - lastRenderedProgress) < MORPH_PROGRESS_EPSILON) {
         return;
       }
 
@@ -227,8 +221,6 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
           svg.style.opacity = "0.000";
           lastRenderedOpacity = opacityKey;
         }
-        lastPaintTime = now;
-        lastRenderedProgress = progress;
         return;
       }
 
@@ -249,18 +241,19 @@ export function MorphCurtain({ scrollProgressRef }: { scrollProgressRef: ScrollP
       svg.style.setProperty("--black-curtain-svg-opacity", blackSvgOpacity.toFixed(3));
       svg.style.opacity = combinedOpacity.toFixed(3);
       lastRenderedOpacity = opacityKey;
-      lastPaintTime = now;
-      lastRenderedProgress = progress;
     };
 
     const runtime = getLandingMotionRuntime();
-    const unsubscribeFrame = runtime.subscribe(({ timeMs }) => {
-      update(timeMs);
+    const frameGate = createScrollFrameGate({ epsilon: MORPH_PROGRESS_EPSILON });
+    const unsubscribeFrame = runtime.subscribe((frame) => {
+      if (frameGate.shouldUpdate(frame)) {
+        update(frame.progress);
+      }
     });
     const unsubscribeVisibility = runtime.subscribeVisibility(() => {
-      lastPaintTime = 0;
+      frameGate.reset();
     });
-    update(performance.now());
+    update();
 
     return () => {
       unsubscribeFrame();

@@ -4,6 +4,7 @@ import { SplitText } from "gsap/SplitText";
 
 import { LETTER_STORM } from "../storyChoreography";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
+import { createScrollFrameGate } from "../performance/scrollFrameGate";
 import type { ScrollProgressRef } from "../types";
 import { progressBetween } from "../three/motion";
 
@@ -38,7 +39,9 @@ export function HorizontalTicker({ scrollProgressRef }: { scrollProgressRef: Scr
 
     const measureTickerDistance = () => {
       tickerDistancePx = textElement.scrollWidth + window.innerWidth * 1.15;
+      frameGate.reset();
     };
+    const frameGate = createScrollFrameGate({ epsilon: 0.00001 });
 
     const context = gsap.context(() => {
       split = SplitText.create(textElement, {
@@ -74,8 +77,11 @@ export function HorizontalTicker({ scrollProgressRef }: { scrollProgressRef: Scr
     }, textElement);
 
     const runtime = getLandingMotionRuntime();
-    const unsubscribe = runtime.subscribe(() => {
-      const stormProgress = progressBetween(scrollProgressRef.current, LETTER_STORM[0] + 0.002, LETTER_STORM[1] - 0.006);
+    const unsubscribe = runtime.subscribe((frame) => {
+      if (!frameGate.shouldUpdate(frame)) {
+        return;
+      }
+      const stormProgress = progressBetween(frame.progress, LETTER_STORM[0] + 0.002, LETTER_STORM[1] - 0.006);
       revealTimeline?.progress(stormProgress);
       trackElement.style.setProperty("--ticker-measured-x", `${(-stormProgress * tickerDistancePx).toFixed(3)}px`);
     });

@@ -244,7 +244,7 @@ assert.match(
 );
 assert.match(
   tickerSource,
-  /revealTimeline[\s\S]*progressBetween\(scrollProgressRef\.current,\s*LETTER_STORM\[0\] \+ 0\.002,\s*LETTER_STORM\[1\] - 0\.006\)/,
+  /revealTimeline[\s\S]*progressBetween\((?:scrollProgressRef\.current|frame\.progress),\s*LETTER_STORM\[0\] \+ 0\.002,\s*LETTER_STORM\[1\] - 0\.006\)/,
   "The final ticker SplitText reveal should scrub across almost the full letter-storm chapter.",
 );
 assert.match(

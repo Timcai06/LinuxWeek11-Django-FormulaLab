@@ -5,6 +5,7 @@ import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { REAL_GREEN_COPY_VISIBILITY_RANGES } from "../storyChoreography";
 import type { ScrollProgressRef } from "../types";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
+import { createScrollFrameGate } from "../performance/scrollFrameGate";
 
 export function LandingFlowCanvas({ scrollProgressRef }: { scrollProgressRef: ScrollProgressRef }) {
   const pathRef = useRef<SVGPathElement>(null);
@@ -20,8 +21,7 @@ export function LandingFlowCanvas({ scrollProgressRef }: { scrollProgressRef: Sc
     // Initialize
     gsap.set([pathRef.current, glowPathRef.current], { drawSVG: "0% 0%" });
 
-    const update = () => {
-      const progress = scrollProgressRef.current;
+    const update = (progress = scrollProgressRef.current) => {
       
       const flowStart = REAL_GREEN_COPY_VISIBILITY_RANGES[0]![0]; // 0.650
       const flowEnd = 1.0; // Absolute end of the landing page
@@ -57,7 +57,12 @@ export function LandingFlowCanvas({ scrollProgressRef }: { scrollProgressRef: Sc
 
     update();
     const runtime = getLandingMotionRuntime();
-    const unsubscribe = runtime.subscribe(update);
+    const frameGate = createScrollFrameGate();
+    const unsubscribe = runtime.subscribe((frame) => {
+      if (frameGate.shouldUpdate(frame)) {
+        update(frame.progress);
+      }
+    });
 
     return () => {
       unsubscribe();

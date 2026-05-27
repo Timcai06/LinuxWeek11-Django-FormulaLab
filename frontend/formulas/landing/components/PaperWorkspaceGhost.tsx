@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { WORKSPACE_GHOST } from "../storyChoreography";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
+import { createScrollFrameGate } from "../performance/scrollFrameGate";
 
 const REVIEW_ITEMS = ["Gaussian integral", "Matrix inverse", "Boundary condition"];
 const EDITOR_TEXT = String.raw`\begin{equation}
@@ -19,16 +20,7 @@ export function PaperWorkspaceGhost() {
       return undefined;
     }
 
-    let lastProgress = -1;
-
-    const update = () => {
-      const scrollProgressRef = (window as any).__scrollProgressRef;
-      const progress = scrollProgressRef ? scrollProgressRef.current : 0;
-      if (progress === lastProgress) {
-        return;
-      }
-      lastProgress = progress;
-
+    const update = (progress = 0) => {
       const [start, end] = WORKSPACE_GHOST;
       let p = 0;
       if (progress > start) {
@@ -54,7 +46,12 @@ export function PaperWorkspaceGhost() {
 
     update();
     const runtime = getLandingMotionRuntime();
-    const unsubscribe = runtime.subscribe(update);
+    const frameGate = createScrollFrameGate();
+    const unsubscribe = runtime.subscribe((frame) => {
+      if (frameGate.shouldUpdate(frame)) {
+        update(frame.progress);
+      }
+    });
 
     return () => {
       unsubscribe();
