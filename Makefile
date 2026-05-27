@@ -4,7 +4,7 @@ PORT ?= 8000
 DOCKER_BUILDKIT ?= 1
 OCR_ENGINE ?= paddle
 
-.PHONY: up down logs web-logs worker-logs model-api-logs migrate shell admin test verify warmup e2e dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis dev-model-api docker-build local local-http local-pix2tex install-pix2tex paddle-web paddle-worker paddle-redis editor-build editor-check frontend-build frontend-check governance-check
+.PHONY: up down logs web-logs worker-logs model-api-logs migrate shell admin test verify warmup e2e e2e-install e2e-smoke e2e-real-model e2e-local dev dev-migrate dev-check dev-test dev-shell dev-worker dev-redis dev-model-api docker-build local local-http local-pix2tex install-pix2tex paddle-web paddle-worker paddle-redis editor-build editor-check frontend-build frontend-check governance-check
 
 up:
 	docker compose up --build
@@ -111,3 +111,15 @@ governance-check:
 
 e2e:
 	npm run e2e
+
+e2e-install:
+	npx playwright install chromium
+
+e2e-smoke:
+	npx playwright test e2e/smoke.spec.ts
+
+e2e-real-model:
+	npx playwright test e2e/formula_lab.spec.ts
+
+e2e-local:
+	E2E_SPEC=e2e/formula_lab.spec.ts ./scripts/run_e2e_local.sh
