@@ -54,12 +54,12 @@ dev-model-api:
 local:
 	@echo "Starting Redis, Django, and Celery with FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE)"
 	@echo "Open http://$(HOST):$(PORT)/ after Django is ready. Press Ctrl-C to stop."
-	FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) $(MAKE) -j3 dev-redis dev-worker dev
+	FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) HOST=$(HOST) PORT=$(PORT) PYTHON=$(PYTHON) ./scripts/run_local.sh
 
 local-http:
 	@echo "Starting Redis, Django, Celery, and FastAPI model API with FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE)"
 	@echo "Open http://$(HOST):$(PORT)/ after Django is ready. Model API runs at http://$(HOST):9000/."
-	FORMULA_LAB_RECOGNITION_BACKEND=http FORMULA_LAB_MODEL_API_URL=http://$(HOST):9000 FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) $(MAKE) -j4 dev-redis dev-model-api dev-worker dev
+	FORMULA_LAB_RECOGNITION_BACKEND=http FORMULA_LAB_MODEL_API_URL=http://$(HOST):9000 START_MODEL_API=1 FORMULA_LAB_OCR_ENGINE=$(OCR_ENGINE) HOST=$(HOST) PORT=$(PORT) PYTHON=$(PYTHON) ./scripts/run_local.sh
 
 local-pix2tex:
 	$(MAKE) OCR_ENGINE=pix2tex local
