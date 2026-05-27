@@ -1,9 +1,18 @@
+import type { LandingPhase } from "../types";
+import { createFrameBudgetTracker } from "./frameBudget";
+import { createLandingStageRegistry, type LandingStageSnapshot } from "./stageRegistry";
+import { createMotionQualityController, type MotionQualityMode } from "./qualityController";
+
 export type MotionRuntimeFrame = {
   timeMs: number;
   deltaMs: number;
   frameMs: number;
   estimatedHz: number;
   visible: boolean;
+  phase: LandingPhase;
+  progress: number;
+  qualityMode: MotionQualityMode;
+  shouldRunIdleWork: boolean;
 };
 
 export type MotionRuntimeSubscriber = (frame: MotionRuntimeFrame) => void;
@@ -17,6 +26,11 @@ export type MotionRuntimeDebugState = {
   estimatedHz: number;
   subscribers: number;
   visible: boolean;
+  phase: LandingPhase;
+  progress: number;
+  progressDelta: number;
+  qualityMode: MotionQualityMode;
+  qualityActive: boolean;
 };
 
 type LandingMotionRuntimeOptions = {
@@ -27,6 +41,8 @@ type LandingMotionRuntimeOptions = {
 export type LandingMotionRuntime = {
   subscribe: (subscriber: MotionRuntimeSubscriber) => () => void;
   subscribeVisibility: (subscriber: (visible: boolean) => void) => () => void;
+  setStage: (phase: LandingPhase, progress: number) => LandingStageSnapshot;
+  getStage: () => LandingStageSnapshot;
   start: () => void;
   stop: () => void;
   destroy: () => void;
@@ -39,16 +55,7 @@ declare global {
   }
 }
 
-const LONG_FRAME_MS = 34;
 const INITIAL_FRAME_MS = 16.67;
-const FRAME_AVERAGE_WEIGHT = 0.08;
-
-function estimatedHzFromFrameMs(frameMs: number) {
-  if (frameMs <= 0) {
-    return 0;
-  }
-  return Math.round(1000 / frameMs);
-}
 
 export function isMotionDebugEnabled(search = window.location.search) {
   return new URLSearchParams(search).get("motion_debug") === "1";
@@ -67,21 +74,30 @@ export function createLandingMotionRuntime({
   let running = false;
   let destroyed = false;
   let lastTimeMs = 0;
-  let averageFrameMs = INITIAL_FRAME_MS;
-  let frameCount = 0;
-  let longFrameCount = 0;
-  let lastFrameMs = INITIAL_FRAME_MS;
+  const frameBudget = createFrameBudgetTracker({ initialFrameMs: INITIAL_FRAME_MS });
+  const stageRegistry = createLandingStageRegistry();
+  const qualityController = createMotionQualityController();
 
-  const snapshot = (): MotionRuntimeDebugState => ({
-    enabled: debug,
-    frameCount,
-    longFrameCount,
-    lastFrameMs,
-    averageFrameMs,
-    estimatedHz: estimatedHzFromFrameMs(averageFrameMs),
-    subscribers: subscribers.size,
-    visible: !document.hidden,
-  });
+  const snapshot = (): MotionRuntimeDebugState => {
+    const frameSnapshot = frameBudget.snapshot();
+    const stageSnapshot = stageRegistry.snapshot();
+    const qualitySnapshot = qualityController.snapshot();
+    return {
+      enabled: debug,
+      frameCount: frameSnapshot.frameCount,
+      longFrameCount: frameSnapshot.longFrameCount,
+      lastFrameMs: frameSnapshot.lastFrameMs,
+      averageFrameMs: frameSnapshot.averageFrameMs,
+      estimatedHz: frameSnapshot.estimatedHz,
+      subscribers: subscribers.size,
+      visible: !document.hidden,
+      phase: stageSnapshot.phase,
+      progress: stageSnapshot.progress,
+      progressDelta: stageSnapshot.progressDelta,
+      qualityMode: qualitySnapshot.mode,
+      qualityActive: qualitySnapshot.active,
+    };
+  };
 
   const publishDebugState = () => {
     if (debug) {
@@ -95,21 +111,28 @@ export function createLandingMotionRuntime({
       return;
     }
 
-    const deltaMs = lastTimeMs > 0 ? timeMs - lastTimeMs : averageFrameMs;
+    const deltaMs = lastTimeMs > 0 ? timeMs - lastTimeMs : INITIAL_FRAME_MS;
     lastTimeMs = timeMs;
-    lastFrameMs = deltaMs;
-    averageFrameMs += (deltaMs - averageFrameMs) * FRAME_AVERAGE_WEIGHT;
-    frameCount += 1;
-    if (deltaMs > LONG_FRAME_MS) {
-      longFrameCount += 1;
-    }
+    const frameSnapshot = frameBudget.record(deltaMs);
+    const stageSnapshot = stageRegistry.snapshot();
+    const qualitySnapshot = qualityController.update({
+      visible: true,
+      phase: stageSnapshot.phase,
+      progress: stageSnapshot.progress,
+      progressDelta: stageSnapshot.progressDelta,
+      timeMs,
+    });
 
     const frame: MotionRuntimeFrame = {
       timeMs,
       deltaMs,
-      frameMs: averageFrameMs,
-      estimatedHz: estimatedHzFromFrameMs(averageFrameMs),
+      frameMs: frameSnapshot.averageFrameMs,
+      estimatedHz: frameSnapshot.estimatedHz,
       visible: true,
+      phase: stageSnapshot.phase,
+      progress: stageSnapshot.progress,
+      qualityMode: qualitySnapshot.mode,
+      shouldRunIdleWork: qualitySnapshot.shouldRunIdleWork,
     };
     subscribers.forEach((subscriber) => subscriber(frame));
     publishDebugState();
@@ -129,6 +152,7 @@ export function createLandingMotionRuntime({
   const stop = () => {
     running = false;
     lastTimeMs = 0;
+    frameBudget.reset();
     if (frameId) {
       cancelAnimationFrame(frameId);
       frameId = 0;
@@ -138,6 +162,14 @@ export function createLandingMotionRuntime({
 
   const handleVisibilityChange = () => {
     if (document.hidden) {
+      const stageSnapshot = stageRegistry.snapshot();
+      qualityController.update({
+        visible: false,
+        phase: stageSnapshot.phase,
+        progress: stageSnapshot.progress,
+        progressDelta: 0,
+        timeMs: performance.now(),
+      });
       stop();
       visibilitySubscribers.forEach((subscriber) => subscriber(false));
       return;
@@ -163,6 +195,12 @@ export function createLandingMotionRuntime({
         visibilitySubscribers.delete(subscriber);
       };
     },
+    setStage(phase, progress) {
+      return stageRegistry.setStage(phase, progress);
+    },
+    getStage() {
+      return stageRegistry.snapshot();
+    },
     start,
     stop,
     destroy() {
@@ -170,6 +208,7 @@ export function createLandingMotionRuntime({
       stop();
       subscribers.clear();
       visibilitySubscribers.clear();
+      stageRegistry.reset();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (debug) {
         delete window.__formulaLabMotionDebug;

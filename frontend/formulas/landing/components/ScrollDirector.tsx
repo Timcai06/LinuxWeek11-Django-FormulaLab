@@ -46,6 +46,7 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
     const runtime = getLandingMotionRuntime({
       debug: isMotionDebugEnabled(),
     });
+    runtime.setStage("intro", 0);
     const unsubscribeVisibility = runtime.subscribeVisibility((visible) => {
       if (!visible) {
         lenis.stop();
@@ -83,8 +84,10 @@ export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorPr
         },
         onUpdate(self) {
           const progress = self.progress;
+          const phase = phaseForProgress(progress);
           scrollProgressRef.current = progress;
-          setStoryVars(storyElement, phaseForProgress(progress), progress);
+          runtime.setStage(phase, progress);
+          setStoryVars(storyElement, phase, progress);
         },
       });
 
