@@ -14,6 +14,7 @@ const curtainSource = readFileSync("frontend/formulas/landing/components/MorphCu
 const copyStageSource = readFileSync("frontend/formulas/landing/components/CurtainCopyStage.tsx", "utf8");
 const canvasSource = readFileSync("frontend/formulas/landing/components/ManuscriptCanvas.tsx", "utf8");
 const vortexSource = readFileSync("frontend/formulas/landing/components/FormulaVortex.tsx", "utf8");
+const gateSource = readFileSync("frontend/formulas/landing/components/WorkbenchGateOverlay.tsx", "utf8");
 const styleSource = readLandingStyles();
 
 assert.doesNotMatch(
@@ -113,7 +114,7 @@ assert.doesNotMatch(
 );
 assert.match(
   directorSource,
-  /phaseOpacityHold\(progress,\s*LETTER_STORM\[0\],\s*0\.932,\s*0\.958,\s*LETTER_STORM\[1\]\)/,
+  /phaseOpacityHold\(progress,\s*LETTER_STORM\[0\],\s*0\.926,\s*0\.966,\s*LETTER_STORM\[1\]\)/,
   "The letter storm should fade in slowly, hold as its own beat, and fade before the final CTA.",
 );
 assert.match(
@@ -128,7 +129,7 @@ assert.match(
 );
 assert.match(
   directorSource,
-  /const realTickerSweep = progressBetween\(progress,\s*LETTER_STORM\[0\] \+ 0\.006,\s*LETTER_STORM\[1\] - 0\.008\)/,
+  /const realTickerSweep = progressBetween\(progress,\s*LETTER_STORM\[0\] \+ 0\.002,\s*LETTER_STORM\[1\] - 0\.006\)/,
   "The visible final ticker should use almost the full letter-storm chapter instead of bursting through a short subrange.",
 );
 assert.doesNotMatch(
@@ -231,15 +232,50 @@ assert.match(
   /PAPER WORKSPACE[\s\S]*REVIEW INBOX[\s\S]*COLLABORATION MEMORY/,
   "The final ticker should reinforce the product story instead of generic sci-fi copy.",
 );
-assert.doesNotMatch(
+assert.match(
   styleSource,
   /\.ht-text[\s\S]*?padding-left:\s*100vw/,
-  "Letter chapter text should not begin a full viewport offscreen after the liquid transition.",
+  "Letter chapter text should begin offscreen like the GSAP horizontal SplitText reference.",
+);
+assert.match(
+  tickerSource,
+  /SplitText\.create[\s\S]*type:\s*"chars, words"/,
+  "The final ticker should use GSAP SplitText chars and words rather than hand-written spans.",
+);
+assert.match(
+  tickerSource,
+  /revealTimeline[\s\S]*progressBetween\(scrollProgressRef\.current,\s*LETTER_STORM\[0\] \+ 0\.002,\s*LETTER_STORM\[1\] - 0\.006\)/,
+  "The final ticker SplitText reveal should scrub across almost the full letter-storm chapter.",
+);
+assert.match(
+  tickerSource,
+  /textElement\.scrollWidth \+ window\.innerWidth \* 1\.15[\s\S]*--ticker-measured-x/,
+  "The final ticker should measure its rendered width so the whole phrase can pass before the gate.",
 );
 assert.match(
   styleSource,
   /\.workbench-gate[\s\S]*?z-index:\s*18/,
   "The final Workbench Gate should sit above the liquid transition layer.",
+);
+assert.match(
+  gateSource,
+  /const FOOTER_PATH_CACHE_STEPS = 120;/,
+  "The final Workbench Gate should cache enough footer frames for smooth liquid motion without per-frame path reconstruction.",
+);
+assert.match(
+  gateSource,
+  /tickerTimeline = gsap[\s\S]*repeat:\s*-1[\s\S]*xPercent:\s*-50/,
+  "The lower-right gate ticker should loop continuously after its SplitText reveal.",
+);
+assert.match(
+  gateSource,
+  /tickerReveal = gsap\.from\(splitTicker\.chars[\s\S]*yPercent:\s*"random\(-180, 180\)"/,
+  "The lower-right ticker should use character-level SplitText motion inspired by the horizontal text reference.",
+);
+assert.match(
+  gateSource,
+  /footerPathForProgress\(footerProgress, velocity\)/,
+  "The final liquid footer should react to scroll velocity with a bouncy path state.",
 );
 assert.match(
   directorSource,
@@ -293,8 +329,8 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /function LandingFramePump\(\)[\s\S]*document\.hidden[\s\S]*invalidate\(\)/,
-  "Landing WebGL should stop invalidating frames while the document is hidden.",
+  /function LandingFramePump\(\{ scrollProgressRef = IDLE_SCROLL_PROGRESS \}: ManuscriptCanvasProps\)[\s\S]*getLandingMotionRuntime[\s\S]*timeMs - lastInvalidateTimeMs >= 33[\s\S]*progressDelta > 0\.00025[\s\S]*invalidate\(\)/,
+  "Landing WebGL should invalidate through the shared runtime and throttle idle paper frames.",
 );
 assert.match(
   vortexSource,
@@ -303,8 +339,8 @@ assert.match(
 );
 assert.match(
   vortexSource,
-  /document\.hidden[\s\S]*tl\.pause\(\)[\s\S]*tl\.resume\(\)/,
-  "Formula vortex timeline should pause while the page is hidden.",
+  /document\.hidden[\s\S]*tl\.pause\(\)[\s\S]*targetOpacity > 0\.01[\s\S]*timelineRef\.current\.resume\(\)[\s\S]*timelineRef\.current\.pause\(\)/,
+  "Formula vortex timeline should pause while hidden or outside its visible chapter.",
 );
 assert.match(
   copyStageSource,

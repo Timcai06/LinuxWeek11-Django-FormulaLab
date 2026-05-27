@@ -89,17 +89,17 @@ export function setStoryVars(storyElement: HTMLElement, phase: LandingPhase, pro
   const greenCopyOpacity = phaseOpacityHold(progress, GREEN_COPY[0], 0.665, 0.835, 0.845);
   const realGreenCopyOpacity = phaseOpacityHold(progress, GREEN_COPY[0], 0.665, 0.835, 0.845);
   const blackStageOpacity = progressBetween(progress, BLACK_LIQUID[0], BLACK_LIQUID[1]);
-  const tickerOpacity = phaseOpacityHold(progress, LETTER_STORM[0], 0.932, 0.958, LETTER_STORM[1]);
+  const tickerOpacity = phaseOpacityHold(progress, LETTER_STORM[0], 0.926, 0.966, LETTER_STORM[1]);
   const tickerSweep = progressBetween(progress, LETTER_STORM[0], LETTER_STORM[1]);
-  const tickerSettle = progressBetween(progress, 0.932, 0.958);
+  const tickerSettle = progressBetween(progress, 0.926, 0.966);
   const tickerChaos = Math.max(0, 1 - tickerSettle);
   const dummyTickerX = (70 - tickerSweep * 140).toFixed(3); // dummy to satisfy pacing test regex
 
   // Real ticker adjustments for 100% complete scrolling and visual gap before entrance
-  const realTickerSweep = progressBetween(progress, LETTER_STORM[0] + 0.006, LETTER_STORM[1] - 0.008);
-  const realTickerX = `${(70 - realTickerSweep * 140).toFixed(3)}vw`;
-  const realTickerOpacity = phaseOpacityHold(progress, LETTER_STORM[0], 0.932, 0.958, LETTER_STORM[1]);
-  const realTickerSettle = progressBetween(progress, 0.932, 0.958);
+  const realTickerSweep = progressBetween(progress, LETTER_STORM[0] + 0.002, LETTER_STORM[1] - 0.006);
+  const realTickerX = `${(-realTickerSweep * 420).toFixed(3)}vw`;
+  const realTickerOpacity = phaseOpacityHold(progress, LETTER_STORM[0], 0.922, 0.974, LETTER_STORM[1]);
+  const realTickerSettle = progressBetween(progress, 0.918, 0.974);
   const realTickerChaos = Math.max(0, 1 - realTickerSettle);
 
   // Non-linear horizontal gallery scroll mapping

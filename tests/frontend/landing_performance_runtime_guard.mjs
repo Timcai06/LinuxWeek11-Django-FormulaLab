@@ -67,6 +67,16 @@ assert.match(
   /uniforms\.uWaveAmount\.value[\s\S]*uniforms\.uWaveProgress\.value/,
   "ManuscriptCanvas should only update shader uniforms for the paper wave.",
 );
+assert.match(
+  manuscriptSource,
+  /getLandingMotionRuntime[\s\S]*timeMs - lastInvalidateTimeMs >= 33[\s\S]*progressDelta > 0\.00025/,
+  "ManuscriptCanvas should use the shared runtime and throttle idle WebGL invalidation.",
+);
+assert.doesNotMatch(
+  manuscriptSource,
+  /requestAnimationFrame\(tick\)|cancelAnimationFrame\(raf\)/,
+  "ManuscriptCanvas should not own a private always-on frame pump.",
+);
 assert.doesNotMatch(
   manuscriptSource,
   /FormulaStarfield|STARFIELD_|createFormulaStarfieldMaterial|aBasePosition|aTargetPosition|aSeed/,
@@ -155,13 +165,18 @@ for (const [name, source] of [
 }
 assert.match(
   gateSource,
-  /const GATE_PATH_CACHE_STEPS = 96;[\s\S]*function createGatePathCache[\s\S]*getInterpolatedPath/,
-  "WorkbenchGateOverlay should cache morph path frames instead of interpolating SVG path strings during runtime.",
+  /const FOOTER_PATH_CACHE_STEPS = 120;[\s\S]*function createFooterPathCache[\s\S]*footerPathForProgress/,
+  "WorkbenchGateOverlay should cache footer path frames instead of interpolating SVG path strings during runtime.",
 );
 assert.match(
   gateSource,
-  /const gatePathCache = createGatePathCache\(\);[\s\S]*pathRef\.current\.setAttribute\("d", gatePathCache\[frameIndex\]!\)/,
-  "WorkbenchGateOverlay should apply cached gate path frames from scroll progress.",
+  /const footerPathCache = createFooterPathCache\(\);[\s\S]*return footerPathCache\[frameIndex\]!/,
+  "WorkbenchGateOverlay should apply cached footer path frames from scroll progress.",
+);
+assert.doesNotMatch(
+  gateSource,
+  /function footerPathForProgress[\s\S]*return createFooterPath\(waveY\)/,
+  "WorkbenchGateOverlay should not build SVG path strings inside its runtime update path.",
 );
 
 assert.match(
@@ -193,6 +208,21 @@ assert.doesNotMatch(
   vortexSource,
   /const draw = \(\) => \{[\s\S]*ctx\.fillText/,
   "FormulaVortex draw loop should not call Canvas text rendering on every animation frame.",
+);
+assert.match(
+  vortexSource,
+  /gsap\.timeline\(\{ onUpdate: draw, paused: true \}\)[\s\S]*targetOpacity > 0\.01[\s\S]*timelineRef\.current\.resume\(\)[\s\S]*timelineRef\.current\.pause\(\)/,
+  "FormulaVortex should pause its repeating GSAP timeline when the vortex is not visible.",
+);
+assert.doesNotMatch(
+  heroSource,
+  /HeroCornerTicker/,
+  "The first-screen lower-right readout should remain static after reverting the looping ticker.",
+);
+assert.match(
+  gateSource,
+  /timeline\(\{ paused: true, repeat: -1 \}\)[\s\S]*tickerTimeline\?\.play\(\)[\s\S]*tickerTimeline\?\.pause\(0\)/,
+  "WorkbenchGateOverlay should only run its infinite gate ticker while the final gate is active.",
 );
 assert.match(
   curtainSource,

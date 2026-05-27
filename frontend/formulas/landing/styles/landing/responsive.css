@@ -1,5 +1,5 @@
 @media (max-width: 900px) {
-  .workbench-gate {
+  .workbench-gate-shell {
     width: min(90vw, 680px);
   }
 }
@@ -22,13 +22,13 @@
     display: none;
   }
 
-  .workbench-gate {
-    width: min(92vw, 560px);
+  .workbench-gate-shell {
     bottom: 40px;
+    width: min(92vw, 560px);
   }
 
-  .workbench-gate-shell {
-    padding: 22px;
+  .gate-corner-ticker {
+    width: min(74vw, 520px);
   }
 
   .decode-chamber,
@@ -94,4 +94,3 @@
     visibility: visible;
   }
 }
-

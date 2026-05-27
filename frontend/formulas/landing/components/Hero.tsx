@@ -60,10 +60,12 @@ export function Hero() {
         <div className="landing-copy">
           <SplitTextTitleSequence animateOnMount={false} />
           <div className="hud-corners" aria-hidden="true" />
-          <h1 className="glitch-title" data-split-title="headline">
-            <span className="title-line title-line-formula">FORMULA</span>
-            <span className="title-line title-line-lab">LAB</span>
-          </h1>
+          <div className="hero-title-stack">
+            <h1 className="glitch-title" data-split-title="headline">
+              <span className="title-line title-line-formula">FORMULA</span>
+              <span className="title-line title-line-lab">LAB</span>
+            </h1>
+          </div>
           <div className="mission-actions">
             <a className="button button-primary" href="/workbench/">
               ENTER WORKBENCH

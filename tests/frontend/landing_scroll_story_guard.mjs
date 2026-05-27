@@ -25,7 +25,7 @@ assert.match(storySource, /ScrollDirector/, "Landing should use a scroll directo
 assert.match(storySource, /FormulaConstellationField/, "Landing should keep formulas in a dedicated constellation module.");
 assert.match(storySource, /WorkbenchGateOverlay/, "Landing should keep the final Workbench Gate in a dedicated module.");
 assert.doesNotMatch(storySource, /WorkspaceRevealOverlay/, "Landing should not keep the rejected Product Preview overlay.");
-assert.match(styleSource, /--cta-opacity/, "Landing should expose a final CTA phase variable.");
+assert.match(styleSource, /--gate-opacity/, "Landing should expose a final gate phase variable.");
 assert.match(directorSource, /--decode-chamber-opacity/, "ScrollDirector should expose Decode Chamber opacity.");
 assert.match(directorSource, /--decode-chamber-y/, "ScrollDirector should expose Decode Chamber vertical motion.");
 assert.match(directorSource, /--workspace-ghost-opacity/, "ScrollDirector should expose Paper Workspace Ghost opacity.");
@@ -88,8 +88,8 @@ assert.doesNotMatch(directorSource, /--paper-preview-opacity/, "Landing should n
 assert.doesNotMatch(directorSource, /--review-preview-opacity/, "Landing should not keep Product Preview review reveal variables.");
 assert.doesNotMatch(directorSource, /--collab-preview-opacity/, "Landing should not keep Product Preview collaboration reveal variables.");
 assert.match(styleSource, /\.workbench-gate/, "The final Workbench Gate should have a dedicated visual layer.");
-assert.match(styleSource, /var\(--gate-opacity\)/, "Landing styles should consume the final gate opacity variable.");
-assert.match(styleSource, /var\(--gate-aura-opacity\)/, "Landing styles should consume the final gate aura variable.");
+assert.match(styleSource, /var\(--gate-opacity(?:,\s*0)?\)/, "Landing styles should consume the final gate opacity variable.");
+assert.match(styleSource, /var\(--gate-aura-opacity(?:,\s*0)?\)/, "Landing styles should consume the final gate aura variable.");
 assert.match(styleSource, /visibility:\s*hidden/, "Workbench Gate should stay hidden before the CTA phase.");
 assert.match(styleSource, /\[data-story-phase="cta"\]\s+\.workbench-gate/, "Workbench Gate should become visible only in the CTA phase.");
 assert.doesNotMatch(
@@ -147,6 +147,7 @@ assert.doesNotMatch(
 assert.match(heroSource, /title-line title-line-formula[\s\S]*FORMULA/, "The landing hero should render FORMULA as the first stacked title line.");
 assert.match(heroSource, /title-line title-line-lab[\s\S]*LAB/, "The landing hero should render LAB as the second stacked title line.");
 assert.doesNotMatch(heroSource, /PAPER WORKSPACE FOR LATEX AUTHORS|Turn rough formulas into reviewable papers/, "The landing hero should remove subtitle copy from the first screen.");
+assert.doesNotMatch(heroSource, /HeroCornerTicker/, "The landing hero should not mount the reverted lower-right looping ticker.");
 assert.match(heroSource, /REVIEW INBOX PRIMED/, "The landing hero should preview the review workflow.");
 assert.match(heroSource, /COLLABORATION LAYER READY/, "The landing hero should preview the collaboration layer.");
 assert.match(

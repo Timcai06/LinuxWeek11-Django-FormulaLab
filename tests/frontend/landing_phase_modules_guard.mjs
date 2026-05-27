@@ -98,7 +98,14 @@ assert.doesNotMatch(collaborationSource, /GPU|VRAM|TARGET LOCKED/, "Collaboratio
 assert.match(styleSource, /\.collaboration-signal-field\b/, "Collaboration Signal Field should have dedicated landing CSS styles.");
 
 assert.match(gateSource, /WorkbenchGateOverlay/, "WorkbenchGateOverlay component should exist.");
-assert.match(gateSource, /workbench-gate/, "Workbench Gate should render a minimal terminal shell.");
+assert.match(gateSource, /workbench-gate/, "Workbench Gate should render the final entry layer.");
+assert.match(gateSource, /gate-liquid-svg/, "Workbench Gate should use a liquid footer wave for the final transition.");
+assert.match(gateSource, /gate-liquid-path/, "Workbench Gate should expose a dedicated SVG path for the bouncy liquid footer.");
+assert.match(gateSource, /createFooterPathCache/, "Workbench Gate should cache liquid footer path frames instead of rebuilding every shape from scratch.");
+assert.match(gateSource, /footerPathForProgress/, "Workbench Gate should drive the liquid footer from scroll progress.");
+assert.match(gateSource, /SplitText\.create/, "Workbench Gate should use SplitText for final title and corner ticker motion.");
+assert.match(gateSource, /gate-corner-ticker/, "Workbench Gate should include the lower-right looping product ticker.");
+assert.match(gateSource, /gate-corner-ticker-track/, "Workbench Gate ticker should use a track that can loop continuously.");
 assert.match(gateSource, /workbench-gate-copy/, "Workbench Gate should keep one short product landing sentence.");
 assert.match(gateSource, /workbench-gate-cta/, "Workbench Gate should expose a final CTA.");
 assert.match(gateSource, /Enter Workbench/, "The final CTA label should be Enter Workbench.");
@@ -109,9 +116,9 @@ assert.doesNotMatch(gateSource, /product-preview-/, "Workbench Gate should not r
 assert.doesNotMatch(gateSource, /Project|Formula Review|Suggested edit|references\.bib|main\.tex/, "Workbench Gate should not render product preview content.");
 assert.match(curtainCopySource, /curtain-copy-eyebrow/, "Green curtain copy should include compact chapter labels.");
 assert.match(curtainCopySource, /01 CAPTURE[\s\S]*02 REVIEW[\s\S]*03 COLLABORATE/, "Green curtain copy should present capture, review, and collaboration as separate beats.");
-assert.notEqual(gateIndex, -1, "Workbench Gate should define its terminal shell.");
+assert.notEqual(gateIndex, -1, "Workbench Gate should define its final entry layer.");
 assert.notEqual(ctaIndex, -1, "Workbench Gate should define its CTA.");
-assert.ok(gateIndex < ctaIndex, "Workbench Gate CTA should live inside the terminal shell.");
+assert.ok(gateIndex < ctaIndex, "Workbench Gate CTA should live inside the final entry layer.");
 
 assert.match(manuscriptSource, /createManuscriptShaderMaterial|manuscriptShaderUniforms/, "ManuscriptCanvas should use the manuscript shader scan material.");
 assert.doesNotMatch(manuscriptSource, /STARFIELD_PARTICLE_COUNT|FormulaStarfield|createFormulaStarfieldMaterial/, "The retired starfield should not remain in the manuscript canvas.");
@@ -130,6 +137,9 @@ assert.match(
 );
 assert.doesNotMatch(typeSource, /"scan"|"reveal"/, "Scan and reveal should not remain top-level landing phases.");
 assert.match(styleSource, /\.workbench-gate-cta/, "Final CTA styles should exist.");
+assert.match(styleSource, /\.gate-liquid-svg/, "Liquid footer SVG styles should exist.");
+assert.match(styleSource, /\.gate-corner-ticker-track[\s\S]*?width:\s*max-content/, "Corner ticker should keep a max-content loop track.");
+assert.match(styleSource, /\.gate-corner-ticker-track[\s\S]*?padding-left:\s*100%/, "Corner ticker should start off to the right like the GSAP horizontal text reference.");
 assert.match(styleSource, /\.cinematic-overlay[\s\S]*?pointer-events:\s*none/, "Cinematic overlays should not intercept CTA clicks.");
 assert.doesNotMatch(styleSource, /\[data-story-phase="cta"\]\s+\.collaboration-signal-field/, "Collaboration signals should not be visible during the final CTA phase.");
 assert.match(styleSource, /--collab-signal-x/, "Collaboration signals should have a horizontal exit vector into the green curtain transition.");

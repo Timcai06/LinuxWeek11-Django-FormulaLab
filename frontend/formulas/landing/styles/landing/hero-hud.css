@@ -87,6 +87,12 @@
   transform: translate3d(var(--actions-x), 0, 0);
 }
 
+.hero-title-stack {
+  position: relative;
+  margin: 8px 0 18px;
+  padding: 0.1em 0;
+}
+
 .landing-readout {
   opacity: var(--hero-opacity);
   transform: translate3d(var(--readout-x), 0, 0);
@@ -147,12 +153,12 @@
 }
 
 .landing-copy h1 {
-  margin: 8px 0 18px;
-  padding: 0.1em 0;
+  margin: 0;
+  padding: 0;
   color: transparent;
   font-size: clamp(4rem, 12vw, 10rem);
   font-weight: 950;
-  line-height: 0.86;
+  line-height: 0.94;
   letter-spacing: 0;
   background: linear-gradient(110deg, #ffffff 0%, #555555 25%, #ffffff 50%, #555555 75%, #ffffff 100%);
   background-size: 200% auto;
@@ -166,6 +172,13 @@
 .landing-copy h1:hover {
   cursor: default;
   animation: metallicSweep 6s linear infinite, chromaticGlitch 0.12s infinite alternate;
+}
+
+.landing-story:not([data-story-phase="intro"]) .landing-hero::after,
+.landing-story:not([data-story-phase="intro"]) .hero-scanline,
+.landing-story:not([data-story-phase="intro"]) .shooting-star,
+.landing-story:not([data-story-phase="intro"]) .landing-copy h1 {
+  animation-play-state: paused;
 }
 
 .mission-subtitle {
@@ -196,7 +209,7 @@
   z-index: 3;
   display: grid;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.74);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;

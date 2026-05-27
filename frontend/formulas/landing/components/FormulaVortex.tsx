@@ -123,7 +123,7 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
       });
     };
 
-    const tl = gsap.timeline({ onUpdate: draw })
+    const tl = gsap.timeline({ onUpdate: draw, paused: true })
       .fromTo(particles, {
         x: (i: number) => {
           const angle = (i / count * Math.PI * 2) - Math.PI / 2;
@@ -160,7 +160,6 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
         tl.pause();
         return;
       }
-      tl.resume();
       draw();
     };
 
@@ -178,6 +177,7 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
     let lastPaintTime = 0;
     let currentSpeed = 0.15;
     let lastProgress = scrollProgressRef.current;
+    let wasActive = false;
 
     const update = (now: number) => {
       if (document.hidden) {
@@ -207,6 +207,17 @@ export function FormulaVortex({ scrollProgressRef }: { scrollProgressRef: Scroll
 
         const targetOpacity = Math.max(0, absorbPhase - exitPhase * 1.2);
         canvasRef.current.style.opacity = Math.min(1.0, targetOpacity).toFixed(3);
+        const isActive = targetOpacity > 0.01 || scrollBoost > 0.02;
+        if (isActive) {
+          timelineRef.current.resume();
+        } else {
+          timelineRef.current.pause();
+          if (wasActive) {
+            const context = canvasRef.current.getContext("2d");
+            context?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          }
+        }
+        wasActive = isActive;
         lastPaintTime = now;
       }
     };

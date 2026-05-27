@@ -71,10 +71,11 @@ assert.ok(blackLiquid[1] <= letterStorm[0], "Letter storm should not start until
 assert.ok(letterStorm[1] <= workbenchGate[0], "Workbench gate should not appear before the letter storm finishes.");
 assert.ok(greenCopy[0] - greenLiquid[1] >= 0.01, "The completed green curtain needs a perceptible settled beat before SplitText starts.");
 assert.ok(greenCopy[1] - greenCopy[0] >= 0.15, "Green SplitText needs enough scroll distance to avoid skipping between messages.");
-assert.ok(letterStorm[1] - letterStorm[0] >= 0.055, "Letter storm should read as its own typographic chapter before the gate appears.");
+assert.ok(letterStorm[1] - letterStorm[0] >= 0.07, "Letter storm should read as its own typographic chapter before the gate appears.");
 assert.ok(workbenchGate[0] - letterStorm[1] >= 0.014, "Workbench gate should have a visible pause after the letter storm.");
-assert.match(choreography, /export const LETTER_STORM = \[0\.904,\s*0\.962\] as const;/, "Letter storm should be compact after extending the green copy dwell.");
-assert.match(choreography, /export const WORKBENCH_GATE = \[0\.978,\s*1\.0\] as const;/, "Workbench gate should enter after a real post-ticker breath.");
+assert.match(choreography, /export const LETTER_STORM = \[0\.900,\s*0\.980\] as const;/, "Letter storm should have enough room for a full SplitText horizontal pass.");
+assert.match(choreography, /export const WORKBENCH_GATE = \[0\.994,\s*1\.0\] as const;/, "Workbench gate should enter after a real post-ticker breath.");
+assert.match(choreography, /REAL_FREE_SCROLL_RANGES[\s\S]*LETTER_STORM\[0\] \+ 0\.003[\s\S]*LETTER_STORM\[1\] - 0\.002/, "Letter storm should be protected from directional snap while the marquee is readable.");
 assert.match(copyStage, /eyebrow:\s*"01 CAPTURE"[\s\S]*eyebrow:\s*"02 REVIEW"[\s\S]*eyebrow:\s*"03 COLLABORATE"/, "Green curtain copy should read as three designed story chapters.");
 
 assert.match(

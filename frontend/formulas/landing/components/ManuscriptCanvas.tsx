@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { PAPER_CENTER, PAPER_EXIT, SCAN_REVEAL } from "../storyChoreography";
 import { easedRange } from "../three/motion";
 import { createManuscriptShaderMaterial, type ManuscriptShaderUniforms } from "../three/ManuscriptShaderMaterial";
+import { getLandingMotionRuntime } from "../performance/motionRuntime";
 
 const MANUSCRIPT_TEXTURE = "/static/formulas/visuals/manuscript_texture_alpha.png";
 const IDLE_SCROLL_PROGRESS = { current: 0 };
@@ -84,50 +85,40 @@ function PaperMesh({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanva
   );
 }
 
-function LandingFramePump() {
+function LandingFramePump({ scrollProgressRef = IDLE_SCROLL_PROGRESS }: ManuscriptCanvasProps) {
   const invalidate = useThree((state) => state.invalidate);
 
   useEffect(() => {
-    let raf = 0;
-
-    const tick = () => {
+    let lastProgress = Number.NaN;
+    let lastInvalidateTimeMs = 0;
+    const runtime = getLandingMotionRuntime();
+    const unsubscribeFrame = runtime.subscribe(({ timeMs }) => {
       if (document.hidden) {
-        raf = 0;
         return;
       }
-      invalidate();
-      raf = requestAnimationFrame(tick);
-    };
-
-    const start = () => {
-      if (!raf && !document.hidden) {
-        raf = requestAnimationFrame(tick);
+      const progress = scrollProgressRef.current;
+      const progressDelta = Math.abs(progress - lastProgress);
+      const paperIsActive = progress <= PAPER_EXIT[1] + 0.04;
+      const shouldRefreshIdleFloat = paperIsActive && timeMs - lastInvalidateTimeMs >= 33;
+      if (progressDelta > 0.00025 || shouldRefreshIdleFloat) {
+        invalidate();
+        lastProgress = progress;
+        lastInvalidateTimeMs = timeMs;
       }
-    };
-
-    const stop = () => {
-      if (raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
+    });
+    const unsubscribeVisibility = runtime.subscribeVisibility((visible) => {
+      if (visible) {
+        lastProgress = Number.NaN;
+        invalidate();
       }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        stop();
-        return;
-      }
-      start();
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    start();
+    });
+    invalidate();
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      stop();
+      unsubscribeFrame();
+      unsubscribeVisibility();
     };
-  }, [invalidate]);
+  }, [invalidate, scrollProgressRef]);
 
   return null;
 }
@@ -141,7 +132,7 @@ export function ManuscriptCanvas({ scrollProgressRef }: ManuscriptCanvasProps) {
         frameloop="demand"
         gl={{ alpha: true, antialias: false, powerPreference: "low-power" }}
       >
-        <LandingFramePump />
+        <LandingFramePump scrollProgressRef={scrollProgressRef} />
         <fog attach="fog" args={["#000000", 5, 20]} />
         <PaperMesh scrollProgressRef={scrollProgressRef} />
       </Canvas>

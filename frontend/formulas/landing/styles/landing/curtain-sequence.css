@@ -120,21 +120,22 @@
 
 .ht-track {
   width: 100%;
-  transform: translate3d(var(--ticker-x), var(--ticker-y), 0) scale(var(--ticker-scale));
-  transform-origin: center;
+  transform: translate3d(var(--ticker-measured-x, var(--ticker-x)), var(--ticker-y), 0) scale(var(--ticker-scale));
+  transform-origin: left center;
   will-change: transform;
 }
 
 .ht-text {
   display: flex;
+  gap: 4vw;
   width: max-content;
   white-space: nowrap;
-  padding-left: 0;
+  padding-left: 100vw;
   margin: 0;
-  font-size: clamp(3rem, 12vw, 15rem);
-  font-weight: 900;
+  font-size: clamp(4rem, 13vw, 17rem);
+  font-weight: 950;
   line-height: 1.1;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   color: rgba(255, 255, 255, 0.92);
   font-family: "D-DIN", "D-DIN Exp", "Arial Narrow", Arial, sans-serif;
   text-shadow: 0 0 60px rgba(255, 255, 255, 0.15);
@@ -143,9 +144,11 @@
 
 .ht-char {
   display: inline-block;
-  transform: translate3d(0, calc(var(--ticker-chaos) * var(--char-drift)), 0)
-    rotate(calc(var(--ticker-chaos) * var(--char-rotation)));
   will-change: transform;
+}
+
+.ht-word {
+  display: inline-flex;
 }
 
 /* ── Morph Curtain (Phase Gate Transition) ───────────────── */

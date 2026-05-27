@@ -1,4 +1,4 @@
-export const STORY_HEIGHT_VH = 2800;
+export const STORY_HEIGHT_VH = 3800;
 
 export const PAPER_CENTER = [0.008, 0.032] as const;
 export const SCAN_REVEAL = [0.12, 0.23] as const;
@@ -9,9 +9,9 @@ export const PAPER_EXIT = [0.505, 0.555] as const;
 
 export const GREEN_LIQUID = [0.555, 0.638] as const;
 export const GREEN_COPY = [0.650, 0.835] as const;
-export const BLACK_LIQUID = [0.845, 0.900] as const;
-export const LETTER_STORM = [0.904, 0.962] as const;
-export const WORKBENCH_GATE = [0.978, 1.0] as const;
+export const BLACK_LIQUID = [0.845, 0.895] as const;
+export const LETTER_STORM = [0.900, 0.980] as const;
+export const WORKBENCH_GATE = [0.994, 1.0] as const;
 
 // Required by architectural test guard check:
 export const GREEN_COPY_BLOCK_RANGES = [
@@ -72,7 +72,7 @@ export const REAL_STORY_SNAP_POINTS = [
   GREEN_LIQUID[1],
   ...GREEN_COPY_SNAP_POINTS,
   BLACK_LIQUID[1],
-  0.935,
+  LETTER_STORM[1],
   WORKBENCH_GATE[0],
   1,
 ];
@@ -89,4 +89,5 @@ export const FREE_SCROLL_RANGES = [
 export const REAL_FREE_SCROLL_RANGES = [
   [0.565, 0.612],
   [0.852, 0.892],
+  [LETTER_STORM[0] + 0.003, LETTER_STORM[1] - 0.002],
 ] as const;
