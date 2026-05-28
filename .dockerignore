@@ -23,6 +23,7 @@ dist/
 *.egg-info/
 
 node_modules/
+**/.astro/
 test-results/
 playwright-report/
 

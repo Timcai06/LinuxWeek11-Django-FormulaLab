@@ -32,6 +32,20 @@ class FormulaWorkbenchViewTests(FormulaViewTestCase):
         self.assertContains(response, "ENTER WORKBENCH")
         self.assertContains(response, "VIEW MISSION LOG")
 
+    def test_experiment_serves_astro_experience_page(self):
+        response = self.client.get("/experiment/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Formula Lab Experiment")
+        self.assertContains(response, "data-experiment-root")
+        self.assertContains(response, "data-experiment-canvas")
+        self.assertContains(response, "ENTER WORKBENCH")
+        self.assertContains(response, "experiment-chapter-story")
+        self.assertContains(response, "data-chapter-formula")
+        self.assertContains(response, "data-chapter-origin")
+        self.assertContains(response, "data-chapter-product")
+        self.assertContains(response, "/static/formulas/experiment/_astro/")
+
     def test_workbench_renders_upload_form_and_telemetry_context(self):
         project = PaperProject.objects.create(name="Active paper", writing_goal="Collect formulas")
         FormulaJob.objects.create(original_image="formula_uploads/source.png")

@@ -1,0 +1,102 @@
+---
+import "../styles/experiment.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#020302" />
+    <title>Formula Lab Experiment</title>
+    <meta
+      name="description"
+      content="An experimental Formula Lab entrance: paper, formulas, and a research workspace rendered as a scroll-driven WebGL motion study."
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="/static/formulas/experiment/assets/research-manuscript-sheet.png"
+      fetchpriority="high"
+    />
+    <link rel="stylesheet" href="/static/formulas/vendor/katex/katex.min.css" />
+  </head>
+  <body data-experiment-root>
+    <canvas data-experiment-canvas aria-hidden="true"></canvas>
+
+    <header class="experiment-nav" aria-label="Experiment navigation">
+      <a class="experiment-brand" href="/">FORMULA LAB</a>
+      <a class="experiment-nav__link" href="/workbench/">ENTER WORKBENCH</a>
+    </header>
+
+    <main class="experiment-story" data-experiment-story>
+      <section class="experiment-stage experiment-stage--intro" aria-label="Formula Lab experimental entrance">
+        <div class="experiment-kicker">ART LAB / WEBGL STUDY 01</div>
+        <h1 class="experiment-title" aria-label="Formula Lab">
+          <span class="experiment-title__word experiment-title__word--formula">FORMULA</span>
+          <span class="experiment-title__word experiment-title__word--lab">LAB</span>
+        </h1>
+        <p class="experiment-subcopy">
+          A rough paper becomes a living workspace for LaTeX authors.
+        </p>
+      </section>
+
+      <section class="experiment-stage experiment-stage--paper" aria-label="Paper extraction sequence">
+        <div class="experiment-panel experiment-panel--left">
+          <span>01</span>
+          <strong>Capture the manuscript</strong>
+          <p>Static symbols enter a single visual pipeline instead of a disconnected OCR box.</p>
+        </div>
+        <div class="experiment-panel experiment-panel--right">
+          <span>02</span>
+          <strong>Stabilize the math</strong>
+          <p>Formula candidates stay attached to source context, confidence, and review state.</p>
+        </div>
+      </section>
+
+      <section class="experiment-stage experiment-stage--workspace" aria-label="Workspace morph sequence">
+        <div class="experiment-grid-copy">
+          <span>VALIDATED LATEX</span>
+          <span>PAPER CONTEXT</span>
+          <span>REVIEW INBOX</span>
+          <span>COLLABORATION SIGNALS</span>
+        </div>
+        <p class="experiment-statement">
+          From image recognition to a paper-native review surface.
+        </p>
+      </section>
+
+      <aside class="experiment-chapter-story" aria-live="polite">
+        <span class="experiment-chapter-story__label" data-chapter-label>Chapter 01</span>
+        <strong class="experiment-chapter-story__formula" data-chapter-formula>e^(i*pi)+1=0</strong>
+        <span class="experiment-chapter-story__author" data-chapter-author>Leonhard Euler / 18th century</span>
+        <div class="experiment-chapter-story__fragments" data-chapter-story>
+          <p class="experiment-chapter-story__body" data-chapter-origin>
+            A compact bridge between exponential growth, rotation, and the geometry of complex numbers.
+          </p>
+          <p class="experiment-chapter-story__body" data-chapter-conflict>
+            Mathematicians needed one language for curves, cycles, and imaginary quantities.
+          </p>
+          <p class="experiment-chapter-story__body" data-chapter-legacy>
+            Several fundamental constants meet in one compressed line.
+          </p>
+          <p class="experiment-chapter-story__body experiment-chapter-story__body--product" data-chapter-product>
+            Formula Lab treats dense notation as a reviewable object, not a dead image.
+          </p>
+        </div>
+      </aside>
+
+      <section class="experiment-stage experiment-stage--gate" aria-label="Workbench entrance">
+        <div class="experiment-gate">
+          <span class="experiment-gate__eyebrow">THE WORKSPACE IS READY</span>
+          <h2>Review formulas where the paper lives.</h2>
+          <a class="experiment-gate__button" href="/workbench/">ENTER WORKBENCH</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      import "../scripts/experiment-runtime.ts";
+    </script>
+  </body>
+</html>

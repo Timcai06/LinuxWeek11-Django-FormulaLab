@@ -1,6 +1,8 @@
 import logging
+from pathlib import Path
 
-from django.http import JsonResponse
+from django.contrib.staticfiles import finders
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
@@ -17,6 +19,13 @@ logger = logging.getLogger(__name__)
 
 def landing(request):
     return render(request, "formulas/landing.html")
+
+
+def experiment(request):
+    index_path = finders.find("formulas/experiment/index.html")
+    if not index_path:
+        raise Http404("Formula Lab experiment page has not been built.")
+    return HttpResponse(Path(index_path).read_text(encoding="utf-8"))
 
 
 def workbench(request):

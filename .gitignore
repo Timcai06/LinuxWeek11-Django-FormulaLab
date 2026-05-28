@@ -16,6 +16,7 @@ media/
 .model-cache/
 .superpowers/
 .agents/superpowers/
+.astro/
 *.sqlite3
 var/model-cache/
 /var/*

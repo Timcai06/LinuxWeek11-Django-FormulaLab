@@ -19,10 +19,11 @@ from .project_views import (
     review_formula_item,
 )
 from .system_views import health_api, pause_queue_api, resume_queue_api, system_page, warmup_api
-from .workbench_views import create_job, landing, workbench
+from .workbench_views import create_job, experiment, landing, workbench
 
 __all__ = [
     "create_job",
+    "experiment",
     "api_formula_item_detail",
     "api_formula_item_version_restore",
     "api_formula_item_versions",
