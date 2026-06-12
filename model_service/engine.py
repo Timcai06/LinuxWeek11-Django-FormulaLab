@@ -6,6 +6,9 @@ from django.conf import settings
 from apps.formulas.services.ocr_engines import get_formula_engine
 
 
+# This module is process-local state for the FastAPI model service. It describes
+# model readiness inside the model-api process only; Django/Celery health is
+# reported separately through Redis-backed telemetry.
 _STATE_LOCK = Lock()
 _STATUS = "unknown"
 _ERROR_MESSAGE = ""

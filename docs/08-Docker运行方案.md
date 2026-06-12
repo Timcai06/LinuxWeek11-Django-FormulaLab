@@ -45,6 +45,70 @@ platform: linux/amd64
 
 这与常见 Linux 服务器部署架构一致，也保证 Paddle wheel 可以安装。代价是 Apple Silicon Mac 本机构建和运行容器会走 amd64 emulation，速度会比本机 `.conda` 慢。
 
+## UTM ARM64 + Mac 模型服务运行方案
+
+如果课程验收环境是 Apple Silicon 上的 UTM Ubuntu ARM64 虚拟机，完整 Paddle OCR 不能直接放进 Linux ARM64 容器中运行。当前项目采用“路线 C”完成本机混合验收：
+
+```text
+Linux / UTM / Docker
+  web      Django 页面和上传入口
+  worker   Celery 任务执行器
+  db       PostgreSQL
+  redis    Celery broker
+
+Mac 本机
+  model-api  FastAPI + PaddleOCR FormulaRecognition
+```
+
+这条路线的用户体验仍然是在 Linux 浏览器里打开网站并上传图片；识别请求由 Linux worker 通过 HTTP 转发到 Mac 上的模型服务。
+
+Mac 端启动模型服务：
+
+```bash
+cd /Users/tim/Desktop/shared-Linux/formula-lab
+make mac-model
+```
+
+Linux 端启动网站链路：
+
+```bash
+cd /mnt/utm/shared-Linux/formula-lab
+make linux-up
+```
+
+Linux 端关闭容器：
+
+```bash
+make linux-down
+```
+
+Mac 端关闭模型服务：
+
+```text
+Ctrl + C
+```
+
+检查 Linux 是否能连到 Mac 模型：
+
+```bash
+make linux-model-health
+```
+
+当前路线 C 使用两个覆盖文件：
+
+```text
+docker-compose.arm64-smoke.yml       让 web / worker 使用 linux/arm64，并跳过 Paddle 安装
+docker-compose.arm64-mac-model.yml   让 worker 调用 Mac model-api，并把 /app/media 改为 Docker named volume
+```
+
+`/app/media` 在路线 C 中不能继续 bind 到 UTM 共享目录。原因是 UTM 共享挂载在容器里可能拒绝 Django 创建上传目录，表现为：
+
+```text
+PermissionError: [Errno 1] Operation not permitted: '/app/media/formula_uploads/...'
+```
+
+因此路线 C 让 web 和 worker 共用 `formula_lab_media` 命名 volume。这样上传文件、预处理图片和 worker 读取路径都留在 Linux Docker 原生存储内，避免共享目录权限问题。
+
 前端布局智能使用 Node 构建层生成静态 bundle。Docker 构建时先在 Node stage 运行 `npm run build`，再把生成的 `layout-intelligence.js` 复制进最终 Python 镜像。最终运行时仍然只有 Python 服务、PostgreSQL 和 Redis，不启动 Node 服务。
 
 ## 服务设计
@@ -193,6 +257,8 @@ postgres_data                 Docker 命名 volume，保存 PostgreSQL 数据
 模型缓存很重要，因为 PaddleOCR 需要下载模型权重。如果每次重建容器都重新下载，会明显影响开发体验和验收稳定性。
 
 这种设计偏向课程验收和本地调试：宿主机可以直接看到上传文件和模型缓存。未来如果要做更接近生产环境的 Compose，可以把 `media` 和 `model_cache` 改成命名 volume，并拆出 `compose.prod.yml`。
+
+路线 C 是例外：由于 `/mnt/utm` 共享挂载不适合作为容器写入型媒体目录，`docker-compose.arm64-mac-model.yml` 会把 `media` 覆盖为 Docker 命名 volume。
 
 ## 环境变量
 

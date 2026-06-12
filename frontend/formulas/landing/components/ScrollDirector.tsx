@@ -7,6 +7,14 @@ import type { ScrollDirectorProps } from "../types";
 import { phaseForProgress, setStoryVars, snapToStoryBeat } from "../storyTimeline";
 import { getLandingMotionRuntime, isMotionDebugEnabled } from "../performance/motionRuntime";
 
+/**
+ * Owns the landing page's scroll timeline.
+ *
+ * @performance / @caveats Keep ScrollTrigger and Lenis setup here so the rest
+ * of the landing island consumes a single progress source through refs/CSS
+ * variables. Adding separate primary ScrollTriggers in child components tends
+ * to create duplicate scroll work and makes cleanup/leak audits much harder.
+ */
 export function ScrollDirector({ scrollProgressRef, children }: ScrollDirectorProps) {
   const storyRef = useRef<HTMLElement>(null);
 

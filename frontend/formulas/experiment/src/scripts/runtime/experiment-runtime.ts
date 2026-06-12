@@ -50,10 +50,17 @@ export function createExperimentRuntime(root: HTMLElement, story: HTMLElement, c
   let smoothProgress = 0;
   let lastTime = performance.now();
   let isVisible = !document.hidden;
+  let lastRenderedProgress = Number.NaN;
+  let lastInteractionAt = performance.now();
+
+  const IDLE_PROGRESS_EPSILON = 0.00018;
+  const IDLE_SETTLE_MS = 520;
 
   function writeProgress(value: number) {
     targetProgress = value;
+    lastInteractionAt = performance.now();
     root.style.setProperty("--experiment-progress", value.toFixed(4));
+    startRenderLoop();
   }
 
   function render(time: number) {
@@ -67,7 +74,22 @@ export function createExperimentRuntime(root: HTMLElement, story: HTMLElement, c
     const chapterState = getChapterState(smoothProgress);
     renderChapterStory(root, chapterState);
     scene.render(time, smoothProgress, chapterState.activeIndex, chapterState.localProgress);
-    animationFrame = requestAnimationFrame(render);
+
+    const progressDelta = Number.isNaN(lastRenderedProgress)
+      ? Infinity
+      : Math.abs(smoothProgress - lastRenderedProgress);
+    lastRenderedProgress = smoothProgress;
+
+    // The experiment page is an art-heavy WebGL surface. Keep the same visual
+    // easing, but stop scheduling frames once scroll, pointer, and damping have
+    // settled so an open tab does not keep the GPU awake indefinitely.
+    const recentlyInteractive = time - lastInteractionAt < IDLE_SETTLE_MS;
+    const stillSettling = Math.abs(targetProgress - smoothProgress) > IDLE_PROGRESS_EPSILON;
+    if (progressDelta > IDLE_PROGRESS_EPSILON || recentlyInteractive || stillSettling) {
+      animationFrame = requestAnimationFrame(render);
+      return;
+    }
+    animationFrame = 0;
   }
 
   function startRenderLoop() {
@@ -89,18 +111,25 @@ export function createExperimentRuntime(root: HTMLElement, story: HTMLElement, c
   const timeline = initDomTimeline(story, writeProgress);
 
   const onPointerMove = (event: PointerEvent) => {
+    lastInteractionAt = performance.now();
     scene.setPointer(
       (event.clientX / window.innerWidth - 0.5) * 2,
       -(event.clientY / window.innerHeight - 0.5) * 2,
     );
+    startRenderLoop();
   };
   const onResize = () => {
+    lastRenderedProgress = Number.NaN;
+    lastInteractionAt = performance.now();
     scene.resize();
     ScrollTrigger.refresh();
+    startRenderLoop();
   };
   const onVisibilityChange = () => {
     isVisible = !document.hidden;
     if (isVisible) {
+      lastRenderedProgress = Number.NaN;
+      lastInteractionAt = performance.now();
       startRenderLoop();
       ScrollTrigger.refresh();
     } else {

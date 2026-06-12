@@ -2,6 +2,16 @@ import gsap from "gsap";
 import * as THREE from "three";
 import { formulaChapters, type FormulaChapter } from "../../data/formula-chapters";
 
+/**
+ * WebGL paper scene for the experimental art page.
+ *
+ * @description This layer samples formula regions from the manuscript texture
+ * and lifts them into 3D. DOM copy, KaTeX story text, and scroll choreography
+ * stay outside this file so shader work remains focused and disposable.
+ * @performance / @caveats Any geometry, material, texture, or renderer created
+ * here must be released in dispose(); the outer runtime decides when frames are
+ * needed so this scene can render on demand instead of owning an endless loop.
+ */
 const MANUSCRIPT_TEXTURE_URL = "/static/formulas/experiment/assets/research-manuscript-sheet.png";
 const PAPER_WIDTH = 3.35;
 const PAPER_HEIGHT = 4.45;

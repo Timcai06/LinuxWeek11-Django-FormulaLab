@@ -38,8 +38,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY config/requirements/base.txt /app/requirements.txt
 COPY config/requirements/paddle.txt /app/requirements-paddle.txt
+# Default Docker builds include Paddle for the amd64 production path. ARM64
+# smoke/route C builds pass FORMULA_LAB_INSTALL_PADDLE=0 because PaddlePaddle
+# does not publish Linux ARM64 wheels for the current OCR stack.
+ARG FORMULA_LAB_INSTALL_PADDLE=1
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system -r /app/requirements.txt -r /app/requirements-paddle.txt
+    if [ "${FORMULA_LAB_INSTALL_PADDLE}" = "1" ]; then \
+        uv pip install --system -r /app/requirements.txt -r /app/requirements-paddle.txt; \
+    else \
+        uv pip install --system -r /app/requirements.txt; \
+    fi
 
 COPY . /app
 COPY --from=frontend /app/apps/formulas/static/formulas/js/generated/layout-intelligence.js /app/apps/formulas/static/formulas/js/generated/layout-intelligence.js

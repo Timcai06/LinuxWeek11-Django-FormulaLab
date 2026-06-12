@@ -5,6 +5,14 @@ import { createMotionQualityController, type MotionQualityMode } from "./quality
 import { createLandingTransitionOrchestrator, type LandingTransitionSnapshot } from "./transitionOrchestrator";
 import { createRendererSubscriber, type RendererSubscriptionOptions } from "./rendererScheduler";
 
+/**
+ * Single motion runtime for the cinematic landing page.
+ *
+ * @performance / @caveats Components should subscribe to this runtime instead
+ * of opening their own perpetual rAF loops. It centralizes visibility pausing,
+ * phase/progress snapshots, transition settling, and quality mode so Landing can
+ * stay expressive without keeping the GPU busy after the scroll story settles.
+ */
 export type MotionRuntimeFrame = {
   timeMs: number;
   deltaMs: number;

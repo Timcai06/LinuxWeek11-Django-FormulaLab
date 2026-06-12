@@ -5,6 +5,9 @@ from apps.formulas.services.ocr_engines import get_formula_engine
 from apps.formulas.services.recognition_types import RecognitionResult
 
 
+# Recognition clients keep task code independent from where the heavy OCR model
+# lives. Local mode is fastest for Mac/.conda development; HTTP mode is the
+# deployment boundary used by Docker and the UTM route C Mac-model workflow.
 class LocalRecognitionClient:
     name = "local"
 

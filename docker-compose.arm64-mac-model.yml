@@ -1,0 +1,29 @@
+services:
+  web:
+    environment:
+      FORMULA_LAB_RECOGNITION_BACKEND: http
+      FORMULA_LAB_MODEL_API_URL: ${FORMULA_LAB_MODEL_API_URL:?Set FORMULA_LAB_MODEL_API_URL to the Mac model API URL}
+    volumes: !override
+      - .:/app
+      # UTM shared folders can reject container-side mkdir/chmod. Keep uploads
+      # in a Docker volume so Django and Celery can share media without touching
+      # the macOS-backed bind mount.
+      - formula_lab_media:/app/media
+
+  worker:
+    environment:
+      FORMULA_LAB_RECOGNITION_BACKEND: http
+      FORMULA_LAB_MODEL_API_URL: ${FORMULA_LAB_MODEL_API_URL:?Set FORMULA_LAB_MODEL_API_URL to the Mac model API URL}
+    volumes: !override
+      - .:/app
+      # Must match web:/app/media; OCR tasks read the uploaded file path created
+      # by Django before sending it to the Mac-hosted model API.
+      - formula_lab_media:/app/media
+    depends_on: !override
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  formula_lab_media:

@@ -1,0 +1,32 @@
+services:
+  web:
+    platform: linux/arm64
+    build:
+      args:
+        # PaddlePaddle has no Linux ARM64 wheel in the current OCR stack.
+        # This override keeps the site shell buildable on UTM/aarch64.
+        FORMULA_LAB_INSTALL_PADDLE: "0"
+    command: >
+      sh -c "until python -c 'import socket; socket.create_connection((\"db\", 5432), 2).close()' >/dev/null 2>&1;
+             do echo waiting for db; sleep 1; done &&
+             python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      FORMULA_LAB_RECOGNITION_BACKEND: http
+      FORMULA_LAB_MODEL_API_URL: http://model-api:9000
+
+  worker:
+    platform: linux/arm64
+    build:
+      args:
+        # Worker code still runs on Linux ARM64, but OCR must be delegated
+        # through docker-compose.arm64-mac-model.yml for the full route C flow.
+        FORMULA_LAB_INSTALL_PADDLE: "0"
+
+  model-api:
+    platform: linux/arm64
+    build:
+      args:
+        # Kept for smoke/build symmetry; do not use this ARM64 service for
+        # Paddle OCR because the runtime dependency is unavailable on Linux ARM64.
+        FORMULA_LAB_INSTALL_PADDLE: "0"

@@ -5,6 +5,14 @@ import type { ScrollProgressRef } from "../types";
 import { getLandingMotionRuntime } from "../performance/motionRuntime";
 import { progressBetween } from "../three/motion";
 
+/**
+ * Scroll-scrubbed liquid curtain rendered with cached SVG paths.
+ *
+ * @performance / @caveats The original GSAP liquid examples mutate point arrays
+ * and rebuild path strings on every frame. Here the path shapes are sampled once
+ * into a cache, then scroll only chooses a frame index, keeping the visual close
+ * to the reference without a high-refresh CPU tax.
+ */
 const NUM_POINTS = 10;
 const NUM_PATHS = 2;
 const DELAY_POINTS_MAX = 0.3;

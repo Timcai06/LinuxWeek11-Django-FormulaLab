@@ -34,6 +34,10 @@ STAGES = {
     "RESULT_READY": ("RESULT READY", "公式识别结果已生成", 100),
 }
 
+# The Celery task is the single owner of mission state transitions. Views create
+# queued jobs, recognition clients hide model placement, and this pipeline ties
+# together queue pause, warmup, preprocessing, inference, postprocess, and the
+# project-level FormulaItem materialization.
 _heartbeat_thread = None
 _heartbeat_lock = threading.Lock()
 
